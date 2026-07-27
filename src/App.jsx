@@ -17,6 +17,7 @@ import Profile from '@/pages/contango/Profile';
 import Paywall from '@/pages/contango/Paywall';
 import DrillCoach from '@/pages/contango/DrillCoach';
 import OnboardingGuide from '@/pages/contango/OnboardingGuide';
+import Practice from '@/pages/contango/Practice';
 
 function App() {
 
@@ -38,6 +39,7 @@ function App() {
               <Route path="/paywall" element={<Paywall />} />
               <Route path="/drill-coach" element={<DrillCoach />} />
               <Route path="/guide" element={<OnboardingGuide />} />
+              <Route path="/practice" element={<Practice />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </ContangoProvider>

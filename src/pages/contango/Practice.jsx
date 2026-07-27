@@ -1,0 +1,203 @@
+import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Repeat, Clock, Sparkles, Check, X, CalendarClock } from "lucide-react";
+import ScreenShell from "@/components/contango/ScreenShell";
+import PracticeReview from "@/components/contango/practice/PracticeReview";
+import { useContango } from "@/contexts/ContangoContext";
+import { buildPracticeCatalog, isDue, nextDueMs } from "@/lib/spacedRepetition";
+
+const SESSION_SIZE = 10;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleOptions(card) {
+  const order = card.options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return { ...card, _options: order.map((i) => card.options[i]), _correct: order.indexOf(card.correct) };
+}
+
+function fmtDue(ms) {
+  if (ms == null) return "later";
+  const h = Math.round(ms / 3600000);
+  if (h < 1) return "soon";
+  if (h < 24) return `in ${h}h`;
+  return `in ${Math.round(h / 24)}d`;
+}
+
+export default function Practice() {
+  const { progress, reviewCard, recordSession } = useContango();
+  const srCards = progress.srCards || {};
+  const catalog = useMemo(
+    () => buildPracticeCatalog(progress),
+    [progress.completedLessons, progress.completedDrills]
+  );
+  const dueCards = useMemo(() => catalog.filter((c) => isDue(srCards[c.id])), [catalog, srCards]);
+
+  const [phase, setPhase] = useState("home");
+  const [queue, setQueue] = useState([]);
+  const [idx, setIdx] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [stats, setStats] = useState({ correct: 0, total: 0 });
+
+  function startSession(useAll = false) {
+    const pool = useAll ? catalog : dueCards;
+    if (!pool.length) return;
+    // prioritize lapsed, then new, then shortest interval; then shuffle + cap
+    const prioritized = [...pool].sort((a, b) => {
+      const la = srCards[a.id]?.lapses || 0, lb = srCards[b.id]?.lapses || 0;
+      if (la !== lb) return lb - la;
+      const ia = srCards[a.id]?.interval ?? 0, ib = srCards[b.id]?.interval ?? 0;
+      return ia - ib;
+    });
+    const prepared = shuffle(prioritized).slice(0, SESSION_SIZE).map(shuffleOptions);
+    setQueue(prepared);
+    setIdx(0);
+    setSelected(null);
+    setStats({ correct: 0, total: 0 });
+    setPhase("review");
+  }
+
+  function handleContinue() {
+    const card = queue[idx];
+    const correct = selected === card._correct;
+    reviewCard(card.id, correct ? "good" : "again");
+    const nextStats = { correct: stats.correct + (correct ? 1 : 0), total: stats.total + 1 };
+    setStats(nextStats);
+    setSelected(null);
+    if (idx + 1 >= queue.length) {
+      recordSession({ correct: nextStats.correct, total: nextStats.total, completedType: "practice" });
+      setPhase("done");
+    } else {
+      setIdx(idx + 1);
+    }
+  }
+
+  // ---------- HOME ----------
+  if (phase === "home") {
+    return (
+      <ScreenShell backTo="/" title="Spaced Practice" showStats>
+        <div className="mb-5 flex items-center gap-3 rounded-2xl border border-sky-500/30 bg-sky-500/5 p-4">
+          <Repeat className="h-7 w-7 text-sky-400" />
+          <div>
+            <div className="font-display font-semibold text-slate-100">Spaced Practice</div>
+            <div className="text-xs text-slate-500">Resurfaces what you've learned on an expanding schedule — before you forget it.</div>
+          </div>
+        </div>
+
+        {catalog.length === 0 ? (
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center">
+            <Sparkles className="mx-auto mb-3 h-8 w-8 text-slate-600" />
+            <p className="text-sm text-slate-300">Complete a lesson first — practice pulls from concepts and charts you've already learned.</p>
+            <Link to="/" className="mt-5 inline-flex rounded-xl bg-amber-400 px-5 py-3 font-semibold text-slate-950">Go to lessons</Link>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4 grid grid-cols-2 gap-3">
+              <Stat icon={<Clock className="h-4 w-4" />} label="Due now" value={dueCards.length} accent="text-sky-400" />
+              <Stat icon={<Check className="h-4 w-4" />} label="Learned" value={catalog.length} accent="text-emerald-400" />
+            </div>
+
+            <button
+              onClick={() => startSession(false)}
+              disabled={!dueCards.length}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-4 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30 disabled:hover:bg-amber-400"
+            >
+              {dueCards.length ? `Review ${Math.min(dueCards.length, SESSION_SIZE)} due cards` : "Nothing due right now"}
+            </button>
+            <button
+              onClick={() => startSession(true)}
+              className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 py-3.5 font-semibold text-slate-200 transition hover:border-slate-500"
+            >
+              Practice ahead ({catalog.length} learned)
+            </button>
+
+            {dueCards.length === 0 && (
+              <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-300">
+                <Check className="h-4 w-4" /> All caught up — next review {fmtDue(nextDueMs(srCards))}.
+              </div>
+            )}
+          </>
+        )}
+      </ScreenShell>
+    );
+  }
+
+  // ---------- REVIEW ----------
+  if (phase === "review") {
+    const card = queue[idx];
+    return (
+      <ScreenShell backTo="/" title="Spaced Practice" showStats={false}>
+        <div className="mb-3 flex items-center gap-2">
+          {queue.map((_, i) => (
+            <div key={i} className={`h-1.5 flex-1 rounded-full ${i < idx ? "bg-emerald-500" : i === idx ? "bg-amber-400" : "bg-slate-800"}`} />
+          ))}
+        </div>
+        <div className="mb-2 text-xs text-slate-500">{card.title}</div>
+        <PracticeReview card={card} selected={selected} onSelect={setSelected} onContinue={handleContinue} />
+      </ScreenShell>
+    );
+  }
+
+  // ---------- DONE ----------
+  const pct = stats.total ? Math.round((stats.correct / stats.total) * 100) : 0;
+  return (
+    <ScreenShell backTo="/" title="Spaced Practice" showStats={false}>
+      <div className="py-8 text-center" style={{ animation: "fadeIn 0.5s ease-out" }}>
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/30">
+          <Check className="h-8 w-8 text-emerald-400" />
+        </div>
+        <h2 className="font-display text-2xl font-bold text-slate-100">Session complete</h2>
+        <div className="mx-auto mt-6 grid max-w-xs grid-cols-3 gap-3">
+          <DoneStat value={`${stats.correct}/${stats.total}`} label="correct" accent="text-emerald-400" />
+          <DoneStat value={`${pct}%`} label="accuracy" accent="text-sky-400" />
+          <DoneStat value={`+${stats.correct * 5}`} label="XP" accent="text-amber-400" />
+        </div>
+        <div className="mx-auto mt-5 flex max-w-xs items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs text-slate-400">
+          <CalendarClock className="h-4 w-4 text-slate-500" />
+          {dueCards.length ? `${dueCards.length} cards still due` : `All caught up — next review ${fmtDue(nextDueMs(srCards))}`}
+        </div>
+        <div className="mx-auto mt-6 max-w-xs space-y-2">
+          <button
+            onClick={() => startSession(false)}
+            disabled={!dueCards.length}
+            className="w-full rounded-xl bg-amber-400 py-3.5 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30"
+          >
+            Review more due cards
+          </button>
+          <button onClick={() => setPhase("home")} className="w-full rounded-xl bg-slate-800 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-700">
+            Back to practice home
+          </button>
+        </div>
+      </div>
+      <style>{`@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }`}</style>
+    </ScreenShell>
+  );
+}
+
+function Stat({ icon, label, value, accent }) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div className="flex items-center gap-1.5 text-xs text-slate-500">{icon}{label}</div>
+      <div className={`mt-1 font-mono text-2xl font-bold ${accent}`}>{value}</div>
+    </div>
+  );
+}
+
+function DoneStat({ value, label, accent }) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+      <div className={`font-mono text-xl font-bold ${accent}`}>{value}</div>
+      <div className="text-xs text-slate-500">{label}</div>
+    </div>
+  );
+}

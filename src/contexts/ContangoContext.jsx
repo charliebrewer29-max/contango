@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { MAX_HEARTS, applyProgress, todayStr } from "@/lib/gamification";
+import { scheduleCard } from "@/lib/spacedRepetition";
 
 const STORAGE_KEY = "contango_progress_v1";
 
@@ -23,6 +24,7 @@ const DEFAULT_PROGRESS = {
   mindset: 75,
   diaryUnlocked: [],
   lastDrillReview: null,
+  srCards: {},
 };
 
 const ContangoContext = createContext(null);
@@ -89,6 +91,15 @@ export function ContangoProvider({ children }) {
     setProgress(prev => ({ ...prev, lastDrillReview: review }));
   }, []);
 
+  // Spaced-repetition: update one card's review schedule (no XP here — that's batched at session end).
+  const reviewCard = useCallback((cardId, grade) => {
+    setProgress(prev => {
+      const prevCard = (prev.srCards || {})[cardId];
+      const next = scheduleCard(prevCard, grade);
+      return { ...prev, srCards: { ...(prev.srCards || {}), [cardId]: next } };
+    });
+  }, []);
+
   const value = {
     progress,
     update,
@@ -100,6 +111,7 @@ export function ContangoProvider({ children }) {
     adjustMindset,
     unlockDiary,
     setLastDrillReview,
+    reviewCard,
     todayStr,
   };
 

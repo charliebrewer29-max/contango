@@ -1,14 +1,19 @@
 import React from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Play, Flame, Trophy, User, ChevronRight, Target, Compass } from "lucide-react";
+import { Play, Flame, Trophy, User, ChevronRight, Target, Compass, Repeat } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import SkillTree from "@/components/contango/SkillTree";
 import { useContango } from "@/contexts/ContangoContext";
 import { BRANCHES } from "@/lib/content";
+import { buildPracticeCatalog, isDue } from "@/lib/spacedRepetition";
 
 // Home / Dashboard: stats bar, skill tree, daily goal ring, one obvious Continue button.
 export default function Dashboard() {
   const { progress } = useContango();
+  const practiceDue = React.useMemo(
+    () => buildPracticeCatalog(progress).filter((c) => isDue((progress.srCards || {})[c.id])).length,
+    [progress.completedLessons, progress.completedDrills, progress.srCards]
+  );
 
   if (!progress.onboardingDone) {
     return <Navigate to="/onboarding" replace />;
@@ -51,6 +56,18 @@ export default function Dashboard() {
           <ChevronRight className="h-5 w-5 text-slate-500" />
         </Link>
       )}
+
+      {/* Spaced practice */}
+      <Link to="/practice" className="mb-6 flex items-center gap-3 rounded-2xl border border-sky-500/30 bg-sky-500/5 p-4 transition hover:bg-sky-500/10">
+        <Repeat className="h-6 w-6 shrink-0 text-sky-400" />
+        <div className="flex-1">
+          <div className="text-sm font-semibold text-slate-100">Spaced Practice</div>
+          <div className="text-xs text-slate-400">
+            {practiceDue > 0 ? `${practiceDue} card${practiceDue === 1 ? "" : "s"} due for review` : "All caught up — review ahead"}
+          </div>
+        </div>
+        <ChevronRight className="h-5 w-5 text-slate-500" />
+      </Link>
 
       {/* Quick actions */}
       <div className="mb-6 grid grid-cols-3 gap-3">

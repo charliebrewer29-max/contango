@@ -5,6 +5,7 @@ export const XP_PER_CORRECT = 8;
 export const XP_PER_LESSON_COMPLETE = 12;
 export const XP_PER_DRILL_COMPLETE = 15;
 export const XP_PER_COACH_REFLECTION = 5;
+export const XP_PER_PRACTICE_REVIEW = 5;
 
 export function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -33,6 +34,9 @@ export function applyProgress(progress, { correct, total, completedType }) {
     const wrong = total - correct;
     heartsLost = wrong;
     xpGained = correct * XP_PER_CORRECT + XP_PER_DRILL_COMPLETE;
+  } else if (completedType === "practice") {
+    // spaced-repetition reviews: earn XP per correct, no hearts lost (review is safe)
+    xpGained = correct * XP_PER_PRACTICE_REVIEW;
   }
 
   next.xp = (next.xp || 0) + xpGained;
