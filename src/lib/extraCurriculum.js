@@ -218,6 +218,68 @@ export const EXTRA_BRANCHES = [
         { q: "ORB works best when:", options: ["Liquidity is lowest", "Early RTH volume is highest", "Overnight", "The market is closed"], correct: 1 },
       ],
     },
+    units: [
+      {
+        id: "breakout-retest",
+        type: "concept",
+        title: "Breakout & Retest",
+        info: "A breakout often doesn't run cleanly — price breaks the level, then pulls back to retest it from the other side. The retest is where many traders prefer to enter: instead of buying the breakout candle (often the worst price), you wait for price to come back, confirm the level flipped from resistance to support (or vice versa), and enter there with a tighter stop just beyond the level. The trade-off: you miss breakouts that never look back. The win: you skip most fakeouts and get a better risk/reward.",
+        questions: [
+          { q: "Where does a retest entry happen?", options: ["On the breakout candle itself", "After price returns to the broken level and confirms the flip", "At the midpoint of the range", "After the move is fully extended"], correct: 1 },
+          { q: "The main advantage of a retest entry?", options: ["Guaranteed fill", "Better price, tighter stop, filters most fakeouts", "Higher leverage", "No stop needed"], correct: 1 },
+          { q: "The cost of waiting for a retest?", options: ["Worse risk/reward", "You miss breakouts that never pull back", "Higher commissions", "Slower fills"], correct: 1 },
+          { q: "'Resistance flipped to support' means:", options: ["The level no longer matters", "Old resistance now acts as support on the retest", "The trend reversed", "VWAP moved"], correct: 1 },
+        ],
+      },
+      {
+        id: "failed-breakout",
+        type: "concept",
+        title: "Failed Breakouts & Stop-Runs",
+        info: "The failed breakout is one of the highest-probability setups in futures: price breaks an obvious level, triggers breakout entries and stops, then reverses sharply back through it — a 'stop-run.' The trap works because liquidity pools sit just beyond obvious levels. Signs it's failing: the breakout candle has no follow-through, volume dries up immediately, and price stalls at the level instead of extending. The fade entry is the reversal back through the level, stop beyond the spike extreme. This is the breakout trader's mirror image — and why you confirm, never anticipate.",
+        questions: [
+          { q: "A stop-run is:", options: ["A slow trend", "A breakout that triggers entries/stops then reverses back through the level", "A limit order", "An overnight gap"], correct: 1 },
+          { q: "Which is a sign a breakout is failing?", options: ["Strong follow-through candles", "No follow-through, volume dries up, price stalls at the level", "Tight spreads", "RTH opens"], correct: 1 },
+          { q: "The fade entry for a failed breakout is:", options: ["Before the breakout", "On the reversal back through the level", "At the measured-move target", "At VWAP only"], correct: 1 },
+          { q: "Why do fakeouts cluster at obvious levels?", options: ["Low liquidity there", "Liquidity pools sit just beyond them, attracting stop runs", "Ticks are larger", "The exchange widens spreads"], correct: 1 },
+        ],
+      },
+      {
+        id: "range-expansion",
+        type: "concept",
+        title: "Range Expansion (NR7 / Inside Bar)",
+        info: "Range expansion trades the idea that low volatility begets high volatility: after a tight compression (an NR7 — the narrowest range of the last 7 bars — or a series of inside bars), the market tends to break out with energy. You mark the compression range, wait for a close beyond it, and enter with the stop on the opposite side. The edge is the energy release; the risk is entering early before the real break. Patience — let the close confirm, then go with the energy, not into the chop before it.",
+        questions: [
+          { q: "NR7 refers to:", options: ["The 7th bar of the day", "The narrowest range of the last 7 bars", "A 7-point move", "A 7-contract position"], correct: 1 },
+          { q: "The core idea behind range expansion?", options: ["High volatility begets low volatility", "Low volatility precedes high volatility", "Ranges never break", "Volume always falls first"], correct: 1 },
+          { q: "The entry trigger is:", options: ["Any tick inside the range", "A close beyond the compression range", "A limit at the midpoint", "The first inside bar"], correct: 1 },
+          { q: "The main mistake in range expansion?", options: ["Using a stop", "Entering before the break confirms", "Trading the breakout direction", "Marking the compression range"], correct: 1 },
+        ],
+      },
+      {
+        id: "vwap-breakout",
+        type: "concept",
+        title: "VWAP Reclaim & Breakout",
+        info: "VWAP is the day's fair-value anchor. A useful intraday breakout setup is the VWAP reclaim: price has been below VWAP (control by sellers), then breaks back above it with volume — that's a regime shift from sell-the-rip to buy-the-dip for the session. The entry is the reclaim candle or its retest of VWAP from above; the stop is back below VWAP. It works because algos and intraday participants anchor to VWAP, so the reclaim triggers coordinated flows. A reclaim that immediately fails back below VWAP is a trap — exit fast.",
+        questions: [
+          { q: "A VWAP reclaim means:", options: ["Price breaks below VWAP", "Price breaks back above VWAP after trading below it", "VWAP flattens", "The session closes"], correct: 1 },
+          { q: "Why does the reclaim matter?", options: ["It's a session regime shift from sellers to buyers", "It lowers commissions", "It widens spreads", "It cancels stops"], correct: 0 },
+          { q: "On a VWAP reclaim long, the stop goes:", options: ["Above VWAP", "Back below VWAP", "At the day high", "There is no stop"], correct: 1 },
+          { q: "Flows cluster at VWAP because:", options: ["It's random", "Participants and algos anchor to it", "The exchange sets it", "It only exists overnight"], correct: 1 },
+        ],
+      },
+      {
+        id: "breakout-management",
+        type: "concept",
+        title: "Managing the Breakout Trade",
+        info: "Managing a breakout is about not giving back the move. The mechanics: take partial profit at the first measured-move target (often the size of the range projected from the breakout), then trail the stop on the remainder — commonly under each successive higher low (long) or above each lower high (short). Move to break-even only after a real follow-through candle, not the moment you're slightly green. The cardinal sin is letting a winning breakout round-trip into a loss — a trailing stop prevents that. Plan the scale-out before you enter, not after.",
+        questions: [
+          { q: "A measured-move target is often:", options: ["A fixed dollar amount", "The range size projected from the breakout", "The day's high", "VWAP"], correct: 1 },
+          { q: "When should you move to break-even?", options: ["The moment you're slightly green", "Only after a real follow-through candle", "Never", "At the first tick"], correct: 1 },
+          { q: "Trailing under successive higher lows (long) lets you:", options: ["Add size", "Let profits run while protecting gains", "Avoid stops", "Trade without a plan"], correct: 1 },
+          { q: "The cardinal sin in breakout management is:", options: ["Taking partials", "Letting a winner round-trip into a loss", "Using a trailing stop", "Scaling out into strength"], correct: 1 },
+        ],
+      },
+    ],
     buildDrill: () => {
       const bars = generateTrendData("ES");
       const rangeBars = bars.slice(0, 16);
@@ -232,6 +294,104 @@ export const EXTRA_BRANCHES = [
         ],
         entryZone: { zoneStart: 17, zoneEnd: 21 },
         stopPrice: rangeLow,
+      };
+    },
+  },
+  {
+    id: "momentum",
+    branchTitle: "Momentum Trading",
+    icon: "Target",
+    unlockRequires: ["foundation-complete", "risk-psych-complete"],
+    type: "strategy",
+    blurb: "Buy strength, sell weakness. Relative strength, gap-and-go, opening drives, and ignition — and knowing when momentum is exhausted.",
+    color: "violet",
+    introLesson: {
+      id: "momentum-intro",
+      type: "concept",
+      title: "What Is Momentum Trading",
+      info: "Momentum trading buys strength and sells weakness: you enter moves that are already accelerating rather than catching turns. The edge is that momentum tends to persist short-term — winners run, losers get out. The discipline is not chasing late, sizing for volatility, and trailing hard. Momentum fails at exhaustion — the climax bar, the volume spike, the parabolic extension — which is where you take profits, not add. It's the opposite mindset from mean reversion: there you fade extremes; here you ride them. The five-part template: (1) trade it when a directional impulse is underway; (2) confirmation is a pullback that holds, not the spike itself; (3) profit is open-ended, you trail; (4) loss is capped tight under the ignition pullback; (5) the failure mode is chasing the climax then riding the reversal.",
+      questions: [
+        { q: "Momentum trading enters:", options: ["Turning points", "Moves that are already accelerating", "Only the daily lows", "Sideways ranges"], correct: 1 },
+        { q: "The short-term edge of momentum is:", options: ["Mean reversion", "Momentum tends to persist", "Zero volatility", "Guaranteed fills"], correct: 1 },
+        { q: "Momentum fails at:", options: ["The first pullback", "Exhaustion / climax", "RTH open", "VWAP"], correct: 1 },
+        { q: "Versus mean reversion, momentum traders:", options: ["Fade extremes", "Ride extremes", "Avoid trends", "Never use stops"], correct: 1 },
+        { q: "A key discipline in momentum trading is:", options: ["Chasing late", "Not chasing late and sizing for volatility", "Adding to losers", "Holding through reversal"], correct: 1 },
+      ],
+    },
+    units: [
+      {
+        id: "momentum-rs",
+        type: "concept",
+        title: "Relative Strength (RS)",
+        info: "Relative strength compares an instrument to a benchmark or the broad market. If NQ is up 2% while ES is up 0.3%, NQ is showing RS — money is flowing into it preferentially. The practical use: in an up session, trade the strongest instrument long (it leads and holds); in a down session, short the weakest. RS tells you where the momentum actually is, so you're not fighting the laggard. Update RS through the session, not just at the open — leadership rotates.",
+        questions: [
+          { q: "Relative strength measures:", options: ["An instrument's volatility", "An instrument's performance vs a benchmark", "Tick value", "Margin"], correct: 1 },
+          { q: "In an up session you'd rather be:", options: ["Short the strongest", "Long the strongest instrument", "Flat", "Long the laggard"], correct: 1 },
+          { q: "RS helps you avoid:", options: ["The strongest names", "Trading the laggard", "Using stops", "RTH"], correct: 1 },
+          { q: "RS should be:", options: ["Set once at the open", "Re-evaluated through the session", "Ignored", "Used only overnight"], correct: 1 },
+        ],
+      },
+      {
+        id: "gap-and-go",
+        type: "concept",
+        title: "Gap & Go",
+        info: "A gap-and-go is a stock or index that gaps at the open and keeps going in the gap direction, with little pullback. The setup: a catalyst-driven gap, strong pre-market volume, and the first 5–15 min candle holding the gap (no fill). You enter on the first pullback that holds above the opening range low (for a long gap up), targeting the gap-fill level only if it fails, otherwise trailing. The trap is the gap-and-reverse — the gap fills and keeps going. Confirmation: the first pullback must hold, not break. If it breaks, the 'go' was a 'no.'",
+        questions: [
+          { q: "A gap-and-go describes:", options: ["A gap that fills immediately", "A gap that continues in the gap direction", "A flat open", "An overnight gap that closes"], correct: 1 },
+          { q: "Entry is typically on:", options: ["The gap open tick", "The first pullback that holds the gap", "The gap-fill target", "The close"], correct: 1 },
+          { q: "The trap to avoid is:", options: ["The gap-and-reverse", "Holding the gap", "Using a stop", "Trading pre-market volume"], correct: 0 },
+          { q: "Confirmation it's 'go' not 'reverse':", options: ["The first pullback breaks", "The first pullback holds above the gap", "Volume dries up", "VWAP flattens"], correct: 1 },
+        ],
+      },
+      {
+        id: "opening-drive",
+        type: "concept",
+        title: "Opening Drive Continuation",
+        info: "The opening drive is the first sustained leg of the RTH session — on a trend day the direction is often set in the first 30–60 minutes. You look for a strong open, a clean pullback that holds above the opening range, and continuation. The entry is the continuation break of the opening-drive pullback high (long). It fails on rotation days where the open gets faded and the first leg reverses — which is why you don't hold through a clean break of the opening range low. Context matters: opening drives work when there's a catalyst or a clear regime, not in directionless chop.",
+        questions: [
+          { q: "The opening drive is:", options: ["The lunch lull", "The first sustained leg of the session", "The overnight session", "The close auction"], correct: 1 },
+          { q: "On a trend day, direction is often set:", options: ["In the last hour", "In the first 30–60 minutes", "Overnight only", "At the close"], correct: 1 },
+          { q: "The continuation entry is:", options: ["A break of the opening-drive pullback high", "The exact open tick", "A limit at the low", "After the close"], correct: 0 },
+          { q: "It fails on:", options: ["Trend days", "Rotation days where the open gets faded", "High-volume opens", "Catalyst-driven days"], correct: 1 },
+        ],
+      },
+      {
+        id: "momentum-ignition",
+        type: "concept",
+        title: "Momentum Ignition",
+        info: "Momentum ignition is the moment an orderly move turns into an acceleration — often tied to a catalyst (headline, data, break of a key level). The disciplined way to trade it: enter on the first pullback after ignition, not the climax candle itself. Chasing the ignition candle means buying the top of a spike. Use a tight stop under the ignition pullback and size down — these moves are fast and give back hard. Ignition is where FOMO kills accounts; the rule is 'enter the retest, not the spike.'",
+        questions: [
+          { q: "Momentum ignition is:", options: ["A range break", "An orderly move turning into acceleration", "A margin call", "The close"], correct: 1 },
+          { q: "The disciplined entry is:", options: ["The climax candle", "The first pullback after ignition", "The exact top", "After the reversal"], correct: 1 },
+          { q: "Chasing the ignition candle usually means:", options: ["A great fill", "Buying the top of a spike", "A tight stop", "Lower risk"], correct: 1 },
+          { q: "Why size down on ignition trades?", options: ["To increase leverage", "Fast moves give back hard", "To avoid stops", "Ignition never works"], correct: 1 },
+        ],
+      },
+      {
+        id: "momentum-exhaustion",
+        type: "concept",
+        title: "Momentum Exhaustion",
+        info: "Exhaustion is the end of a momentum run — and your exit signal, not an entry. Signs: a climax volume bar, a parabolic or widening-range spike, price extending far from VWAP and from moving averages, and momentum divergence (price makes a new high but the next push is weaker). The move often reverses hard after exhaustion. Taking profits into strength (scaling out as it accelerates) beats waiting for the reversal — once exhaustion prints, the give-back is fast. Never add to an exhausted move; the reversal you're betting against is the one that wrecks the day.",
+        questions: [
+          { q: "Exhaustion is:", options: ["An entry signal", "The end of a momentum run — an exit signal", "A type of stop", "A range pattern"], correct: 1 },
+          { q: "A classic exhaustion sign is:", options: ["A tight spread", "Climax volume / parabolic spike / divergence", "Low volume", "A flat VWAP"], correct: 1 },
+          { q: "The right action at exhaustion is:", options: ["Add more", "Take profits into strength", "Hold and hope", "Flip short at the top"], correct: 1 },
+          { q: "Adding to an exhausted move is:", options: ["Safe", "A mistake — reversals are fast", "Required", "How you trail"], correct: 1 },
+        ],
+      },
+    ],
+    buildDrill: () => {
+      const bars = generateTrendData("NQ");
+      const accelLow = Math.min(...bars.slice(0, 18).map((b) => b.low));
+      return {
+        bars,
+        instrument: "NQ",
+        decisionPoints: [
+          { barIndex: 14, type: "mcq", prompt: "Price is accelerating out of the gate but you missed the exact bottom. What's disciplined?", options: ["Chase the spike now", "Wait for the first pullback that holds, then enter", "Short the strength", "Size up to make up for missing it"], correct: 1 },
+          { barIndex: 38, type: "mcq", prompt: "After a long run, a climax volume spike prints and price is far from VWAP. What's the move?", options: ["Add more — it's working", "Hold and hope", "Take profits into strength; this is exhaustion", "Flip short at the exact top"], correct: 2 },
+        ],
+        entryZone: { zoneStart: 18, zoneEnd: 24 },
+        stopPrice: accelLow,
       };
     },
   },
