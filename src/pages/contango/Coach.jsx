@@ -9,7 +9,7 @@ import { base44 } from "@/api/base44Client";
 
 // AI Coach: reflection input → coaching feedback.
 // Routed through InvokeLLM (server-side). System prompt bakes in the educational-only constraint.
-const SYSTEM_CONSTRAINT = `You are ${COACH_NAME}, an AI trading-education coach inside Contango, a simulated educational app. You are reviewing an educational simulation, NOT real trades. Never produce real-market buy/sell language or personalized trade signals. Everything is generic strategy education using simulated data. Keep feedback specific to the user's stated decision, fast, plain, and actionable. 3-5 sentences max.`;
+const SYSTEM_CONSTRAINT = `You're ${COACH_NAME}, a trading-education mentor inside Contango — a simulated, educational app. You're coaching a learner through a simulated drill, NOT reviewing real trades. Stay in mentor mode: warm, plain-spoken, specific to what they said, and genuinely helpful. Never produce real-market buy/sell language or personalized trade signals — everything is generic strategy education on simulated data. Keep it to 3–5 sentences, like a quick note from a coach who's in your corner.`;
 
 export default function Coach() {
   const [params] = useSearchParams();
@@ -24,8 +24,8 @@ export default function Coach() {
   const scrollRef = useRef(null);
 
   const welcome = branch
-    ? `You just finished the ${branch.branchTitle} drill. Reflect on your decision: what were you watching for, and what would you do differently?`
-    : `I'm ${COACH_NAME}. Tell me about a trade setup you're working through, or ask me to explain a concept differently.`;
+    ? `Nice work on the ${branch.branchTitle} drill. Take a breath and walk me through it — what were you watching for, and what would you do differently next time?`
+    : `Hey, I'm ${COACH_NAME}. Tell me about a setup you're working through, or ask me to explain something a different way — I'm here to help you think it through.`;
 
   useEffect(() => {
     setMessages([{ role: "coach", text: welcome }]);
@@ -48,18 +48,18 @@ export default function Coach() {
       const reply = typeof res === "string" ? res : (res?.text || res?.response || JSON.stringify(res));
       setMessages(m => [...m, { role: "coach", text: reply }]);
     } catch (e) {
-      setMessages(m => [...m, { role: "coach", text: "I couldn't reach the coach service right now. Try again in a moment." }]);
+      setMessages(m => [...m, { role: "coach", text: "Hmm, I couldn't reach the coach right now. Give it another try in a moment." }]);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <ScreenShell showStats={false} title={`${COACH_NAME} · AI Coach`} tab="coach">
+    <ScreenShell showStats={false} title={COACH_NAME} tab="coach">
       <div className="mb-3 flex items-center gap-2 text-sky-400">
         <Sparkles className="h-5 w-5" />
         <span className="font-display text-sm font-semibold">{COACH_NAME}</span>
-        <span className="text-xs text-slate-500">· educational only</span>
+        <span className="text-xs text-slate-500">· your trading mentor</span>
       </div>
 
       <div ref={scrollRef} className="flex h-[55vh] flex-col gap-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-4">
@@ -86,7 +86,7 @@ export default function Coach() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Reflect on your trade or ask a question…"
+          placeholder="Tell me what you're thinking…"
           className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-sky-500 focus:outline-none"
         />
         <button onClick={send} disabled={loading || !input.trim()}

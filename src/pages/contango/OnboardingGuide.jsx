@@ -12,11 +12,11 @@ function buildOpener(progress) {
     considering: "considering trading with real capital someday",
     "already-trade": "already trading and filling knowledge gaps",
   };
-  const parts = ["I'm a new user setting up my learning journey in Contango."];
-  if (progress.why) parts.push(`My motivation: ${whyMap[progress.why] || progress.why}.`);
+  const parts = ["I'm brand new here and setting up my learning journey in Contango."];
+  if (progress.why) parts.push(`Why I'm here: ${whyMap[progress.why] || progress.why}.`);
   if (progress.dailyGoal) parts.push(`My daily XP goal: ${progress.dailyGoal}.`);
-  parts.push(`So far: ${progress.xp || 0} XP, ${progress.streak || 0}-day streak, ${(progress.completedLessons || []).length} lessons done.`);
-  parts.push("Help me get oriented and recommend exactly where I should start. Keep it short and concrete.");
+  parts.push(`So far: ${progress.xp || 0} XP, a ${progress.streak || 0}-day streak, ${(progress.completedLessons || []).length} lessons done.`);
+  parts.push("Can you help me get oriented and point me to exactly where I should start? Keep it short and concrete.");
   return parts.join(" ");
 }
 
@@ -45,7 +45,7 @@ export default function OnboardingGuide() {
       });
       base44.agents.addMessage(conv, { role: "user", content: buildOpener(progress) });
     } catch (e) {
-      setError("Couldn't start the guide session. Make sure you're logged in, then try again.");
+      setError("Hmm, I couldn't get the guide started. Make sure you're logged in, then give it another try.");
     }
     return () => unsub();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -76,7 +76,7 @@ export default function OnboardingGuide() {
       <div className="mb-3 flex items-center gap-2 text-amber-400">
         <Compass className="h-5 w-5" />
         <span className="font-display text-sm font-semibold">Onboarding Guide</span>
-        <span className="text-xs text-slate-500">· find your starting point</span>
+        <span className="text-xs text-slate-500">· let's find your starting point</span>
       </div>
 
       <div ref={scrollRef} className="flex h-[58vh] flex-col gap-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-4">
@@ -95,7 +95,7 @@ export default function OnboardingGuide() {
         {awaitingReply && (
           <div className="flex justify-start">
             <div className="flex items-center gap-2 rounded-2xl bg-slate-800 px-4 py-3 text-sm text-slate-400">
-              <Loader2 className="h-4 w-4 animate-spin" /> Thinking…
+              <Loader2 className="h-4 w-4 animate-spin" /> Let me think…
             </div>
           </div>
         )}
@@ -106,7 +106,7 @@ export default function OnboardingGuide() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Ask where to start, or what a term means…"
+          placeholder="Ask me where to start, or what a term means…"
           className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-amber-400 focus:outline-none"
         />
         <button

@@ -30,9 +30,9 @@ export default function Dashboard() {
         <div className="flex items-center gap-5">
           <GoalRing pct={dailyPct} />
           <div className="flex-1">
-            <p className="text-xs uppercase tracking-wider text-slate-500">Daily goal</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">Today's goal</p>
             <p className="font-mono text-2xl font-bold text-slate-100">{progress.dailyXp || 0}<span className="text-sm text-slate-500"> / {progress.dailyGoal} XP</span></p>
-            <p className="mt-1 text-xs text-slate-400">{dailyPct >= 100 ? "Goal complete — nice work!" : `${progress.dailyGoal - (progress.dailyXp || 0)} XP to go`}</p>
+            <p className="mt-1 text-xs text-slate-400">{dailyPct >= 100 ? "Goal done — nice work today!" : `${progress.dailyGoal - (progress.dailyXp || 0)} XP to go`}</p>
           </div>
         </div>
         {nextLesson && (
@@ -41,7 +41,7 @@ export default function Dashboard() {
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-4 font-display font-bold text-slate-950 transition hover:bg-amber-300"
           >
             <Play className="h-5 w-5 fill-slate-950" />
-            Continue: {nextLesson.title}
+            Pick up where you left off
           </Link>
         )}
       </section>
@@ -50,8 +50,8 @@ export default function Dashboard() {
         <Link to="/guide" className="mb-6 flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 transition hover:bg-amber-500/10">
           <Compass className="h-6 w-6 shrink-0 text-amber-400" />
           <div className="flex-1">
-            <div className="text-sm font-semibold text-slate-100">New here? Chat with a guide</div>
-            <div className="text-xs text-slate-400">Get oriented and find your best starting point.</div>
+            <div className="text-sm font-semibold text-slate-100">New here? Let's find your starting point</div>
+            <div className="text-xs text-slate-400">Chat with a guide and get oriented in a few minutes.</div>
           </div>
           <ChevronRight className="h-5 w-5 text-slate-500" />
         </Link>
@@ -63,7 +63,7 @@ export default function Dashboard() {
         <div className="flex-1">
           <div className="text-sm font-semibold text-slate-100">Spaced Practice</div>
           <div className="text-xs text-slate-400">
-            {practiceDue > 0 ? `${practiceDue} card${practiceDue === 1 ? "" : "s"} due for review` : "All caught up — review ahead"}
+            {practiceDue > 0 ? `${practiceDue} card${practiceDue === 1 ? "" : "s"} ready to review` : "All caught up — review ahead whenever you like"}
           </div>
         </div>
         <ChevronRight className="h-5 w-5 text-slate-500" />
@@ -72,7 +72,7 @@ export default function Dashboard() {
       {/* Quick actions */}
       <div className="mb-6 grid grid-cols-3 gap-3">
         <QuickLink to="/leaderboard" icon={<Trophy className="h-5 w-5" />} label="Leagues" color="text-amber-400" />
-        <QuickLink to="/coach" icon={<Flame className="h-5 w-5" />} label="AI Coach" color="text-sky-400" />
+        <QuickLink to="/coach" icon={<Flame className="h-5 w-5" />} label="Coach" color="text-sky-400" />
         <QuickLink to="/profile" icon={<User className="h-5 w-5" />} label="Profile" color="text-slate-300" />
       </div>
 
@@ -87,8 +87,8 @@ export default function Dashboard() {
 
       {/* Footer disclaimer */}
       <p className="mt-8 text-center text-[11px] leading-relaxed text-slate-600">
-        Simulated educational content only. No real money, no live trading, no trade signals.<br />
-        Contango is not affiliated with TradingView.
+        Everything here is simulated and educational — no real money, no live trading, no trade signals.<br />
+        Contango isn't affiliated with TradingView.
       </p>
     </ScreenShell>
   );

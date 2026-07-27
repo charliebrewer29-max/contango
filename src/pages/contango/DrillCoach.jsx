@@ -8,22 +8,22 @@ import { base44 } from "@/api/base44Client";
 // Compose the drill-decision summary the agent will analyze.
 function buildSummary(review) {
   if (!review) {
-    return "Hi — I just finished a simulated chart drill in Contango. Can you give me general guidance on how to review my trading decisions after a drill?";
+    return "Hey — I just finished a simulated chart drill in Contango. Could you walk me through how to review my trading decisions after a drill?";
   }
   const lines = [
-    `I just finished a simulated chart drill on the **${review.branchTitle}** strategy (${review.instrument}). I got ${review.correctCount}/${review.total} decisions correct.`,
+    `I just finished a simulated chart drill on the **${review.branchTitle}** strategy (${review.instrument}). I got ${review.correctCount}/${review.total} right.`,
     "",
-    "Here are my decisions, one by one:",
+    "Here's what I did, one decision at a time:",
   ];
   review.decisions.forEach((d, i) => {
     const chosen = d.options[d.selected] ?? "(no answer)";
     const right = d.options[d.correct];
     lines.push(`\n**Decision ${i + 1}** (around bar ${d.barIndex}):`);
     lines.push(`- The drill asked: "${d.prompt}"`);
-    lines.push(`- I chose: "${chosen}" — ${d.isCorrect ? "correct." : `WRONG. The correct answer was: "${right}".`}`);
+    lines.push(`- I picked: "${chosen}" — ${d.isCorrect ? "got it right." : `missed it. The right answer was: "${right}".`}`);
   });
   lines.push("");
-  lines.push("Please analyze my mistakes and my correct reasoning, and give me constructive, specific feedback. For each wrong decision explain the likely bias/error and what to watch for; reinforce what I got right. Finish with the ONE thing I should focus on next time. Remember this is simulated/educational only — no real-market signals.");
+  lines.push("Can you talk me through my mistakes and the parts I got right, and give me honest, specific feedback? For each one I got wrong, name the likely bias or slip-up and what to watch for; for the ones I got right, reinforce the reasoning. Then tell me the ONE thing to focus on next time. Remember this is all simulated and educational — no real-market signals.");
   return lines.join("\n");
 }
 
@@ -54,7 +54,7 @@ export default function DrillCoach() {
       });
       base44.agents.addMessage(conv, { role: "user", content: buildSummary(progress.lastDrillReview) });
     } catch (e) {
-      setError("Couldn't start the Drill Coach session. Make sure you're logged in, then try again from a finished drill.");
+      setError("Hmm, I couldn't get the review started. Make sure you're logged in, then head back from a finished drill and try again.");
     }
     return () => unsub();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,7 +85,7 @@ export default function DrillCoach() {
       <div className="mb-3 flex items-center gap-2 text-emerald-400">
         <Bot className="h-5 w-5" />
         <span className="font-display text-sm font-semibold">Drill Coach</span>
-        <span className="text-xs text-slate-500">· mistake review</span>
+        <span className="text-xs text-slate-500">· let's review your drill</span>
       </div>
 
       <div ref={scrollRef} className="flex h-[58vh] flex-col gap-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-4">
@@ -104,7 +104,7 @@ export default function DrillCoach() {
         {awaitingReply && (
           <div className="flex justify-start">
             <div className="flex items-center gap-2 rounded-2xl bg-slate-800 px-4 py-3 text-sm text-slate-400">
-              <Loader2 className="h-4 w-4 animate-spin" /> Analyzing your decisions…
+              <Loader2 className="h-4 w-4 animate-spin" /> Looking over your decisions…
             </div>
           </div>
         )}
@@ -115,7 +115,7 @@ export default function DrillCoach() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Ask a follow-up about your decisions…"
+          placeholder="Ask me anything about your decisions…"
           className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-emerald-500 focus:outline-none"
         />
         <button
@@ -127,7 +127,7 @@ export default function DrillCoach() {
         </button>
       </div>
       <p className="mt-2 text-center text-[11px] text-slate-600">
-        Reviews simulated drills only — never real trades or personalized signals.
+        Reviews your simulated drills only — never real trades or personalized signals.
       </p>
     </ScreenShell>
   );
