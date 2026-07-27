@@ -49,6 +49,24 @@ export default function ReminderSettings() {
     }
   }
 
+  // Optimistic enable/disable: flip the UI instantly, persist in the
+  // background, and roll back only if the save fails.
+  async function toggleEnabled() {
+    if (saving) return;
+    const next = !enabled;
+    setEnabled(next);
+    setStatus(next ? "on" : "off");
+    setSaving(true);
+    try {
+      await saveReminder({ enabled: next, reminder_time: time, email }, buildSnapshot(progress));
+    } catch {
+      setEnabled(!next);
+      setStatus("error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const label12 = (() => {
     const [h, m] = (time || "09:00").split(":");
     const hh = parseInt(h, 10);
@@ -70,7 +88,8 @@ export default function ReminderSettings() {
             </div>
           </div>
           <button
-            onClick={() => setEnabled((v) => !v)}
+            onClick={toggleEnabled}
+            disabled={saving}
             className={`relative h-6 w-11 shrink-0 rounded-full transition ${enabled ? "bg-amber-400" : "bg-slate-700"}`}
             aria-label="Toggle daily reminders"
           >

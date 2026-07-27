@@ -86,7 +86,11 @@
     @apply border-border outline-ring/50;
   }
 
-  html { background-color: #0a0e16; }
+  html {
+    background-color: #0a0e16;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+  }
 
   body {
     @apply font-body;
@@ -95,6 +99,18 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     line-height: 1.6;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+  }
+
+  /* Disable native text selection / callouts on interactive UI so taps feel
+     like app controls, not web text - matches the native iOS/Android feel. */
+  button, a, nav, [role="button"], [role="link"], summary {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .font-display {

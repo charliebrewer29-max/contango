@@ -13,7 +13,7 @@ export default function ScreenShell({ children, showStats = true, backTo, title,
   return (
     <div className="cg-app-bg min-h-screen text-slate-100">
       <TickerTape reducedMotion={progress.reducedMotion} />
-      <header className="sticky top-0 z-20 border-b border-slate-800/60 bg-[#0a0e16]/80 backdrop-blur-xl">
+      <header className="pt-safe sticky top-0 z-20 border-b border-slate-800/60 bg-[#0a0e16]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3.5">
           <div className="flex items-center gap-3">
             {backTo ? (

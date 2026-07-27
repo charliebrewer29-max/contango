@@ -34,11 +34,13 @@ export default function Profile() {
   }, [flow]);
 
   async function toggleConsent() {
+    const next = !aiOn;
+    setAiOn(next); // optimistic - flip immediately, revert on failure
     setAiBusy(true);
     try {
-      const next = !aiOn;
       await setConsent(next, flow);
-      setAiOn(next);
+    } catch (_e) {
+      setAiOn(!next); // rollback
     } finally { setAiBusy(false); }
   }
 
