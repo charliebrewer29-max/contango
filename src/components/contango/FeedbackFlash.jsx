@@ -1,12 +1,19 @@
 import React, { useEffect } from "react";
 import { Check, X, Flame, PartyPopper } from "lucide-react";
+import { useContango } from "@/contexts/ContangoContext";
+import { playCorrect, playWrong } from "@/lib/sfx";
 
 // Instant, unambiguous feedback: green flash on correct, red shake on wrong.
+// Plays a distinct sound for each outcome when the user has Sound on.
 export default function FeedbackFlash({ state }) {
-  // state: 'correct' | 'wrong' | null
+  // state: 'correct' | 'wrong' | 'milestone' | null
+  const { progress } = useContango();
   useEffect(() => {
     if (!state) return;
-  }, [state]);
+    if (!progress.soundOn) return;
+    if (state === "correct" || state === "milestone") playCorrect();
+    else if (state === "wrong") playWrong();
+  }, [state, progress.soundOn]);
 
   if (!state) return null;
   const correct = state === "correct" || state === "milestone";
