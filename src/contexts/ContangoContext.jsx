@@ -20,6 +20,8 @@ const DEFAULT_PROGRESS = {
   soundOn: true,
   hapticsOn: true,
   subscription: "free",
+  mindset: 75,
+  diaryUnlocked: [],
 };
 
 const ContangoContext = createContext(null);
@@ -73,6 +75,15 @@ export function ContangoProvider({ children }) {
     setProgress({ ...DEFAULT_PROGRESS });
   }, []);
 
+  const adjustMindset = useCallback((delta) => {
+    setProgress(prev => ({ ...prev, mindset: Math.max(0, Math.min(100, (prev.mindset ?? 75) + delta)) }));
+  }, []);
+
+  const unlockDiary = useCallback((id) => {
+    setProgress(prev => (prev.diaryUnlocked || []).includes(id) ? prev :
+      { ...prev, diaryUnlocked: [...(prev.diaryUnlocked || []), id] });
+  }, []);
+
   const value = {
     progress,
     update,
@@ -81,6 +92,8 @@ export function ContangoProvider({ children }) {
     markDrillComplete,
     refillHearts,
     resetProgress,
+    adjustMindset,
+    unlockDiary,
     todayStr,
   };
 

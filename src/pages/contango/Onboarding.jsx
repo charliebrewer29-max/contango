@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Flame, Heart, Zap, ShieldCheck } from "lucide-react";
+import { ChevronRight, Zap, ShieldCheck } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { GOAL_OPTIONS, COACH_NAME } from "@/lib/contangoTheme";
+import ContangoLogo from "@/components/contango/ContangoLogo";
 
 // Onboarding: welcome → disclaimer → goal selection ("why") → daily goal → first lesson prompt.
 // Disclaimers are visible and required (spec Section 2 & 13).
@@ -30,10 +31,8 @@ export default function Onboarding() {
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         {step === 0 && (
           <div className="flex flex-1 flex-col items-center justify-center text-center" style={{ animation: "fadeIn 0.5s ease-out" }}>
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-500/10 border border-amber-500/30">
-              <Flame className="h-10 w-10 text-amber-400" />
-            </div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-amber-400">Contango</h1>
+            <ContangoLogo size="xl" showWord animated className="mb-1" />
+            <h1 className="font-display text-2xl font-bold tracking-tight text-slate-500 uppercase">Futures, learned.</h1>
             <p className="mt-3 text-lg text-slate-300">Learn futures trading the way you'd learn a language.</p>
             <p className="mt-6 max-w-xs text-sm text-slate-500">Bite-sized lessons, chart-replay drills, and an AI coach — all simulated, all educational. No real money, ever.</p>
             <button onClick={() => setStep(1)} className="mt-10 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">

@@ -5,6 +5,8 @@ import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { MAX_HEARTS } from "@/lib/gamification";
 import { COACH_NAME } from "@/lib/contangoTheme";
+import TraderDiary from "@/components/contango/TraderDiary";
+import MindsetMeter from "@/components/contango/MindsetMeter";
 
 export default function Profile() {
   const { progress, update, refillHearts, resetProgress } = useContango();
@@ -32,6 +34,14 @@ export default function Profile() {
         <Stat label="Lessons done" value={progress.completedLessons.length} />
         <Stat label="Drills done" value={progress.completedDrills.length} />
       </div>
+
+      {/* mindset */}
+      <div className="mb-6 rounded-2xl border border-slate-800 bg-slate-900 p-4">
+        <MindsetMeter value={progress.mindset ?? 75} />
+      </div>
+
+      {/* trader's diary */}
+      <TraderDiary unlocked={progress.diaryUnlocked || []} />
 
       {/* preferences */}
       <Section title="Preferences">

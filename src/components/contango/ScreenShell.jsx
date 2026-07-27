@@ -5,6 +5,7 @@ import TickerTape from "./TickerTape";
 import StatsBar from "./StatsBar";
 import { useContango } from "@/contexts/ContangoContext";
 import BottomNav from "./BottomNav";
+import ContangoLogo from "./ContangoLogo";
 
 // Screen shell: ticker tape + optional stats + back nav + content.
 export default function ScreenShell({ children, showStats = true, backTo, title, right, tab }) {
@@ -21,7 +22,7 @@ export default function ScreenShell({ children, showStats = true, backTo, title,
               </Link>
             ) : (
               <Link to="/" className="flex items-center gap-2">
-                <span className="font-display text-lg font-bold tracking-tight text-amber-400">Contango</span>
+                <ContangoLogo size="sm" showWord />
               </Link>
             )}
           </div>

@@ -2,6 +2,7 @@
 // Foundation, Risk & Psychology, Instruments, Strategy branches, Platform Literacy.
 
 import { generateTrendData, generateRangeScenario } from "./instruments";
+import { PSYCH_UNITS, DIARY_ENTRIES } from "./psychCurriculum";
 
 export const BRANCHES = [
   {
@@ -78,52 +79,7 @@ export const BRANCHES = [
     type: "core",
     blurb: "Position sizing, stop placement, risk/reward, discipline. Required — gates the strategy tree.",
     color: "rose",
-    units: [
-      {
-        id: "position-sizing",
-        type: "concept",
-        title: "Position Sizing",
-        info: "Position sizing is a formula, not a feeling: Stop distance in ticks × tick value × number of contracts = dollars at risk. Decide that dollar number BEFORE looking at the chart. This is where Micros earn their place — they're the lever that makes the formula work on a small account, letting you size to your risk budget instead of rounding up to a full contract.",
-        questions: [
-          { q: "What's the position sizing formula?", options: ["Ticks × contracts", "Stop ticks × tick value × contracts", "Account size × leverage", "Price × volume"], correct: 1 },
-          { q: "When should you decide your dollar risk?", options: ["After entering", "Before looking at the chart", "When the trade is profitable", "Never"], correct: 1 },
-          { q: "Why do Micros matter for sizing?", options: ["They're cheaper to trade", "They let you size precisely to a risk budget", "They have no risk", "They increase leverage"], correct: 1 },
-        ],
-      },
-      {
-        id: "stops",
-        type: "concept",
-        title: "Stop-Loss Discipline",
-        info: "Every trade needs a stop, decided before entry. In a leveraged product, an unmanaged loser outruns your reaction time — the market can move more ticks in seconds than your gut is willing to accept in dollars. The stop is the price where your thesis is wrong, full stop. If that stop is too far for your risk budget, you trade fewer contracts or you don't take the trade.",
-        questions: [
-          { q: "When is a stop-loss decided?", options: ["After the trade goes against you", "Before entry", "At end of day", "When margin call hits"], correct: 1 },
-          { q: "Why can't you rely on reaction time to exit losers?", options: ["Leverage moves faster than you can react", "Brokers won't let you exit", "It's illegal", "Stops cost money"], correct: 0 },
-          { q: "If the structural stop is too far for your budget, what do you do?", options: ["Move the stop closer", "Trade fewer contracts or skip the trade", "Add leverage", "Hope"], correct: 1 },
-        ],
-      },
-      {
-        id: "risk-reward",
-        type: "concept",
-        title: "Risk-to-Reward",
-        info: "Target roughly 1.5–2x the amount you risk. With a 2:1 reward-to-risk, you can be wrong more than half the time and still be profitable — a system doesn't need a high win rate to work. The drill: given an entry and a stop, where does the target have to be to justify the trade?",
-        questions: [
-          { q: "What's a healthy minimum reward-to-risk target?", options: ["0.5:1", "1:1", "1.5–2:1", "10:1"], correct: 2 },
-          { q: "With 2:1 R:R, what win rate keeps you profitable?", options: ["Over 90%", "Roughly above one-third", "Exactly 50%", "100%"], correct: 1 },
-          { q: "Given a 4-tick stop, where should a 2:1 target sit?", options: ["2 ticks away", "4 ticks away", "8 ticks away", "16 ticks away"], correct: 2 },
-        ],
-      },
-      {
-        id: "daily-loss-limit",
-        type: "concept",
-        title: "Daily Loss Limit",
-        info: "A hard dollar or trade-count stop for the session. It prevents one bad day from becoming a bad week. This pairs naturally with the app's hearts mechanic — same idea in game form. When the limit is hit, you stop. Full stop. Revenge trading to 'make it back' is how small losses become account-ending ones.",
-        questions: [
-          { q: "What is a daily loss limit?", options: ["A suggested guideline", "A hard dollar or trade-count stop for the session", "A tax on losses", "A broker feature"], correct: 1 },
-          { q: "What should you do when the daily limit is hit?", options: ["Trade smaller to recover", "Stop for the day", "Switch instruments", "Increase leverage"], correct: 1 },
-          { q: "What does 'revenge trading' describe?", options: ["Trading with a plan", "Trying to make back losses emotionally", "Hedging", "Copying another trader"], correct: 1 },
-        ],
-      },
-    ],
+    units: PSYCH_UNITS,
   },
   {
     id: "instruments",
@@ -285,3 +241,5 @@ export function allUnitsFlat() {
   }
   return out;
 }
+
+export { DIARY_ENTRIES };
