@@ -206,8 +206,8 @@ export const BRANCHES = [
         { q: "Where does the stop go structurally?", options: ["Above the entry", "Below the breakout level", "At the entry price", "There is no stop"], correct: 1 },
       ],
     },
-    buildDrill: (instrumentKey = "ES", messy = false) => {
-      const bars = generateTrendData(instrumentKey, 7, messy);
+    buildDrill: (instrumentKey = "ES", difficulty = "medium") => {
+      const bars = generateTrendData(instrumentKey, 7, difficulty);
       const lowBeforeBreakout = Math.min(...bars.slice(0, 22).map(b => b.low));
       return {
         bars,
@@ -241,8 +241,8 @@ export const BRANCHES = [
         { q: "Where does the stop go?", options: ["At VWAP", "Beyond the band", "At the entry", "No stop needed"], correct: 1 },
       ],
     },
-    buildDrill: (instrumentKey = "ES", messy = false) => {
-      const { bars, lowIdx, highIdx } = generateRangeScenario(instrumentKey, 11, messy);
+    buildDrill: (instrumentKey = "ES", difficulty = "medium") => {
+      const { bars, lowIdx, highIdx } = generateRangeScenario(instrumentKey, 11, difficulty);
       return {
         bars,
         instrument: instrumentKey,

@@ -280,8 +280,8 @@ export const EXTRA_BRANCHES = [
         ],
       },
     ],
-    buildDrill: (instrumentKey = "ES", messy = false) => {
-      const bars = generateTrendData(instrumentKey, 7, messy);
+    buildDrill: (instrumentKey = "ES", difficulty = "medium") => {
+      const bars = generateTrendData(instrumentKey, 7, difficulty);
       const rangeBars = bars.slice(0, 16);
       const rangeHigh = Math.max(...rangeBars.map((b) => b.high));
       const rangeLow = Math.min(...rangeBars.map((b) => b.low));
@@ -380,8 +380,8 @@ export const EXTRA_BRANCHES = [
         ],
       },
     ],
-    buildDrill: (instrumentKey = "NQ", messy = false) => {
-      const bars = generateTrendData(instrumentKey, 7, messy);
+    buildDrill: (instrumentKey = "NQ", difficulty = "medium") => {
+      const bars = generateTrendData(instrumentKey, 7, difficulty);
       const accelLow = Math.min(...bars.slice(0, 18).map((b) => b.low));
       return {
         bars,

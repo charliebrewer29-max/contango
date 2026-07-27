@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ChevronRight, Check, X, Play, Pause, MessageCircle, Bot, Crown, Waves } from "lucide-react";
+import { ChevronRight, Check, X, Play, MessageCircle, Bot, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import CandleChart from "@/components/contango/CandleChart";
 import FeedbackFlash, { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
@@ -21,8 +21,8 @@ export default function Drill() {
   const branch = findBranch(branchId);
 
   const [instrument, setInstrument] = useState(() => (branch?.id === "momentum" ? "NQ" : "ES"));
-  const [messy, setMessy] = useState(false);
-  const scenario = useMemo(() => branch?.buildDrill ? branch.buildDrill(instrument, messy) : null, [branch, instrument, messy]);
+  const [difficulty, setDifficulty] = useState("medium");
+  const scenario = useMemo(() => branch?.buildDrill ? branch.buildDrill(instrument, difficulty) : null, [branch, instrument, difficulty]);
   const [revealTo, setRevealTo] = useState(scenario ? Math.min(scenario.bars.length, scenario.decisionPoints[0]?.barIndex + 1 || 15) : 0);
   const [dpIdx, setDpIdx] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -48,7 +48,7 @@ export default function Drill() {
     setDecisionLog([]); setFlash(null);
     decisionsRef.current = [];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instrument, messy]);
+  }, [instrument, difficulty]);
 
   if (!scenario) {
     return <ScreenShell><div className="text-slate-400">Drill not found.</div></ScreenShell>;
@@ -196,6 +196,24 @@ export default function Drill() {
         </div>
       </div>
 
+      {/* difficulty selector - available to everyone */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="text-xs text-slate-500">Difficulty</span>
+        <div className="flex gap-1.5">
+          {[
+            { id: "easy", label: "Easy" },
+            { id: "medium", label: "Medium" },
+            { id: "messy", label: "Messy" },
+          ].map((d) => (
+            <button key={d.id} onClick={() => setDifficulty(d.id)}
+              className={`rounded-lg border px-2.5 py-1 text-xs ${difficulty === d.id ? "border-amber-400 bg-amber-400/10 text-amber-300" : "border-slate-700 bg-slate-900 text-slate-400"}`}>
+              {d.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* instrument selector - premium only */}
       {isPremium(progress) && (
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <div className="flex flex-wrap gap-1.5">
@@ -206,10 +224,6 @@ export default function Drill() {
               </button>
             ))}
           </div>
-          <button onClick={() => setMessy((m) => !m)}
-            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs ${messy ? "border-rose-500 bg-rose-500/10 text-rose-300" : "border-slate-700 bg-slate-900 text-slate-400"}`}>
-            <Waves className="h-3.5 w-3.5" /> Messy {messy ? "on" : "off"}
-          </button>
         </div>
       )}
 
