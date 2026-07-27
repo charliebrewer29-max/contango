@@ -67,10 +67,10 @@ export default function Practice() {
     setPhase("review");
   }
 
-  function handleContinue() {
+  function handleGrade(grade) {
     const card = queue[idx];
-    const correct = selected === card._correct;
-    reviewCard(card.id, correct ? "good" : "again");
+    const correct = grade !== "again";
+    reviewCard(card.id, grade);
     const nextStats = { correct: stats.correct + (correct ? 1 : 0), total: stats.total + 1 };
     setStats(nextStats);
     setSelected(null);
@@ -143,7 +143,7 @@ export default function Practice() {
           ))}
         </div>
         <div className="mb-2 text-xs text-slate-500">{card.title}</div>
-        <PracticeReview card={card} selected={selected} onSelect={setSelected} onContinue={handleContinue} />
+        <PracticeReview card={card} selected={selected} onSelect={setSelected} onGrade={handleGrade} srCard={srCards[card.id]} />
       </ScreenShell>
     );
   }

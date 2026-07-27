@@ -1,14 +1,20 @@
 import React from "react";
-import { Check, X, ChevronRight } from "lucide-react";
+import { Check, X } from "lucide-react";
 import CandleChart from "@/components/contango/CandleChart";
 import { INSTRUMENTS } from "@/lib/instruments";
+import { scheduleCard } from "@/lib/spacedRepetition";
 
 // One review card: chart (optional) + prompt + shuffled MCQ options.
 // Presentational: reports the selected option up; parent computes the grade.
-export default function PracticeReview({ card, selected, onSelect, onContinue }) {
+export default function PracticeReview({ card, selected, onSelect, onGrade, srCard }) {
   const answered = selected !== null;
   const isCorrect = answered && selected === card._correct;
   const inst = INSTRUMENTS[card.instrument] || null;
+  const wrong = answered && !isCorrect;
+  const fmtInterval = (grade) => {
+    const n = scheduleCard(srCard, grade).interval;
+    return n <= 0 ? "soon" : `${n}d`;
+  };
 
   return (
     <div className="space-y-4" style={{ animation: "fadeIn 0.3s ease-out" }}>
@@ -76,15 +82,29 @@ export default function PracticeReview({ card, selected, onSelect, onContinue })
         </div>
       )}
 
-      <button
-        disabled={!answered}
-        onClick={onContinue}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-3.5 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30 disabled:hover:bg-amber-400"
-      >
-        Continue <ChevronRight className="h-5 w-5" />
-      </button>
+      {answered && (
+        <div className={wrong ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2"}>
+          <GradeBtn label="Again" hint={fmtInterval("again")} tone="rose" onClick={() => onGrade("again")} />
+          {!wrong && <GradeBtn label="Good" hint={fmtInterval("good")} tone="emerald" onClick={() => onGrade("good")} />}
+          {!wrong && <GradeBtn label="Easy" hint={fmtInterval("easy")} tone="sky" onClick={() => onGrade("easy")} />}
+        </div>
+      )}
 
       <style>{`@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }`}</style>
     </div>
+  );
+}
+
+function GradeBtn({ label, hint, tone, onClick }) {
+  const tones = {
+    rose: "border-rose-500/50 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20",
+    emerald: "border-emerald-500/50 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20",
+    sky: "border-sky-500/50 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20",
+  };
+  return (
+    <button onClick={onClick} className={`flex flex-col items-center rounded-xl border py-3 font-display font-bold transition ${tones[tone]}`}>
+      <span className="text-sm">{label}</span>
+      <span className="font-mono text-[11px] opacity-70">{hint}</span>
+    </button>
   );
 }
