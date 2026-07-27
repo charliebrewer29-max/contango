@@ -30,55 +30,33 @@ export default function ContangoLogo({ size = "md", showWord = false, animated =
           fill="none"
           className={animated ? "cg-anim" : ""}
         >
-          <defs>
-            <linearGradient id={`${uid}-curve`} x1="0" y1="48" x2="48" y2="0" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#fbbf24" />
-              <stop offset="0.55" stopColor="#34d399" />
-              <stop offset="1" stopColor="#38bdf8" />
-            </linearGradient>
-            <linearGradient id={`${uid}-candle`} x1="0" y1="20" x2="0" y2="40" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#34d399" />
-              <stop offset="1" stopColor="#10b981" />
-            </linearGradient>
-            <filter id={`${uid}-glow`} x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="1.6" result="b" />
-              <feMerge>
-                <feMergeNode in="b" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
           {/* rounded badge */}
-          <rect x="1.5" y="1.5" width="45" height="45" rx="13" stroke="#1e293b" strokeWidth="1.5" fill="#020617" />
+          <rect x="1.5" y="1.5" width="45" height="45" rx="13" stroke="#272d38" strokeWidth="1.5" fill="#0b1117" />
 
-          {/* contango curve: upward sloping */}
+          {/* contango curve: upward sloping, single restrained stroke */}
           <path
-            d="M8 38 C 16 36, 22 30, 28 24 S 38 12, 40 9"
-            stroke={`url(#${uid}-curve)`}
-            strokeWidth="2.6"
+            d="M9 37 C 17 35, 22 29, 28 24 S 38 13, 39 11"
+            stroke="#3fae84"
+            strokeWidth="2.4"
             strokeLinecap="round"
-            filter={`url(#${uid}-glow)`}
             className="cg-curve"
-            style={animated ? { strokeDasharray: 60, strokeDashoffset: 60 } : undefined}
+            style={animated ? { strokeDasharray: 58, strokeDashoffset: 58 } : undefined}
           />
 
           {/* candlestick riding the curve */}
           <g className="cg-candle">
-            <line x1="33" y1="13" x2="33" y2="29" stroke="#34d399" strokeWidth="1.2" />
-            <rect x="30.6" y="17" width="4.8" height="9" rx="1" fill={`url(#${uid}-candle)`} />
+            <line x1="32" y1="15" x2="32" y2="29" stroke="#3fae84" strokeWidth="1.1" />
+            <rect x="29.8" y="18" width="4.4" height="8" rx="1" fill="#3fae84" />
           </g>
 
           {/* arrow tip at the end of the curve */}
-          <path d="M40 9 L 35.5 11 M 40 9 L 38.5 13.5" stroke="#38bdf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="cg-tip" />
+          <path d="M39 11 L 34.5 12 M 39 11 L 37.5 15" stroke="#3fae84" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="cg-tip" />
         </svg>
       </span>
 
       {showWord && (
-        <span className={`font-display font-bold tracking-tight ${s.font} cg-word`}>
-          <span className="bg-gradient-to-r from-amber-300 via-emerald-300 to-sky-300 bg-clip-text text-transparent">
-            Contango
-          </span>
+        <span className={`font-display font-semibold tracking-tight text-slate-200 ${s.font} cg-word`}>
+          Contango
         </span>
       )}
 
