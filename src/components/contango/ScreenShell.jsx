@@ -6,10 +6,11 @@ import StatsBar from "./StatsBar";
 import { useContango } from "@/contexts/ContangoContext";
 import BottomNav from "./BottomNav";
 import ContangoLogo from "./ContangoLogo";
+import PullToRefresh from "./PullToRefresh";
 
 // Screen shell: ticker tape + optional stats + back nav + content.
 export default function ScreenShell({ children, showStats = true, backTo, title, right, tab }) {
-  const { progress } = useContango();
+  const { progress, refresh } = useContango();
   return (
     <div className="cg-app-bg min-h-screen text-slate-100">
       <TickerTape reducedMotion={progress.reducedMotion} />
@@ -30,12 +31,14 @@ export default function ScreenShell({ children, showStats = true, backTo, title,
           <div className="flex items-center gap-3">{right}</div>
         </div>
       </header>
-      {showStats && (
-        <div className="mx-auto max-w-2xl px-5 pt-5">
-          <StatsBar />
-        </div>
-      )}
-      <main className={`mx-auto max-w-2xl px-5 pt-5 ${tab ? "pb-28" : "pb-24"}`}>{children}</main>
+      <PullToRefresh onRefresh={refresh}>
+        {showStats && (
+          <div className="mx-auto max-w-2xl px-5 pt-5">
+            <StatsBar />
+          </div>
+        )}
+        <main className={`mx-auto max-w-2xl px-5 pt-5 ${tab ? "pb-28" : "pb-24"}`}>{children}</main>
+      </PullToRefresh>
       {tab && <BottomNav active={tab} />}
     </div>
   );

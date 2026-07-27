@@ -87,15 +87,15 @@
   }
 
   html {
-    background-color: #0a0e16;
+    background-color: hsl(var(--background));
     overscroll-behavior: none;
     overscroll-behavior-y: none;
   }
 
   body {
     @apply font-body;
-    background-color: #0a0e16;
-    color: #e2e8f0;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     line-height: 1.6;

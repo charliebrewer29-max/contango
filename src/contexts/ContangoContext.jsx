@@ -59,6 +59,15 @@ export function ContangoProvider({ children }) {
     });
   }, []);
 
+  // Pull-to-refresh: re-sync progress from storage so stats reflect any
+  // external changes and the UI re-renders fresh.
+  const refresh = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setProgress({ ...DEFAULT_PROGRESS, ...JSON.parse(raw) });
+    } catch (e) { /* ignore */ }
+  }, []);
+
   // Run a lesson/drill result through the gamification engine
   const recordSession = useCallback((session) => {
     let emittedEvents = [];
@@ -169,6 +178,7 @@ export function ContangoProvider({ children }) {
   const value = {
     progress,
     update,
+    refresh,
     recordSession,
     markLessonComplete,
     markDrillComplete,
