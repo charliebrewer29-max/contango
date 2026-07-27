@@ -9,9 +9,12 @@ import TraderDiary from "@/components/contango/TraderDiary";
 import MindsetMeter from "@/components/contango/MindsetMeter";
 import BranchBadge, { BRANCH_BADGES } from "@/components/contango/BranchBadge";
 import ReminderSettings from "@/components/contango/ReminderSettings";
+import StreakRewards from "@/components/contango/StreakRewards";
+import { getEquippedFlair } from "@/lib/streakRewards";
 
 export default function Profile() {
   const { progress, update, refillHearts, resetProgress } = useContango();
+  const flair = getEquippedFlair(progress);
 
   function toggle(field) {
     update({ [field]: !progress[field] });
@@ -21,12 +24,13 @@ export default function Profile() {
     <ScreenShell showStats={false} title="Profile & Settings" tab="profile">
       {/* identity card */}
       <div className="mb-6 flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/30">
+        <div className={`flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/30 ${flair ? flair.ringClass : ""}`}>
           <User className="h-7 w-7 text-amber-400" />
         </div>
         <div>
           <div className="font-display text-lg font-semibold text-slate-100">Trader</div>
           <div className="text-xs text-slate-500">{progress.xp} XP · {progress.streak || 0} day streak</div>
+          {flair && <div className="text-xs font-medium text-amber-300">{flair.glyph} {flair.title}</div>}
           <div className="text-xs text-amber-400">{progress.subscription === "premium" ? "Premium" : "Free tier"}</div>
         </div>
       </div>
@@ -58,6 +62,8 @@ export default function Profile() {
           })}
         </div>
       </div>
+
+      <StreakRewards />
 
       <ReminderSettings />
 

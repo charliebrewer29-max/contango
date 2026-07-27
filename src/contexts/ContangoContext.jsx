@@ -27,6 +27,8 @@ const DEFAULT_PROGRESS = {
   srCards: {},
   badges: [],
   stats: {},
+  rewards: [],
+  equippedFlair: null,
 };
 
 const ContangoContext = createContext(null);

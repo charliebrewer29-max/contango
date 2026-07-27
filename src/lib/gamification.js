@@ -1,5 +1,7 @@
 // Gamification engine — XP / streak / hearts (spec Section 6)
 
+import { STREAK_REWARDS } from "./streakRewards";
+
 export const MAX_HEARTS = 5;
 export const XP_PER_CORRECT = 8;
 export const XP_PER_LESSON_COMPLETE = 12;
@@ -83,6 +85,20 @@ export function applyProgress(progress, { correct, total, completedType }) {
     // milestone celebration
     if ([7, 30, 100].includes(next.streak)) {
       events.push({ type: "streak-milestone", streak: next.streak });
+    }
+
+    // streak milestone rewards — unlock cosmetic flair; auto-equip the first
+    // one earned so the profile reflects progress immediately.
+    const newlyUnlocked = [];
+    for (const r of STREAK_REWARDS) {
+      if (next.streak >= r.streak && !(next.rewards || []).includes(r.id)) {
+        next.rewards = [...(next.rewards || []), r.id];
+        newlyUnlocked.push(r);
+        events.push({ type: "streak-reward", reward: r });
+      }
+    }
+    if (newlyUnlocked.length && !next.equippedFlair) {
+      next.equippedFlair = newlyUnlocked[newlyUnlocked.length - 1].id;
     }
     if (next.streak === 1 && !next.firstLessonDone) {
       events.push({ type: "first-lesson" });
