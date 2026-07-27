@@ -1,0 +1,60 @@
+{
+  "name": "Reminder",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "reminder_time": {
+      "type": "string"
+    },
+    "reminder_hour": {
+      "type": "number"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "last_sent_date": {
+      "type": "string"
+    },
+    "xp": {
+      "type": "number"
+    },
+    "streak": {
+      "type": "number"
+    },
+    "lessons_done": {
+      "type": "number"
+    },
+    "daily_goal": {
+      "type": "number"
+    },
+    "daily_xp": {
+      "type": "number"
+    },
+    "next_lesson_title": {
+      "type": "string"
+    },
+    "badges_count": {
+      "type": "number"
+    }
+  },
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

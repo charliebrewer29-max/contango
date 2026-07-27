@@ -8,6 +8,7 @@ import { COACH_NAME } from "@/lib/contangoTheme";
 import TraderDiary from "@/components/contango/TraderDiary";
 import MindsetMeter from "@/components/contango/MindsetMeter";
 import BranchBadge, { BRANCH_BADGES } from "@/components/contango/BranchBadge";
+import ReminderSettings from "@/components/contango/ReminderSettings";
 
 export default function Profile() {
   const { progress, update, refillHearts, resetProgress } = useContango();
@@ -57,6 +58,8 @@ export default function Profile() {
           })}
         </div>
       </div>
+
+      <ReminderSettings />
 
       {/* trader's diary */}
       <TraderDiary unlocked={progress.diaryUnlocked || []} />

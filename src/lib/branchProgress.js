@@ -37,3 +37,26 @@ export function branchDoneCount(branch, progress) {
   if (branch.buildDrill && (progress.completedDrills || []).includes(`${branch.id}-drill`)) n++;
   return n;
 }
+
+// Next incomplete lesson across the curriculum (foundation first, then any
+// branch intro / unit). Used by the dashboard's Continue button and by the
+// reminder snapshot so emails can name the next step.
+export function findNextLesson(progress) {
+  const foundation = BRANCHES.find(b => b.id === "foundation");
+  if (foundation && foundation.units) {
+    for (const u of foundation.units) {
+      if (!(progress.completedLessons || []).includes(u.id)) return { id: u.id, title: u.title };
+    }
+  }
+  for (const b of BRANCHES) {
+    if (b.introLesson && !(progress.completedLessons || []).includes(b.introLesson.id)) {
+      return { id: b.introLesson.id, title: b.branchTitle };
+    }
+    if (b.units) {
+      for (const u of b.units) {
+        if (!(progress.completedLessons || []).includes(u.id)) return { id: u.id, title: u.title };
+      }
+    }
+  }
+  return null;
+}

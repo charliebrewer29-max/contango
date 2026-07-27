@@ -6,6 +6,7 @@ import CandleChart from "@/components/contango/CandleChart";
 import FeedbackFlash, { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
 import BranchBadgeCelebration from "@/components/contango/BranchBadgeCelebration";
 import { isBranchComplete } from "@/lib/branchProgress";
+import { syncReminderSnapshot, buildSnapshot } from "@/lib/reminders";
 import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
 import { INSTRUMENTS } from "@/lib/instruments";
@@ -124,6 +125,8 @@ export default function Drill() {
       setShowCelebrate(true);
       setTimeout(() => setShowCelebrate(false), 2200);
     }
+    const xpGain = (typeof finalCorrect === "number" ? finalCorrect : correctCount) * 8 + 15;
+    syncReminderSnapshot(buildSnapshot({ ...progress, completedDrills: [...(progress.completedDrills || []), `${branch.id}-drill`], xp: (progress.xp || 0) + xpGain, dailyXp: (progress.dailyXp || 0) + xpGain }));
     void events;
   }
 

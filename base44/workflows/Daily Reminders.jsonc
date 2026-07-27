@@ -1,0 +1,44 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "5 * * * *",
+      "one_time_date": null,
+      "timezone": "America/Chicago",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "daily_reminders",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendDailyReminders"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Send daily reminders",
+            "description": "Email due users their practice nudge"
+          }
+        }
+      }
+    ]
+  },
+  "name": "Daily Reminders",
+  "description": "Every hour, sends each user a personalized daily practice reminder email at their chosen hour."
+}

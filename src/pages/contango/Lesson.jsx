@@ -6,6 +6,7 @@ import FeedbackFlash from "@/components/contango/FeedbackFlash";
 import { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
 import BranchBadgeCelebration from "@/components/contango/BranchBadgeCelebration";
 import { isBranchComplete } from "@/lib/branchProgress";
+import { syncReminderSnapshot, buildSnapshot } from "@/lib/reminders";
 import MindsetMeter from "@/components/contango/MindsetMeter";
 import { useContango } from "@/contexts/ContangoContext";
 import { allUnitsFlat, DIARY_ENTRIES } from "@/lib/content";
@@ -107,6 +108,7 @@ export default function Lesson() {
       setShowCelebrate(true);
       setTimeout(() => setShowCelebrate(false), 2200);
     }
+    syncReminderSnapshot(buildSnapshot({ ...progress, completedLessons: [...(progress.completedLessons || []), unit.id], xp: (progress.xp || 0) + totalXp, dailyXp: (progress.dailyXp || 0) + totalXp }));
     void events;
   }
 
