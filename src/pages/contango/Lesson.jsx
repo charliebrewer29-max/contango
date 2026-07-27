@@ -21,7 +21,7 @@ import { buildLessonChart } from "@/lib/lessonCharts";
 export default function Lesson() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary, unlockBadge } = useContango();
+  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary, unlockBadge, recordAnswer } = useContango();
 
   const entry = allUnitsFlat().find(e => e.unit.id === lessonId);
   const unit = entry?.unit;
@@ -77,6 +77,7 @@ export default function Lesson() {
     setQuizTotal(t => t + 1);
     if (correct) setCorrectCount(c => c + 1);
     if (isPsych) adjustMindset(correct ? 4 : -6);
+    recordAnswer(unit.id, correct);
   }
 
   function chooseEmotion(idx) {

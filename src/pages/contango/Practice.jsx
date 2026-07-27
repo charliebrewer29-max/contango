@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Repeat, Clock, Sparkles, Check, X, CalendarClock } from "lucide-react";
+import { Repeat, Clock, Sparkles, Check, X, CalendarClock, Target } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import PracticeReview from "@/components/contango/practice/PracticeReview";
 import { useContango } from "@/contexts/ContangoContext";
 import { buildPracticeCatalog, isDue, nextDueMs } from "@/lib/spacedRepetition";
+import { weakConcepts } from "@/lib/performance";
 
 const SESSION_SIZE = 10;
 
@@ -49,17 +50,39 @@ export default function Practice() {
   const [selected, setSelected] = useState(null);
   const [stats, setStats] = useState({ correct: 0, total: 0 });
 
-  function startSession(useAll = false) {
-    const pool = useAll ? catalog : dueCards;
+  function startSession(mode = "due") {
+    let pool;
+    if (mode === "weak") {
+      const weakIds = weakConcepts(progress).slice(0, 6).map((w) => w.id);
+      pool = weakIds.length
+        ? catalog.filter((c) => {
+            const parts = c.id.split(":");
+            const uid = parts[0] === "drill" ? null : parts[1];
+            return uid && weakIds.includes(uid);
+          })
+        : [];
+      if (!pool.length) pool = dueCards.length ? dueCards : catalog;
+    } else {
+      pool = mode === "all" ? catalog : dueCards;
+    }
     if (!pool.length) return;
-    // prioritize lapsed, then new, then shortest interval; then shuffle + cap
+    const accOf = (card) => {
+      const parts = card.id.split(":");
+      const uid = parts[0] === "drill" ? null : parts[1];
+      if (!uid) return null;
+      const s = (progress.stats || {})[uid];
+      return s && s.seen ? s.correct / s.seen : null;
+    };
+    // adaptive order: most-lapsed first, then weakest accuracy, then shortest interval
     const prioritized = [...pool].sort((a, b) => {
       const la = srCards[a.id]?.lapses || 0, lb = srCards[b.id]?.lapses || 0;
       if (la !== lb) return lb - la;
+      const aa = accOf(a), ab = accOf(b);
+      if (aa != null && ab != null && aa !== ab) return aa - ab;
       const ia = srCards[a.id]?.interval ?? 0, ib = srCards[b.id]?.interval ?? 0;
       return ia - ib;
     });
-    const prepared = shuffle(prioritized).slice(0, SESSION_SIZE).map(shuffleOptions);
+    const prepared = prioritized.slice(0, SESSION_SIZE).map(shuffleOptions);
     setQueue(prepared);
     setIdx(0);
     setSelected(null);
@@ -108,18 +131,45 @@ export default function Practice() {
             </div>
 
             <button
-              onClick={() => startSession(false)}
+              onClick={() => startSession("due")}
               disabled={!dueCards.length}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-4 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30 disabled:hover:bg-amber-400"
             >
               {dueCards.length ? `Review ${Math.min(dueCards.length, SESSION_SIZE)} due cards` : "Nothing due right now"}
             </button>
             <button
-              onClick={() => startSession(true)}
+              onClick={() => startSession("all")}
               className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 py-3.5 font-semibold text-slate-200 transition hover:border-slate-500"
             >
               Practice ahead ({catalog.length} learned)
             </button>
+
+            {(() => {
+              const weak = weakConcepts(progress).slice(0, 3);
+              if (!weak.length) return null;
+              return (
+                <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-rose-400">
+                    <Target className="h-4 w-4" />
+                    <span className="text-xs font-semibold uppercase tracking-wider">Focus areas · what to work on</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {weak.map((w) => (
+                      <li key={w.id} className="flex items-center justify-between text-xs">
+                        <span className="text-slate-300">{w.title}</span>
+                        <span className="font-mono text-rose-400">{Math.round(w.accuracy * 100)}% · {w.correct}/{w.seen}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => startSession("weak")}
+                    className="mt-3 w-full rounded-xl bg-rose-500 py-3 font-semibold text-white transition hover:bg-rose-400"
+                  >
+                    Drill your weak spots
+                  </button>
+                </div>
+              );
+            })()}
 
             {dueCards.length === 0 && (
               <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-300">
@@ -168,7 +218,7 @@ export default function Practice() {
         </div>
         <div className="mx-auto mt-6 max-w-xs space-y-2">
           <button
-            onClick={() => startSession(false)}
+            onClick={() => startSession("due")}
             disabled={!dueCards.length}
             className="w-full rounded-xl bg-amber-400 py-3.5 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30"
           >

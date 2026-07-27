@@ -1,5 +1,5 @@
 import React from "react";
-import { BarChart3, Flame, Zap, Brain, TrendingUp } from "lucide-react";
+import { BarChart3, Flame, Zap, Brain, TrendingUp, Target } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
   AreaChart, Area,
@@ -7,6 +7,7 @@ import {
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { lastNDays, branchMastery, conceptMastery } from "@/lib/insights";
+import { weakConcepts, strongConcepts } from "@/lib/performance";
 
 const COLOR_HEX = {
   amber: "#fbbf24",
@@ -153,6 +154,45 @@ export default function Insights() {
             ))}
           </div>
         )}
+      </ChartCard>
+
+      <ChartCard title="Strengths & weak spots" icon={<Target className="h-4 w-4 text-rose-400" />}>
+        {(() => {
+          const weak = weakConcepts(progress).slice(0, 3);
+          const strong = strongConcepts(progress).slice(0, 3);
+          if (!weak.length && !strong.length)
+            return <Empty text="Answer lesson questions to see where you shine and where to focus." />;
+          return (
+            <div className="space-y-4">
+              {weak.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-rose-400">Needs work</p>
+                  <div className="space-y-2">
+                    {weak.map((w) => (
+                      <div key={w.id} className="flex items-center justify-between text-xs">
+                        <span className="text-slate-300">{w.title}</span>
+                        <span className="font-mono text-rose-400">{Math.round(w.accuracy * 100)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {strong.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">Your strengths</p>
+                  <div className="space-y-2">
+                    {strong.map((w) => (
+                      <div key={w.id} className="flex items-center justify-between text-xs">
+                        <span className="text-slate-300">{w.title}</span>
+                        <span className="font-mono text-emerald-400">{Math.round(w.accuracy * 100)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </ChartCard>
     </ScreenShell>
   );

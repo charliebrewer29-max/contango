@@ -6,6 +6,7 @@
 
 import { generateTrendData, generateRangeScenario } from "./instruments";
 import { PSYCH_UNITS, DIARY_ENTRIES } from "./psychCurriculum";
+import { EXTRA_QUESTIONS, EXTRA_UNITS, EXTRA_BRANCHES } from "./extraCurriculum";
 
 export const BRANCHES = [
   {
@@ -231,6 +232,24 @@ export const BRANCHES = [
     },
   },
 ];
+
+// Expand the curriculum at module load: extra questions per unit, new units in
+// existing branches, and entirely new learning areas. Every consumer of
+// BRANCHES (skill tree, practice catalog, insights, reminders) sees the
+// merged content automatically.
+for (const b of BRANCHES) {
+  if (b.units) for (const u of b.units) {
+    if (EXTRA_QUESTIONS[u.id]) u.questions = [...(u.questions || []), ...EXTRA_QUESTIONS[u.id]];
+  }
+  if (b.introLesson && EXTRA_QUESTIONS[b.introLesson.id]) {
+    b.introLesson.questions = [...(b.introLesson.questions || []), ...EXTRA_QUESTIONS[b.introLesson.id]];
+  }
+}
+for (const { branchId, unit } of EXTRA_UNITS) {
+  const b = BRANCHES.find((x) => x.id === branchId);
+  if (b && b.units) b.units.push(unit);
+}
+for (const eb of EXTRA_BRANCHES) BRANCHES.push(eb);
 
 export function findBranch(id) {
   return BRANCHES.find(b => b.id === id);

@@ -26,6 +26,7 @@ const DEFAULT_PROGRESS = {
   lastDrillReview: null,
   srCards: {},
   badges: [],
+  stats: {},
 };
 
 const ContangoContext = createContext(null);
@@ -105,6 +106,16 @@ export function ContangoProvider({ children }) {
     setProgress(prev => (prev.badges || []).includes(id) ? prev : { ...prev, badges: [...(prev.badges || []), id] });
   }, []);
 
+  // Per-concept accuracy tracking: every graded lesson/chart answer is recorded
+  // so the app can surface strengths/weaknesses and target practice at weak areas.
+  const recordAnswer = useCallback((unitId, isCorrect) => {
+    setProgress(prev => {
+      const cur = (prev.stats || {})[unitId] || { seen: 0, correct: 0 };
+      const nextStat = { seen: cur.seen + 1, correct: cur.correct + (isCorrect ? 1 : 0), lastCorrect: isCorrect };
+      return { ...prev, stats: { ...(prev.stats || {}), [unitId]: nextStat } };
+    });
+  }, []);
+
   const value = {
     progress,
     update,
@@ -117,6 +128,7 @@ export function ContangoProvider({ children }) {
     unlockDiary,
     setLastDrillReview,
     reviewCard,
+    recordAnswer,
     unlockBadge,
     todayStr,
   };
