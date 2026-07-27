@@ -212,8 +212,10 @@ export const BRANCHES = [
       return {
         bars,
         instrument: instrumentKey,
+        dataProfile: "consolidation-then-breakout",
         decisionPoints: [
           { barIndex: 19, type: "mcq", prompt: "Price is just consolidating - no breakout yet. What's the right move?", options: ["Buy now - anticipate the breakout", "Wait for a confirmed close beyond the range", "Sell short the range", "Buy with maximum size"], correct: 1 },
+          { barIndex: 24, type: "tap", prompt: "The breakout just closed beyond the range. Tap directly on the chart where you'd enter.", zoneStart: 22, zoneEnd: 26 },
           { barIndex: 41, type: "mcq", prompt: "We broke out and ran up, now we're pulling back. Where does the trailing stop sit?", options: ["Above the entry", "Below the recent swing low", "At the original breakout level", "No stop - let it run forever"], correct: 1 },
         ],
         entryZone: { zoneStart: 22, zoneEnd: 26 },
@@ -274,6 +276,80 @@ for (const { branchId, unit } of EXTRA_UNITS) {
   if (b && b.units) b.units.push(unit);
 }
 for (const eb of EXTRA_BRANCHES) BRANCHES.push(eb);
+
+// === Schema migration: normalize every unit to the cards + questions schema ===
+// Learn phase = cards (text / widget / reveal / emotion / takeaway), no hearts, free
+// pacing. Answer phase = questions (graded, forward-only, hearts on the line). Units
+// authored with the legacy `stages` or `info`+`questions` shape are converted here so
+// the Lesson engine only ever speaks one schema. Source content is untouched.
+const LEARN_CARD_TYPES = new Set(["text", "teach", "widget", "reveal", "emotion", "takeaway"]);
+const TAKEAWAYS = {
+  contracts: "Margin is leverage - a small deposit controls a large contract, and that leverage magnifies gains and losses equally.",
+  ticks: "Turn 'the market moved N points' into dollars per contract - that's the number that matters to your account.",
+  micros: "Micros are one-tenth the size, so the same mistake costs a tenth as much - real practice, affordable.",
+  "order-types": "Market guarantees the fill, limit guarantees the price, stop triggers the exit - pick the one your decision needs.",
+  sessions: "Liquidity lives in the RTH cash session; overnight is thinner with wider spreads.",
+  "es-profile": "ES has the deepest liquidity and the most orderly trends - the right first instrument for any strategy.",
+  "nq-profile": "NQ is ES with the volume turned up - same setups, but faster and needing wider stops.",
+  "cl-profile": "CL is headline-driven and prone to false breakouts - a clean setup can still fail.",
+  "gc-profile": "Gold teaches regime recognition: trend inside a macro regime, then sideways - know when not to trend-trade.",
+  "first-chart": "Timeframe picks the question you're asking - intraday noise or the bigger trend - so choose it deliberately.",
+  "trend-intro": "Trend following enters on a confirmed breakout and trails the stop; it fails in chop when breakouts reverse.",
+  "mr-intro": "Mean reversion fades band extremes back to VWAP; it fails when the range breaks and 'overbought' keeps going.",
+  "trader-mindset": "Your edge isn't the chart - it's the consistency between what the market does and what you do about it.",
+  fomo: "A move you didn't trade cost you nothing; a move you chased can cost everything - wait for your trigger.",
+  "loss-aversion": "Exits are the plan's, not your feelings': target hit take profit, stop hit take the loss.",
+  "revenge-tilt": "A tight chest and 'just get one back' is a stop instruction, not a trading signal.",
+  overconfidence: "Size by the formula, not by confidence - a hot streak is variance, not a new edge.",
+  "position-sizing": "Decide your dollar risk before the chart, then size contracts so the stop equals that risk.",
+  stops: "Decide your stop before entry; if it's too far for your budget, trade fewer contracts or skip the trade.",
+  "risk-reward": "Aim for 1.5-2x your risk and you can be wrong more than half the time and still profit.",
+  "daily-loss-limit": "When the daily limit is hit, stop - full stop - before tilt turns a bad day into a blown account.",
+  "margin-mechanics": "Keep a buffer above maintenance - in futures the broker can liquidate you at the market before you decide to.",
+  settlement: "Index futures settle in cash; physical-delivery contracts get rolled well before first notice day.",
+  "contango-backwardation": "Contango costs the long on the roll; backwardation pays the long - term structure shapes every carry trade.",
+  "leverage-math": "Pick your dollar risk first, then size so a normal stop equals that risk - never the other way around.",
+  "mnq-profile": "MNQ is one-tenth of NQ - practice the most volatile index with small, honest stakes.",
+  "mcl-profile": "MCL is one-tenth of CL - practice crude's headline volatility with a tenth of the risk.",
+  "ym-rty": "YM is the slow blue-chip, RTY the most volatile equity index - same strategies, different personalities.",
+  "breakout-intro": "Define the opening range, enter the break with volume, stop back inside - and confirm, never anticipate.",
+  "breakout-retest": "Wait for the retest where the broken level flips - better price, tighter stop, fewer fakeouts.",
+  "failed-breakout": "A breakout that triggers entries and stops then reverses is a stop-run - confirm with follow-through, never anticipate.",
+  "range-expansion": "Low volatility precedes high volatility - let the close confirm the compression break, then go with the energy.",
+  "vwap-breakout": "A VWAP reclaim is a session regime shift - enter the reclaim or its retest, stop back below VWAP.",
+  "breakout-management": "Take partials at the measured move, trail under successive lows, and never let a winner round-trip.",
+  "momentum-intro": "Momentum enters moves already accelerating and rides them - enter the retest, not the spike, and trail hard.",
+  "momentum-rs": "Trade the strongest instrument long in up sessions, short the weakest in down - RS shows where momentum lives.",
+  "gap-and-go": "Enter the first pullback that holds the gap; if it breaks, the 'go' was a 'no.'",
+  "opening-drive": "On a trend day direction is set early - enter the continuation break of the opening-drive pullback.",
+  "momentum-ignition": "Enter the retest after ignition, not the climax candle - FOMO at ignition is where accounts get wrecked.",
+  "momentum-exhaustion": "Exhaustion is your exit, not an entry - take profits into strength; the give-back after a climax is fast.",
+};
+function normalizeUnit(unit) {
+  if (unit.cards) return; // already canonical
+  const cards = [];
+  if (unit.stages) {
+    // extract graded questions from legacy stages only when none were authored
+    const extractQuizzes = !unit.questions || unit.questions.length === 0;
+    if (extractQuizzes) unit.questions = [];
+    for (const s of unit.stages) {
+      if (s.type === "quiz") {
+        if (extractQuizzes) unit.questions.push({ q: s.q, options: s.options, correct: s.correct, notes: s.notes });
+      } else if (LEARN_CARD_TYPES.has(s.type)) {
+        cards.push(s);
+      }
+    }
+  } else if (unit.info) {
+    cards.push({ type: "text", heading: unit.title, body: unit.info });
+  }
+  const tk = TAKEAWAYS[unit.id];
+  if (tk) cards.push({ type: "takeaway", body: tk });
+  if (cards.length) unit.cards = cards;
+}
+for (const b of BRANCHES) {
+  if (b.units) for (const u of b.units) normalizeUnit(u);
+  if (b.introLesson) normalizeUnit(b.introLesson);
+}
 
 export function findBranch(id) {
   return BRANCHES.find(b => b.id === id);

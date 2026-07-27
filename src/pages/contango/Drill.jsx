@@ -38,11 +38,19 @@ export default function Drill() {
   const playRef = useRef(null);
   const decisionsRef = useRef([]);
 
+  // Bars to reveal when a decision point is active. For tap points, reveal
+  // through the end of the tap zone so the whole entry zone is visible.
+  function revealTarget(dp, n) {
+    if (!dp) return n || 15;
+    if (dp.type === "tap" && dp.zoneEnd != null) return Math.min(n, Math.max(dp.barIndex, dp.zoneEnd) + 1);
+    return Math.min(n, dp.barIndex + 1);
+  }
+
   // restart the drill when the instrument or messy mode changes
   useEffect(() => {
     if (playRef.current) { clearInterval(playRef.current); playRef.current = null; }
     if (!scenario) return;
-    setRevealTo(Math.min(scenario.bars.length, scenario.decisionPoints[0]?.barIndex + 1 || 15));
+    setRevealTo(revealTarget(scenario.decisionPoints[0], scenario.bars.length));
     setDpIdx(0); setSelected(null); setPhase("replay");
     setEntryPrice(null); setStopPrice(null); setExitPrice(null);
     setDecisionLog([]); setFlash(null);
@@ -77,12 +85,13 @@ export default function Drill() {
     playRef.current = setInterval(() => {
       setRevealTo(prev => {
         const next = prev + 1;
-        // stop when we reach the next decision point bar or end
-        if (currentDP && next > currentDP.barIndex) {
+        const target = revealTarget(currentDP, bars.length);
+        // stop when we reach the next decision point (or its tap zone) or end
+        if (currentDP && next >= target) {
           clearInterval(playRef.current);
           playRef.current = null;
           setPhase("decision");
-          return currentDP.barIndex + 1;
+          return target;
         }
         if (next >= bars.length) {
           clearInterval(playRef.current);
@@ -131,6 +140,39 @@ export default function Drill() {
     }, 1000);
   }
 
+  // tap decision point: user taps a bar on the chart; scored against a zone.
+  // Draws a real entry line at the tapped bar's close and a stop line below the
+  // lowest low in the lookback window before the tap - so the chart teaches stop
+  // placement, not only entry timing.
+  function answerTap(idx) {
+    if (selected !== null) return;
+    setSelected(idx);
+    const inZone = idx >= currentDP.zoneStart && idx <= currentDP.zoneEnd;
+    setFlash(inZone ? "correct" : "wrong");
+    if (inZone) setCorrectCount(c => c + 1);
+    setDecisionLog(log => [...log, { barIndex: idx, selected: idx, correct: inZone, type: "tap" }]);
+    decisionsRef.current.push({ barIndex: idx, selected: idx, correct: inZone, type: "tap" });
+    const entryBar = bars[idx];
+    setEntryPrice(entryBar.close);
+    const lookStart = Math.max(0, idx - 10);
+    setStopPrice(Math.min(...bars.slice(lookStart, idx).map(b => b.low)));
+    const conceptKey = `drill:${branch.id}`;
+    recordAnswer(conceptKey, inZone);
+    if (!inZone) reviewCard(conceptKey, "again");
+    setTimeout(() => {
+      setFlash(null);
+      if (dpIdx + 1 >= decisionPoints.length) {
+        setExitPrice(bars[bars.length - 1].close);
+        finishDrill(inZone ? correctCount + 1 : correctCount);
+      } else {
+        setDpIdx(dpIdx + 1);
+        setSelected(null);
+        setPhase("replay");
+        setTimeout(startReveal, 300);
+      }
+    }, 1200);
+  }
+
   function finishDrill(finalCorrect) {
     const events = recordSession({ correct: finalCorrect, total: decisionPoints.length, completedType: "drill" });
     markDrillComplete(`${branch.id}-drill`);
@@ -167,7 +209,7 @@ export default function Drill() {
 
   function skipToDecision() {
     if (playRef.current) { clearInterval(playRef.current); playRef.current = null; }
-    setRevealTo(currentDP.barIndex + 1);
+    setRevealTo(revealTarget(currentDP, bars.length));
     setPhase("decision");
   }
 
@@ -234,6 +276,9 @@ export default function Drill() {
         stopPrice={stopPrice}
         exitPrice={exitPrice}
         height={260}
+        tapMode={phase === "decision" && currentDP?.type === "tap" && selected === null ? { zoneStart: currentDP.zoneStart, zoneEnd: currentDP.zoneEnd } : null}
+        onTapZone={answerTap}
+        selectedBar={phase === "decision" && currentDP?.type === "tap" ? selected : null}
       />
 
       {/* replay controls / progress */}
@@ -278,6 +323,27 @@ export default function Drill() {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* tap decision point: tap directly on the chart where you'd enter */}
+      {phase === "decision" && currentDP && currentDP.type === "tap" && (
+        <div className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/5 p-4" style={{ animation: "fadeIn 0.3s ease-out" }}>
+          <div className="mb-1 flex items-center gap-2 text-sky-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">Decision point {dpIdx + 1} · tap to enter</span>
+          </div>
+          <p className="font-medium text-slate-100">{currentDP.prompt}</p>
+          {selected === null ? (
+            <p className="mt-2 text-xs text-slate-500">Tap directly on the chart where you'd enter. We'll draw your entry and stop from the bar you pick.</p>
+          ) : (
+            <div className="mt-3 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm">
+              {selected >= currentDP.zoneStart && selected <= currentDP.zoneEnd ? (
+                <span className="text-emerald-400">In the entry zone - your entry and stop are drawn on the chart.</span>
+              ) : (
+                <span className="text-rose-400">Outside the zone - the entry was bars {currentDP.zoneStart}-{currentDP.zoneEnd}.</span>
+              )}
+            </div>
+          )}
         </div>
       )}
 

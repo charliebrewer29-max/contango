@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Check, X, ChevronRight, ChevronLeft, Brain, ArrowRight, BookOpen, BarChart3, Move, Eye, Heart, Target } from "lucide-react";
+import { Check, X, ChevronRight, ChevronLeft, Brain, ArrowRight, BookOpen, BarChart3, Move, Eye, Heart, Target, Sparkles } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import FeedbackFlash from "@/components/contango/FeedbackFlash";
 import { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
@@ -20,7 +20,7 @@ import { buildLessonChart } from "@/lib/lessonCharts";
 // safe space - the moment it costs a heart, people rush it to get to the test.
 // ANSWER: quiz / chart. Graded, forward-only, hearts on the line. Only the
 // proving is scored.
-const LEARN_TYPES = new Set(["teach", "emotion", "widget", "reveal"]);
+const LEARN_TYPES = new Set(["teach", "text", "emotion", "widget", "reveal", "takeaway"]);
 
 export default function Lesson() {
   const { lessonId } = useParams();
@@ -34,7 +34,15 @@ export default function Lesson() {
   // Build the full stage list (explicit stages, or legacy info → chart → quiz).
   const stages = useMemo(() => {
     if (!unit) return [];
-    if (unit.stages) return unit.stages;
+    // Canonical schema: cards (learn) + optional chart + questions (answer).
+    if (unit.cards) {
+      const s = [...unit.cards];
+      const chart = buildLessonChart(unit.id);
+      if (chart) s.push(chart);
+      for (const q of (unit.questions || [])) s.push({ type: "quiz", ...q });
+      return s;
+    }
+    if (unit.stages) return unit.stages; // legacy fallback
     const s = [{ type: "teach", heading: unit.title, body: unit.info }];
     const chart = buildLessonChart(unit.id);
     if (chart) s.push(chart);
@@ -181,8 +189,8 @@ export default function Lesson() {
             <div className="mb-5"><MindsetMeter value={progress.mindset ?? 75} /></div>
           )}
 
-          {/* ---- TEACH ---- */}
-          {learnStage.type === "teach" && (
+          {/* ---- TEXT / TEACH ---- */}
+          {(learnStage.type === "teach" || learnStage.type === "text") && (
             <div>
               <div className="mb-2 flex items-center gap-2 text-amber-400">
                 <BookOpen className="h-4 w-4" />
@@ -268,6 +276,17 @@ export default function Lesson() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ---- TAKEAWAY (the one sentence to remember, always last) ---- */}
+          {learnStage.type === "takeaway" && (
+            <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-5" style={{ animation: "fadeIn 0.3s ease-out" }}>
+              <div className="mb-2 flex items-center gap-2 text-amber-400">
+                <Sparkles className="h-4 w-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Takeaway</span>
+              </div>
+              <p className="font-display text-lg font-semibold leading-snug text-amber-100">{learnStage.body}</p>
             </div>
           )}
 
