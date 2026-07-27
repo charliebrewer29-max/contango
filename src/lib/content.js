@@ -182,12 +182,12 @@ export const BRANCHES = [
         { q: "Where does the stop go structurally?", options: ["Above the entry", "Below the breakout level", "At the entry price", "There is no stop"], correct: 1 },
       ],
     },
-    buildDrill: () => {
-      const bars = generateTrendData("ES");
+    buildDrill: (instrumentKey = "ES", messy = false) => {
+      const bars = generateTrendData(instrumentKey, 7, messy);
       const lowBeforeBreakout = Math.min(...bars.slice(0, 22).map(b => b.low));
       return {
         bars,
-        instrument: "ES",
+        instrument: instrumentKey,
         decisionPoints: [
           { barIndex: 19, type: "mcq", prompt: "Price is just consolidating — no breakout yet. What's the right move?", options: ["Buy now — anticipate the breakout", "Wait for a confirmed close beyond the range", "Sell short the range", "Buy with maximum size"], correct: 1 },
           { barIndex: 41, type: "mcq", prompt: "We broke out and ran up, now we're pulling back. Where does the trailing stop sit?", options: ["Above the entry", "Below the recent swing low", "At the original breakout level", "No stop — let it run forever"], correct: 1 },
@@ -217,11 +217,11 @@ export const BRANCHES = [
         { q: "Where does the stop go?", options: ["At VWAP", "Beyond the band", "At the entry", "No stop needed"], correct: 1 },
       ],
     },
-    buildDrill: () => {
-      const { bars, lowIdx, highIdx } = generateRangeScenario("ES");
+    buildDrill: (instrumentKey = "ES", messy = false) => {
+      const { bars, lowIdx, highIdx } = generateRangeScenario(instrumentKey, 11, messy);
       return {
         bars,
-        instrument: "ES",
+        instrument: instrumentKey,
         decisionPoints: [
           { barIndex: lowIdx, type: "mcq", prompt: "Price tagged the low of the range and is bouncing. What's the move?", options: ["Sell short", "Buy the bounce toward the range mid", "Hold through the band", "Wait for the range to break"], correct: 1 },
           { barIndex: highIdx, type: "mcq", prompt: "Price tagged the top of the range. On a short fade, where does the stop go?", options: ["Above the range high", "At the mid", "Below the low", "No stop"], correct: 0 },

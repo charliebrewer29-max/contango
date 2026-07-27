@@ -1,9 +1,10 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { ChevronRight, Lock, Check, Play } from "lucide-react";
+import { ChevronRight, Lock, Check, Play, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
+import { canAccessBranch } from "@/lib/subscription";
 import { isBranchComplete, branchDoneCount, branchUnitCount } from "@/lib/branchProgress";
 import BranchBadge, { badgeForBranch } from "@/components/contango/BranchBadge";
 
@@ -18,8 +19,25 @@ export default function BranchDetail() {
   }
 
   const foundationDone = progress.completedLessons.length > 0;
-  const unlocked = branch.unlockRequires.length === 0 ||
+  const foundationUnlocked = branch.unlockRequires.length === 0 ||
     (branch.unlockRequires.includes("foundation-complete") && foundationDone);
+  const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, progress);
+
+  if (premiumLocked) {
+    return (
+      <ScreenShell showStats backTo="/" title={branch.branchTitle}>
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
+          <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
+          <h2 className="font-display text-xl font-bold text-slate-100">A Premium branch</h2>
+          <p className="mt-2 text-sm text-slate-400">{branch.blurb}</p>
+          <p className="mt-1 text-xs text-slate-500">Free learners get the first two strategy branches. Unlock every branch — plus the journal, the coach's memory, and messy-market drills — with Premium.</p>
+          <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
+        </div>
+      </ScreenShell>
+    );
+  }
+
+  const unlocked = foundationUnlocked;
 
   // Build ordered unit list: intro lesson, then concept units, then drill (for strategy branches)
   const items = [];

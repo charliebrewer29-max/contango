@@ -1,11 +1,13 @@
 import React from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Play, Flame, Trophy, User, ChevronRight, Target, Compass, Repeat, BarChart3 } from "lucide-react";
+import { Play, Flame, Trophy, User, ChevronRight, Target, Compass, Repeat, BarChart3, BookOpen } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import SkillTree from "@/components/contango/SkillTree";
+import AdBanner from "@/components/contango/AdBanner";
 import { useContango } from "@/contexts/ContangoContext";
 import { BRANCHES } from "@/lib/content";
 import { buildPracticeCatalog, isDue } from "@/lib/spacedRepetition";
+import { isPremium, canAccessBranch } from "@/lib/subscription";
 
 // Home / Dashboard: stats bar, skill tree, daily goal ring, one obvious Continue button.
 export default function Dashboard() {
@@ -58,12 +60,32 @@ export default function Dashboard() {
       )}
 
       {/* Spaced practice */}
-      <Link to="/practice" className="mb-6 flex items-center gap-3 rounded-2xl border border-sky-500/30 bg-sky-500/5 p-4 transition hover:bg-sky-500/10">
+      <Link to={isPremium(progress) ? "/practice" : "/paywall"} className="mb-6 flex items-center gap-3 rounded-2xl border border-sky-500/30 bg-sky-500/5 p-4 transition hover:bg-sky-500/10">
         <Repeat className="h-6 w-6 shrink-0 text-sky-400" />
         <div className="flex-1">
-          <div className="text-[15px] font-semibold tracking-tight text-slate-100">Spaced Practice</div>
+          <div className="flex items-center gap-2">
+            <span className="text-[15px] font-semibold tracking-tight text-slate-100">Spaced Practice</span>
+            {!isPremium(progress) && <span className="rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-400">Premium</span>}
+          </div>
           <div className="text-[13px] leading-relaxed text-slate-400">
-            {practiceDue > 0 ? `${practiceDue} card${practiceDue === 1 ? "" : "s"} ready to review` : "All caught up — review ahead whenever you like"}
+            {isPremium(progress)
+              ? (practiceDue > 0 ? `${practiceDue} card${practiceDue === 1 ? "" : "s"} ready to review` : "All caught up — review ahead whenever you like")
+              : "Unlimited sim sandbox, no hearts. Part of Premium."}
+          </div>
+        </div>
+        <ChevronRight className="h-5 w-5 text-slate-500" />
+      </Link>
+
+      {/* Trade journal */}
+      <Link to="/journal" className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 transition hover:bg-emerald-500/10">
+        <BookOpen className="h-6 w-6 shrink-0 text-emerald-400" />
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[15px] font-semibold tracking-tight text-slate-100">Trade Journal</span>
+            {!isPremium(progress) && <span className="rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-400">Premium</span>}
+          </div>
+          <div className="text-[13px] leading-relaxed text-slate-400">
+            {isPremium(progress) ? "Your full decision history with win-rate analytics" : "Free shows your last session — full history with Premium"}
           </div>
         </div>
         <ChevronRight className="h-5 w-5 text-slate-500" />
@@ -85,6 +107,8 @@ export default function Dashboard() {
         </div>
         <SkillTree />
       </section>
+
+      <AdBanner />
 
       {/* Footer disclaimer */}
       <p className="mt-8 text-center text-[11px] leading-[1.7] text-slate-600">
@@ -131,8 +155,9 @@ function findNextLesson(progress) {
       }
     }
   }
-  // then any incomplete branch intro
+  // then any incomplete branch intro (skip premium-locked strategy branches)
   for (const b of BRANCHES) {
+    if (b.type === "strategy" && !canAccessBranch(b, progress)) continue;
     if (b.introLesson && !progress.completedLessons.includes(b.introLesson.id)) {
       return { path: `/branch/${b.id}`, title: b.branchTitle };
     }

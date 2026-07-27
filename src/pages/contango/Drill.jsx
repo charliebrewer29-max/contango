@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ChevronRight, Check, X, Play, Pause, MessageCircle, Bot } from "lucide-react";
+import { ChevronRight, Check, X, Play, Pause, MessageCircle, Bot, Crown, Waves } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import CandleChart from "@/components/contango/CandleChart";
 import FeedbackFlash, { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
@@ -10,16 +10,19 @@ import { syncReminderSnapshot, buildSnapshot } from "@/lib/reminders";
 import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
 import { INSTRUMENTS } from "@/lib/instruments";
+import { canAccessBranch, isPremium, PREMIUM_INSTRUMENTS } from "@/lib/subscription";
 
 // Drill screen: live bar replay with decision points.
 // Bars reveal progressively; mcq decision points pause replay and ask a question.
 export default function Drill() {
   const { branchId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markDrillComplete, setLastDrillReview, progress, unlockBadge, recordAnswer, reviewCard } = useContango();
+  const { recordSession, markDrillComplete, setLastDrillReview, progress, unlockBadge, recordAnswer, reviewCard, logDrill } = useContango();
   const branch = findBranch(branchId);
 
-  const scenario = useMemo(() => branch?.buildDrill ? branch.buildDrill() : null, [branch]);
+  const [instrument, setInstrument] = useState(() => (branch?.id === "momentum" ? "NQ" : "ES"));
+  const [messy, setMessy] = useState(false);
+  const scenario = useMemo(() => branch?.buildDrill ? branch.buildDrill(instrument, messy) : null, [branch, instrument, messy]);
   const [revealTo, setRevealTo] = useState(scenario ? Math.min(scenario.bars.length, scenario.decisionPoints[0]?.barIndex + 1 || 15) : 0);
   const [dpIdx, setDpIdx] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -35,11 +38,36 @@ export default function Drill() {
   const playRef = useRef(null);
   const decisionsRef = useRef([]);
 
+  // restart the drill when the instrument or messy mode changes
+  useEffect(() => {
+    if (playRef.current) { clearInterval(playRef.current); playRef.current = null; }
+    if (!scenario) return;
+    setRevealTo(Math.min(scenario.bars.length, scenario.decisionPoints[0]?.barIndex + 1 || 15));
+    setDpIdx(0); setSelected(null); setPhase("replay");
+    setEntryPrice(null); setStopPrice(null); setExitPrice(null);
+    setDecisionLog([]); setFlash(null);
+    decisionsRef.current = [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instrument, messy]);
+
   if (!scenario) {
     return <ScreenShell><div className="text-slate-400">Drill not found.</div></ScreenShell>;
   }
 
-  const { bars, decisionPoints, instrument, stopPrice: scenarioStop } = scenario;
+  if (!canAccessBranch(branch, progress)) {
+    return (
+      <ScreenShell showStats={false} backTo="/" title={`${branch.branchTitle} Drill`}>
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
+          <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
+          <h2 className="font-display text-xl font-bold text-slate-100">A Premium branch</h2>
+          <p className="mt-2 text-sm text-slate-400">This strategy branch is part of Premium. Free learners get the first two.</p>
+          <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
+        </div>
+      </ScreenShell>
+    );
+  }
+
+  const { bars, decisionPoints, stopPrice: scenarioStop } = scenario;
   const inst = INSTRUMENTS[instrument] || INSTRUMENTS.ES;
   const currentDP = decisionPoints[dpIdx];
 
@@ -106,7 +134,7 @@ export default function Drill() {
   function finishDrill(finalCorrect) {
     const events = recordSession({ correct: finalCorrect, total: decisionPoints.length, completedType: "drill" });
     markDrillComplete(`${branch.id}-drill`);
-    setLastDrillReview({
+    const review = {
       branchId: branch.id,
       branchTitle: branch.branchTitle,
       instrument,
@@ -120,7 +148,9 @@ export default function Drill() {
       })),
       correctCount: finalCorrect,
       total: decisionPoints.length,
-    });
+    };
+    setLastDrillReview(review);
+    logDrill(review);
     setPhase("done");
     const hypoth = { ...progress, completedDrills: [...(progress.completedDrills || []), `${branch.id}-drill`] };
     if (isBranchComplete(branch, hypoth) && !(progress.badges || []).includes(branch.id)) {
@@ -165,6 +195,23 @@ export default function Drill() {
           <div>micro: <span className="font-mono text-slate-400">${(inst.tickValue / 10).toFixed(2)}</span></div>
         </div>
       </div>
+
+      {isPremium(progress) && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            {PREMIUM_INSTRUMENTS.map((ik) => (
+              <button key={ik} onClick={() => setInstrument(ik)}
+                className={`rounded-lg border px-2.5 py-1 text-xs font-mono ${instrument === ik ? "border-amber-400 bg-amber-400/10 text-amber-300" : "border-slate-700 bg-slate-900 text-slate-400"}`}>
+                {ik}
+              </button>
+            ))}
+          </div>
+          <button onClick={() => setMessy((m) => !m)}
+            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs ${messy ? "border-rose-500 bg-rose-500/10 text-rose-300" : "border-slate-700 bg-slate-900 text-slate-400"}`}>
+            <Waves className="h-3.5 w-3.5" /> Messy {messy ? "on" : "off"}
+          </button>
+        </div>
+      )}
 
       <CandleChart
         bars={bars}

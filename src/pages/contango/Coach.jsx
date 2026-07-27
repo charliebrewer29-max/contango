@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Send, Sparkles, Loader2 } from "lucide-react";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { Send, Sparkles, Loader2, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { COACH_NAME } from "@/lib/contangoTheme";
+import { coachCallsRemaining, isPremium } from "@/lib/subscription";
 import { findBranch } from "@/lib/content";
 import { base44 } from "@/api/base44Client";
 
@@ -11,16 +12,28 @@ import { base44 } from "@/api/base44Client";
 // Routed through InvokeLLM (server-side). System prompt bakes in the educational-only constraint.
 const SYSTEM_CONSTRAINT = `You're ${COACH_NAME}, a trading-education mentor inside Contango — a simulated, educational app. You're coaching a learner through a simulated drill, NOT reviewing real trades. Stay in mentor mode: warm, plain-spoken, specific to what they said, and genuinely helpful. Never produce real-market buy/sell language or personalized trade signals — everything is generic strategy education on simulated data. Keep it to 3–5 sentences, like a quick note from a coach who's in your corner.`;
 
+// Premium coach memory: recent exchanges + drill results, baked into the
+// prompt so the coach can reference patterns across sessions ("you've missed
+// the exit decision 4 of your last 5 drills"). Free gets none of this.
+function buildMemoryContext(progress) {
+  const mem = (progress.coachMemory || []).slice(-6)
+    .map((m) => `Learner asked: "${m.q}" → You said: "${m.a}"`).join("\n");
+  const dh = (progress.drillHistory || []).slice(-5)
+    .map((d) => `${d.branchTitle} (${d.instrument}): ${d.correctCount}/${d.total} correct`).join("\n");
+  return `\nWhat you remember about this learner (reference specific past sessions — be concrete, this is your moat):\n${mem || "(no prior notes yet)"}\nRecent drill results:\n${dh || "(no drills yet)"}\n`;
+}
+
 export default function Coach() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { progress } = useContango();
+  const { progress, recordCoachCall, pushCoachMemory } = useContango();
   const branchId = params.get("branch");
   const branch = branchId ? findBranch(branchId) : null;
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showTrialNudge, setShowTrialNudge] = useState(false);
   const scrollRef = useRef(null);
 
   const welcome = branch
@@ -37,16 +50,25 @@ export default function Coach() {
 
   async function send() {
     if (!input.trim() || loading) return;
+    if (coachCallsRemaining(progress) <= 0) {
+      setMessages(m => [...m, { role: "coach", text: "That's your free coach calls used up for today — start your trial for unlimited, memory-backed coaching." }]);
+      setShowTrialNudge(true);
+      return;
+    }
     const userText = input.trim();
     setInput("");
     const newMessages = [...messages, { role: "user", text: userText }];
     setMessages(newMessages);
     setLoading(true);
     try {
-      const prompt = `${SYSTEM_CONSTRAINT}\n\nContext: User is on a simulated educational drill${branch ? ` for the ${branch.branchTitle} strategy` : ""}. Their XP is ${progress.xp}, streak ${progress.streak}.\n\nConversation so far:\n${newMessages.map(m => `${m.role === "user" ? "User" : COACH_NAME}: ${m.text}`).join("\n")}\n\nUser's latest message: ${userText}\n\nRespond as ${COACH_NAME}:`;
+      const memoryBlock = isPremium(progress) ? buildMemoryContext(progress) : "";
+      const prompt = `${SYSTEM_CONSTRAINT}\n\nContext: User is on a simulated educational drill${branch ? ` for the ${branch.branchTitle} strategy` : ""}. Their XP is ${progress.xp}, streak ${progress.streak}.${memoryBlock}\n\nConversation so far:\n${newMessages.map(m => `${m.role === "user" ? "User" : COACH_NAME}: ${m.text}`).join("\n")}\n\nUser's latest message: ${userText}\n\nRespond as ${COACH_NAME}:`;
       const res = await base44.integrations.Core.InvokeLLM({ prompt });
       const reply = typeof res === "string" ? res : (res?.text || res?.response || JSON.stringify(res));
       setMessages(m => [...m, { role: "coach", text: reply }]);
+      recordCoachCall();
+      if (isPremium(progress)) pushCoachMemory({ q: userText, a: reply });
+      if (!isPremium(progress) && (progress.completedDrills || []).length > 0) setShowTrialNudge(true);
     } catch (e) {
       setMessages(m => [...m, { role: "coach", text: "Hmm, I couldn't reach the coach right now. Give it another try in a moment." }]);
     } finally {
@@ -80,6 +102,12 @@ export default function Coach() {
           </div>
         )}
       </div>
+
+      {showTrialNudge && !isPremium(progress) && (
+        <Link to="/paywall" className="mt-3 flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-300 hover:bg-amber-500/10">
+          <Crown className="h-4 w-4 text-amber-400" /> Start your 21-day free trial — unlimited coaching that remembers your history.
+        </Link>
+      )}
 
       <div className="mt-3 flex gap-2">
         <input

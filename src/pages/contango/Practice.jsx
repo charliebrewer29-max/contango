@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Repeat, Clock, Sparkles, Check, X, CalendarClock, Target } from "lucide-react";
+import { Repeat, Clock, Sparkles, Check, X, CalendarClock, Target, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import PracticeReview from "@/components/contango/practice/PracticeReview";
 import { useContango } from "@/contexts/ContangoContext";
 import { buildPracticeCatalog, isDue, nextDueMs } from "@/lib/spacedRepetition";
 import { weakConcepts } from "@/lib/performance";
+import { isPremium } from "@/lib/subscription";
 
 const SESSION_SIZE = 10;
 
@@ -49,6 +50,20 @@ export default function Practice() {
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState(null);
   const [stats, setStats] = useState({ correct: 0, total: 0 });
+
+  if (!isPremium(progress)) {
+    return (
+      <ScreenShell backTo="/" title="Spaced Practice" showStats>
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
+          <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
+          <h2 className="font-display text-xl font-bold text-slate-100">Practice is Premium</h2>
+          <p className="mt-2 text-sm text-slate-400">Practice mode is your unlimited sim sandbox — review every concept and chart as often as you like, with no hearts on the line. It's part of Premium.</p>
+          <p className="mt-2 text-xs text-slate-500">Hearts still apply on the graded curriculum path for everyone — that's the daily-loss-limit discipline you're learning.</p>
+          <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
+        </div>
+      </ScreenShell>
+    );
+  }
 
   function startSession(mode = "due") {
     let pool;

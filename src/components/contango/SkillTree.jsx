@@ -2,10 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import {
   GraduationCap, ShieldCheck, Layers, MonitorPlay, TrendingUp, Activity,
-  Circle, Lock, Check, Zap, Target, DollarSign, BookOpen,
+  Circle, Lock, Check, Zap, Target, DollarSign, BookOpen, Crown,
 } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { BRANCHES } from "@/lib/content";
+import { canAccessBranch } from "@/lib/subscription";
 
 const ICONS = { GraduationCap, ShieldCheck, Layers, MonitorPlay, TrendingUp, Activity, Circle, Zap, Target, DollarSign, BookOpen };
 
@@ -26,8 +27,10 @@ export default function SkillTree() {
   return (
     <div className="flex flex-col items-center gap-2.5 py-5">
       {BRANCHES.map((branch, idx) => {
-        const unlocked = branch.unlockRequires.length === 0 ||
+        const foundationUnlocked = branch.unlockRequires.length === 0 ||
           (branch.unlockRequires.includes("foundation-complete") && foundationDone);
+        const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, progress);
+        const unlocked = foundationUnlocked && !premiumLocked;
         const Icon = ICONS[branch.icon] || Circle;
         const c = COLOR_MAP[branch.color] || COLOR_MAP.amber;
         const isNext = unlocked && !isBranchDone(branch, progress);
@@ -37,9 +40,9 @@ export default function SkillTree() {
         return (
           <div key={branch.id} className="w-full" style={{ transform: `translateX(${offset}px)` }}>
             <Link
-              to={unlocked ? `/branch/${branch.id}` : "#"}
+              to={unlocked ? `/branch/${branch.id}` : premiumLocked ? "/paywall" : "#"}
               className={`flex items-center gap-3 rounded-2xl border p-3.5 transition ${
-                unlocked ? `${c.bg} ${c.ring} hover:scale-[1.01]` : "border-slate-800 bg-slate-900/40 opacity-50"
+                unlocked ? `${c.bg} ${c.ring} hover:scale-[1.01]` : "border-slate-800 bg-slate-900/40 opacity-60"
               } ${isNext ? "animate-pulse shadow-lg " + c.glow : ""}`}
             >
               <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border ${unlocked ? c.bg + " " + c.ring : "bg-slate-800"} ${c.text}`}>
@@ -48,9 +51,12 @@ export default function SkillTree() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="truncate font-display text-[15px] font-semibold tracking-tight text-slate-100">{branch.branchTitle}</span>
-                  {!unlocked && <Lock className="h-3 w-3 text-slate-600" />}
+                  {premiumLocked && <Crown className="h-3.5 w-3.5 text-amber-400" />}
+                  {!foundationUnlocked && <Lock className="h-3 w-3 text-slate-600" />}
                 </div>
-                <p className="truncate text-[13px] leading-snug text-slate-500">{branch.blurb}</p>
+                <p className="truncate text-[13px] leading-snug text-slate-500">
+                  {premiumLocked ? "Premium branch — unlock with Premium" : branch.blurb}
+                </p>
               </div>
               {isBranchDone(branch, progress) && <Check className="h-4 w-4 text-emerald-400" />}
             </Link>

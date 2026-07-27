@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, ChevronRight } from "lucide-react";
+import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, ChevronRight, BookOpen } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { MAX_HEARTS } from "@/lib/gamification";
 import { COACH_NAME } from "@/lib/contangoTheme";
+import { isPremium, trialDaysLeft, canRepairStreak } from "@/lib/subscription";
 import TraderDiary from "@/components/contango/TraderDiary";
 import MindsetMeter from "@/components/contango/MindsetMeter";
 import BranchBadge, { BRANCH_BADGES } from "@/components/contango/BranchBadge";
@@ -13,7 +14,7 @@ import StreakRewards from "@/components/contango/StreakRewards";
 import { getEquippedFlair } from "@/lib/streakRewards";
 
 export default function Profile() {
-  const { progress, update, refillHearts, resetProgress } = useContango();
+  const { progress, update, refillHearts, resetProgress, repairStreak } = useContango();
   const flair = getEquippedFlair(progress);
 
   function toggle(field) {
@@ -46,7 +47,7 @@ export default function Profile() {
             ) : (
               <div className="mt-1 text-xs text-slate-600">No flair yet — keep your streak going to unlock one</div>
             )}
-            <div className="mt-1 text-xs text-amber-400">{progress.subscription === "premium" ? "Premium" : "Free tier"}</div>
+            <div className="mt-1 text-xs text-amber-400">{progress.subscription === "premium" ? "Premium" : progress.subscription === "trial" ? "Free trial" : "Free tier"}</div>
           </div>
         </div>
       </div>
@@ -98,11 +99,26 @@ export default function Profile() {
         <Link to="/paywall" className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-600">
           <Crown className="h-5 w-5 text-amber-400" />
           <div className="flex-1">
-            <div className="text-sm font-medium text-slate-100">{progress.subscription === "premium" ? "Premium active" : "Upgrade to Premium"}</div>
-            <div className="text-xs text-slate-500">Unlimited hearts, all branches, unlimited {COACH_NAME}</div>
+            <div className="text-sm font-medium text-slate-100">
+              {progress.subscription === "premium" ? "Premium active" : progress.subscription === "trial" ? `Free trial · ${trialDaysLeft(progress)} days left` : "Free tier"}
+            </div>
+            <div className="text-xs text-slate-500">Practice sandbox, all branches, {COACH_NAME} memory, full journal</div>
           </div>
           <ChevronRight className="h-5 w-5 text-slate-600" />
         </Link>
+        <Link to="/journal" className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-600">
+          <BookOpen className="h-5 w-5 text-emerald-400" />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-slate-100">Trade Journal</div>
+            <div className="text-xs text-slate-500">{isPremium(progress) ? "Full history & analytics" : "Last session · full history with Premium"}</div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-600" />
+        </Link>
+        {canRepairStreak(progress) && (
+          <button onClick={repairStreak} className="w-full rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-400 hover:bg-amber-500/10">
+            Repair streak (monthly Premium perk)
+          </button>
+        )}
         {progress.hearts < MAX_HEARTS && (
           <button onClick={refillHearts} className="mt-2 w-full rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 text-sm text-rose-400 hover:bg-rose-500/10">
             Refill hearts ({progress.hearts}/{MAX_HEARTS})

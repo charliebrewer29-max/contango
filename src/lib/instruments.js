@@ -65,11 +65,11 @@ function makeCandle(open, mu, sigma, tick, rand) {
 // clustering and a spike at the breakout, so trends accelerate and pull back
 // like real markets. Chop → breakout up → rollover.
 // Fixed decision points at bar indices 19 and 41.
-export function generateTrendData(instrumentKey = "ES", seed = 7) {
+export function generateTrendData(instrumentKey = "ES", seed = 7, messy = false) {
   const inst = INSTRUMENTS[instrumentKey];
   const rand = mulberry32(seed);
   const tick = inst.tickSize;
-  const baseVol = inst.barVol;                  // per-bar return std (fraction of price)
+  const baseVol = inst.barVol * (messy ? 1.4 : 1);  // messy market mode amplifies noise
   const omega = baseVol * baseVol * 0.08;        // GARCH long-run floor
   const alpha = 0.10;                            // shock feedback
   const beta = 0.88;                             // vol persistence (clustering)
@@ -87,12 +87,12 @@ export function generateTrendData(instrumentKey = "ES", seed = 7) {
     // volatility: clustering via GARCH + occasional spike; ignition at the breakout
     let shock = 1;
     if (i === 22) shock = 2.2;
-    else if (rand() < 0.05) shock = 1.6 + rand() * 0.9;
+    else if (rand() < (messy ? 0.16 : 0.05)) shock = 1.6 + rand() * 0.9;
     const sigma = Math.sqrt(sigma2) * shock;
 
     // small overnight-style gap now and then
     let open = price;
-    if (i > 0 && rand() < 0.08) open = roundToTick(open * (1 + gaussian(rand) * baseVol * 0.4), tick);
+    if (i > 0 && rand() < (messy ? 0.16 : 0.08)) open = roundToTick(open * (1 + gaussian(rand) * baseVol * 0.4), tick);
 
     const c = makeCandle(open, mu * open, sigma * open, tick, rand);
     bars.push({ ...c, index: i });
@@ -109,11 +109,11 @@ export function generateTrendData(instrumentKey = "ES", seed = 7) {
 // drift mean-reverts toward a slowly oscillating fair value, producing a range
 // that respects support/resistance with organic pullbacks.
 // Decision points (local low / high) are discovered from the generated data.
-export function generateRangeScenario(instrumentKey = "ES", seed = 11) {
+export function generateRangeScenario(instrumentKey = "ES", seed = 11, messy = false) {
   const inst = INSTRUMENTS[instrumentKey];
   const rand = mulberry32(seed);
   const tick = inst.tickSize;
-  const baseVol = inst.barVol * 0.7;             // quieter inside a range
+  const baseVol = inst.barVol * 0.7 * (messy ? 1.5 : 1);   // messy market mode breaks the range more often
   const omega = baseVol * baseVol * 0.06;
   const alpha = 0.08;
   const beta = 0.90;
@@ -130,11 +130,11 @@ export function generateRangeScenario(instrumentKey = "ES", seed = 11) {
     const muTarget = ((target - price) / price) * 0.06;
     mu = muTarget + (mu - muTarget) * 0.7 + gaussian(rand) * baseVol * 0.1;
 
-    const shock = rand() < 0.05 ? 1.5 + rand() * 0.8 : 1;
+    const shock = rand() < (messy ? 0.14 : 0.05) ? 1.5 + rand() * 0.8 : 1;
     const sigma = Math.sqrt(sigma2) * shock;
 
     let open = price;
-    if (i > 0 && rand() < 0.05) open = roundToTick(open * (1 + gaussian(rand) * baseVol * 0.3), tick);
+    if (i > 0 && rand() < (messy ? 0.12 : 0.05)) open = roundToTick(open * (1 + gaussian(rand) * baseVol * 0.3), tick);
 
     const c = makeCandle(open, mu * open, sigma * open, tick, rand);
     bars.push({ ...c, index: i });

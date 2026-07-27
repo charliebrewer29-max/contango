@@ -280,14 +280,14 @@ export const EXTRA_BRANCHES = [
         ],
       },
     ],
-    buildDrill: () => {
-      const bars = generateTrendData("ES");
+    buildDrill: (instrumentKey = "ES", messy = false) => {
+      const bars = generateTrendData(instrumentKey, 7, messy);
       const rangeBars = bars.slice(0, 16);
       const rangeHigh = Math.max(...rangeBars.map((b) => b.high));
       const rangeLow = Math.min(...rangeBars.map((b) => b.low));
       return {
         bars,
-        instrument: "ES",
+        instrument: instrumentKey,
         decisionPoints: [
           { barIndex: 15, type: "mcq", prompt: "The opening range is set — no breakout yet. What's the right move?", options: ["Buy the middle of the range", "Wait for a close beyond the range high or low", "Short straight into the range high", "Size up immediately"], correct: 1 },
           { barIndex: 30, type: "mcq", prompt: "We broke above the opening range. Where does the stop sit?", options: ["Above the range high", "Below the opening range low", "At the entry price", "No stop"], correct: 1 },
@@ -380,12 +380,12 @@ export const EXTRA_BRANCHES = [
         ],
       },
     ],
-    buildDrill: () => {
-      const bars = generateTrendData("NQ");
+    buildDrill: (instrumentKey = "NQ", messy = false) => {
+      const bars = generateTrendData(instrumentKey, 7, messy);
       const accelLow = Math.min(...bars.slice(0, 18).map((b) => b.low));
       return {
         bars,
-        instrument: "NQ",
+        instrument: instrumentKey,
         decisionPoints: [
           { barIndex: 14, type: "mcq", prompt: "Price is accelerating out of the gate but you missed the exact bottom. What's disciplined?", options: ["Chase the spike now", "Wait for the first pullback that holds, then enter", "Short the strength", "Size up to make up for missing it"], correct: 1 },
           { barIndex: 38, type: "mcq", prompt: "After a long run, a climax volume spike prints and price is far from VWAP. What's the move?", options: ["Add more — it's working", "Hold and hope", "Take profits into strength; this is exhaustion", "Flip short at the exact top"], correct: 2 },

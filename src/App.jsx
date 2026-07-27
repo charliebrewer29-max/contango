@@ -19,6 +19,7 @@ import DrillCoach from '@/pages/contango/DrillCoach';
 import OnboardingGuide from '@/pages/contango/OnboardingGuide';
 import Practice from '@/pages/contango/Practice';
 import Insights from '@/pages/contango/Insights';
+import Journal from '@/pages/contango/Journal';
 
 function App() {
 
@@ -42,6 +43,7 @@ function App() {
               <Route path="/guide" element={<OnboardingGuide />} />
               <Route path="/practice" element={<Practice />} />
               <Route path="/insights" element={<Insights />} />
+              <Route path="/journal" element={<Journal />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </ContangoProvider>

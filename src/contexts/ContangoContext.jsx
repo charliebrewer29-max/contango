@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { MAX_HEARTS, applyProgress, todayStr } from "@/lib/gamification";
 import { scheduleCard } from "@/lib/spacedRepetition";
+import { isPremium } from "@/lib/subscription";
 
 const STORAGE_KEY = "contango_progress_v1";
 
@@ -29,6 +30,11 @@ const DEFAULT_PROGRESS = {
   stats: {},
   rewards: [],
   equippedFlair: null,
+  trialStart: null,
+  coachCalls: { date: null, count: 0 },
+  drillHistory: [],
+  streakRepairMonth: null,
+  coachMemory: [],
 };
 
 const ContangoContext = createContext(null);
@@ -118,6 +124,48 @@ export function ContangoProvider({ children }) {
     });
   }, []);
 
+  const startTrial = useCallback(() => {
+    setProgress(prev => ({ ...prev, subscription: "trial", trialStart: new Date().toISOString() }));
+  }, []);
+
+  const goPremium = useCallback(() => {
+    setProgress(prev => ({ ...prev, subscription: "premium" }));
+  }, []);
+
+  const recordCoachCall = useCallback(() => {
+    setProgress(prev => {
+      const today = todayStr();
+      const cur = prev.coachCalls && prev.coachCalls.date === today ? prev.coachCalls : { date: today, count: 0 };
+      return { ...prev, coachCalls: { date: today, count: cur.count + 1 } };
+    });
+  }, []);
+
+  // Append a structured drill record so the Journal can aggregate it.
+  const logDrill = useCallback((entry) => {
+    setProgress(prev => {
+      const hist = [...(prev.drillHistory || []), { ...entry, date: new Date().toISOString() }];
+      if (hist.length > 100) hist.shift();
+      return { ...prev, drillHistory: hist };
+    });
+  }, []);
+
+  // Premium coach memory: the last few exchanges, baked into later prompts.
+  const pushCoachMemory = useCallback((entry) => {
+    setProgress(prev => {
+      const mem = [...(prev.coachMemory || []), entry].slice(-8);
+      return { ...prev, coachMemory: mem };
+    });
+  }, []);
+
+  const repairStreak = useCallback(() => {
+    setProgress(prev => {
+      if (!isPremium(prev)) return prev;
+      const month = new Date().toISOString().slice(0, 7);
+      if (prev.streakRepairMonth === month) return prev;
+      return { ...prev, streak: (prev.streak || 0) + 1, streakRepairMonth: month, lastActiveDate: todayStr() };
+    });
+  }, []);
+
   const value = {
     progress,
     update,
@@ -132,6 +180,12 @@ export function ContangoProvider({ children }) {
     reviewCard,
     recordAnswer,
     unlockBadge,
+    startTrial,
+    goPremium,
+    recordCoachCall,
+    logDrill,
+    pushCoachMemory,
+    repairStreak,
     todayStr,
   };
 
