@@ -3,43 +3,18 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { AuthProvider } from '@/lib/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
-
-const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
-  }
-
-  // Render the main app
-  return (
-    <Routes>
-      {/* Add your page Route elements here */}
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
-  );
-};
-
+import { ContangoProvider } from '@/contexts/ContangoContext';
+import Onboarding from '@/pages/contango/Onboarding';
+import Dashboard from '@/pages/contango/Dashboard';
+import Lesson from '@/pages/contango/Lesson';
+import BranchDetail from '@/pages/contango/BranchDetail';
+import Drill from '@/pages/contango/Drill';
+import Coach from '@/pages/contango/Coach';
+import Leaderboard from '@/pages/contango/Leaderboard';
+import Profile from '@/pages/contango/Profile';
+import Paywall from '@/pages/contango/Paywall';
 
 function App() {
 
@@ -48,7 +23,20 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
-          <AuthenticatedApp />
+          <ContangoProvider>
+            <Routes>
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/lesson/:lessonId" element={<Lesson />} />
+              <Route path="/branch/:branchId" element={<BranchDetail />} />
+              <Route path="/drill/:branchId" element={<Drill />} />
+              <Route path="/coach" element={<Coach />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/paywall" element={<Paywall />} />
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
+          </ContangoProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>

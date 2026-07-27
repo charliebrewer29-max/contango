@@ -1,0 +1,111 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, ChevronRight } from "lucide-react";
+import ScreenShell from "@/components/contango/ScreenShell";
+import { useContango } from "@/contexts/ContangoContext";
+import { MAX_HEARTS } from "@/lib/gamification";
+import { COACH_NAME } from "@/lib/contangoTheme";
+
+export default function Profile() {
+  const { progress, update, refillHearts, resetProgress } = useContango();
+
+  function toggle(field) {
+    update({ [field]: !progress[field] });
+  }
+
+  return (
+    <ScreenShell showStats={false} title="Profile & Settings">
+      {/* identity card */}
+      <div className="mb-6 flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/30">
+          <User className="h-7 w-7 text-amber-400" />
+        </div>
+        <div>
+          <div className="font-display text-lg font-semibold text-slate-100">Trader</div>
+          <div className="text-xs text-slate-500">{progress.xp} XP · {progress.streak || 0} day streak</div>
+          <div className="text-xs text-amber-400">{progress.subscription === "premium" ? "Premium" : "Free tier"}</div>
+        </div>
+      </div>
+
+      {/* stats */}
+      <div className="mb-6 grid grid-cols-2 gap-3">
+        <Stat label="Lessons done" value={progress.completedLessons.length} />
+        <Stat label="Drills done" value={progress.completedDrills.length} />
+      </div>
+
+      {/* preferences */}
+      <Section title="Preferences">
+        <Toggle icon={<Eye className="h-4 w-4" />} label="Reduced motion" desc="Disable the ticker animation" on={progress.reducedMotion} onClick={() => toggle("reducedMotion")} />
+        <Toggle icon={<Volume2 className="h-4 w-4" />} label="Sound" desc="Correct/wrong/complete cues" on={progress.soundOn} onClick={() => toggle("soundOn")} />
+        <Toggle icon={<Vibrate className="h-4 w-4" />} label="Haptics" desc="Tap feedback on answers" on={progress.hapticsOn} onClick={() => toggle("hapticsOn")} />
+      </Section>
+
+      {/* subscription */}
+      <Section title="Subscription">
+        <Link to="/paywall" className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-600">
+          <Crown className="h-5 w-5 text-amber-400" />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-slate-100">{progress.subscription === "premium" ? "Premium active" : "Upgrade to Premium"}</div>
+            <div className="text-xs text-slate-500">Unlimited hearts, all branches, unlimited {COACH_NAME}</div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-600" />
+        </Link>
+        {progress.hearts < MAX_HEARTS && (
+          <button onClick={refillHearts} className="mt-2 w-full rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 text-sm text-rose-400 hover:bg-rose-500/10">
+            Refill hearts ({progress.hearts}/{MAX_HEARTS})
+          </button>
+        )}
+      </Section>
+
+      {/* danger zone */}
+      <Section title="Account">
+        <button onClick={() => { if (confirm("Reset all progress? This cannot be undone.")) resetProgress(); }}
+          className="flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 text-left hover:border-slate-600">
+          <Trash2 className="h-5 w-5 text-rose-400" />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-slate-200">Reset progress</div>
+            <div className="text-xs text-slate-500">Clears XP, streaks, and completion</div>
+          </div>
+        </button>
+      </Section>
+
+      <p className="mt-8 text-center text-[11px] leading-relaxed text-slate-600">
+        Contango is a simulated educational tool. No real money, no live trading, no trade signals.<br />
+        Not affiliated with TradingView.
+      </p>
+    </ScreenShell>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 text-center">
+      <div className="font-mono text-2xl font-bold text-amber-400">{value}</div>
+      <div className="text-xs text-slate-500">{label}</div>
+    </div>
+  );
+}
+
+function Section({ title, children }) {
+  return (
+    <div className="mb-6">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</h3>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function Toggle({ icon, label, desc, on, onClick }) {
+  return (
+    <button onClick={onClick} className="flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 text-left">
+      <span className="text-slate-400">{icon}</span>
+      <div className="flex-1">
+        <div className="text-sm font-medium text-slate-200">{label}</div>
+        <div className="text-xs text-slate-500">{desc}</div>
+      </div>
+      <div className={`relative h-6 w-11 rounded-full transition ${on ? "bg-amber-400" : "bg-slate-700"}`}>
+        <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${on ? "left-[22px]" : "left-0.5"}`} />
+      </div>
+    </button>
+  );
+}

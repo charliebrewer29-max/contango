@@ -1,0 +1,75 @@
+import React from "react";
+import { useParams, Link } from "react-router-dom";
+import { ChevronRight, Lock, Check, Play } from "lucide-react";
+import ScreenShell from "@/components/contango/ScreenShell";
+import { useContango } from "@/contexts/ContangoContext";
+import { findBranch } from "@/lib/content";
+
+// Branch detail: lists the intro lesson + concept units + drill.
+export default function BranchDetail() {
+  const { branchId } = useParams();
+  const { progress } = useContango();
+  const branch = findBranch(branchId);
+
+  if (!branch) {
+    return <ScreenShell><div className="text-slate-400">Branch not found.</div></ScreenShell>;
+  }
+
+  const foundationDone = progress.completedLessons.length > 0;
+  const unlocked = branch.unlockRequires.length === 0 ||
+    (branch.unlockRequires.includes("foundation-complete") && foundationDone);
+
+  // Build ordered unit list: intro lesson, then concept units, then drill (for strategy branches)
+  const items = [];
+  if (branch.introLesson) items.push({ ...branch.introLesson, kind: "lesson" });
+  if (branch.units) {
+    for (const u of branch.units) items.push({ ...u, kind: "lesson" });
+  }
+  if (branch.buildDrill) {
+    items.push({ id: `${branch.id}-drill`, title: `${branch.branchTitle} Drill`, kind: "drill" });
+  }
+
+  return (
+    <ScreenShell showStats backTo="/" title={branch.branchTitle}>
+      <div className="mb-6">
+        <p className="text-sm text-slate-400">{branch.blurb}</p>
+        {!unlocked && (
+          <p className="mt-3 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-400">
+            <Lock className="h-4 w-4" /> Complete Foundation first to unlock this branch.
+          </p>
+        )}
+      </div>
+
+      <div className="relative space-y-3">
+        {items.map((item, i) => {
+          const done = item.kind === "drill"
+            ? progress.completedDrills.includes(item.id)
+            : progress.completedLessons.includes(item.id);
+          return (
+            <Link
+              key={item.id}
+              to={unlocked ? (item.kind === "drill" ? `/drill/${branch.id}` : `/lesson/${item.id}`) : "#"}
+              className={`flex items-center gap-3 rounded-xl border p-4 transition ${
+                unlocked ? "border-slate-800 bg-slate-900 hover:border-slate-600" : "border-slate-800 bg-slate-900/40 opacity-50"
+              }`}
+            >
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-mono font-bold ${
+                done ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" : "bg-slate-800 text-slate-400"
+              }`}>
+                {done ? <Check className="h-4 w-4" /> : i + 1}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  {item.kind === "drill" && <Play className="h-3 w-3 text-sky-400" />}
+                  <span className="font-medium text-slate-100">{item.title}</span>
+                </div>
+                <span className="text-xs text-slate-500">{item.kind === "drill" ? "Chart replay drill" : "Concept lesson"}</span>
+              </div>
+              {unlocked && <ChevronRight className="h-5 w-5 text-slate-600" />}
+            </Link>
+          );
+        })}
+      </div>
+    </ScreenShell>
+  );
+}
