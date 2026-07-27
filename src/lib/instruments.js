@@ -2,16 +2,16 @@
 // Strategy is the skill, instrument is the terrain.
 
 export const INSTRUMENTS = {
-  ES: { name: "E-mini S&P 500", basePrice: 5987.5, tickSize: 0.25, tickValue: 12.5, volMult: 1.0, noiseMult: 1.0,
+  ES: { name: "E-mini S&P 500", basePrice: 5987.5, tickSize: 0.25, tickValue: 12.5, volMult: 1.0, noiseMult: 1.0, barVol: 0.0006,
         moves: "Fed policy, FOMC, CPI, employment data, earnings, broad risk sentiment",
         character: "Deepest liquidity, tightest spreads. Trends relatively orderly. The right first instrument for every strategy branch." },
-  NQ: { name: "E-mini Nasdaq-100", basePrice: 21340.75, tickSize: 0.25, tickValue: 5.0, volMult: 1.8, noiseMult: 1.3,
+  NQ: { name: "E-mini Nasdaq-100", basePrice: 21340.75, tickSize: 0.25, tickValue: 5.0, volMult: 1.8, noiseMult: 1.3, barVol: 0.0010,
         moves: "Same macro drivers as ES but tech-weighted — extra sensitivity to rates and big-tech earnings",
         character: "ES with the volatility turned up. Same setups appear, but they move faster and need wider stops." },
-  CL: { name: "Crude Oil (WTI)", basePrice: 71.42, tickSize: 0.01, tickValue: 10.0, volMult: 1.5, noiseMult: 1.9,
+  CL: { name: "Crude Oil (WTI)", basePrice: 71.42, tickSize: 0.01, tickValue: 10.0, volMult: 1.5, noiseMult: 1.9, barVol: 0.0020,
         moves: "EIA Wednesday 10:30am ET, API Tuesday 4:30pm, OPEC+, geopolitical supply disruption, dollar strength",
         character: "Headline-driven, prone to violent reversals and false breakouts. Best for teaching a clean setup can fail." },
-  GC: { name: "Gold", basePrice: 2385.2, tickSize: 0.1, tickValue: 10.0, volMult: 1.2, noiseMult: 0.8,
+  GC: { name: "Gold", basePrice: 2385.2, tickSize: 0.1, tickValue: 10.0, volMult: 1.2, noiseMult: 0.8, barVol: 0.0008,
         moves: "Real interest rates (inverse), dollar strength (inverse), safe-haven demand, central bank buying",
         character: "Can trend persistently in a macro regime, then grind sideways. Good for regime recognition." },
 };
@@ -37,82 +37,109 @@ function roundToTick(price, tickSize) {
   return Math.round(price / tickSize) * tickSize;
 }
 
-// Build one realistic OHLC candle: variable body size (doji → momentum),
-// mixed direction with counter-moves, occasional long rejection wicks.
-function makeCandle(open, bias, bodyVol, wickVol, tick, rand) {
-  const goUp = rand() < 0.5 + bias * 0.45;
-  const dir = goUp ? 1 : -1;
-  const sizeRoll = rand();
-  let bodyMult;
-  if (sizeRoll < 0.12) bodyMult = 0.1 + rand() * 0.3;     // indecision / doji
-  else if (sizeRoll > 0.9) bodyMult = 1.4 + rand() * 1.3; // momentum bar
-  else bodyMult = 0.45 + rand() * 0.85;                   // normal
-  const change = dir * bodyMult * bodyVol * tick * (0.8 + rand() * 1.5);
-  const close = roundToTick(open + change, tick);
-  const wick = () => (rand() < 0.18 ? 1.6 + rand() * 2.2 : 0.15 + rand() * 1.1) * wickVol * tick;
-  const high = roundToTick(Math.max(open, close) + wick(), tick);
-  const low = roundToTick(Math.min(open, close) - wick(), tick);
+// Standard-normal sample via Box–Muller (real bar returns are ~normal with fat tails).
+function gaussian(rand) {
+  const u = Math.max(1e-9, rand());
+  const v = rand();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+// Build one OHLC candle from a drift (mu) and stochastic volatility (sigma),
+// both in PRICE units. The close is a normal return; wicks scale with sigma and
+// sit longer on the side opposite the close (real rejection behavior), so trend
+// bars show small wicks and big bodies while chop bars show balanced wicks.
+function makeCandle(open, mu, sigma, tick, rand) {
+  const ret = mu + sigma * gaussian(rand);             // per-bar return (price units)
+  const close = roundToTick(open + ret, tick);
+  const wickMean = sigma * 0.5;                         // typical wick ≈ half a bar's vol
+  const bull = close >= open;
+  const upperWick = Math.abs(gaussian(rand)) * wickMean * (bull ? 0.6 : 1.25);
+  const lowerWick = Math.abs(gaussian(rand)) * wickMean * (bull ? 1.25 : 0.6);
+  const high = roundToTick(Math.max(open, close) + Math.max(tick, upperWick), tick);
+  const low = roundToTick(Math.min(open, close) - Math.max(tick, lowerWick), tick);
   return { open, high, low, close };
 }
 
-// Trend-following pattern: chop → clean breakout → rollover.
+// Trend-following pattern modeled as a stochastic-volatility process:
+// a mean-reverting (Ornstein–Uhlenbeck) drift rides a GARCH(1,1) volatility with
+// clustering and a spike at the breakout, so trends accelerate and pull back
+// like real markets. Chop → breakout up → rollover.
 // Fixed decision points at bar indices 19 and 41.
 export function generateTrendData(instrumentKey = "ES", seed = 7) {
   const inst = INSTRUMENTS[instrumentKey];
   const rand = mulberry32(seed);
-  const bars = [];
-  let price = inst.basePrice;
   const tick = inst.tickSize;
-  const vol = inst.volMult;
-  const noise = inst.noiseMult;
+  const baseVol = inst.barVol;                  // per-bar return std (fraction of price)
+  const omega = baseVol * baseVol * 0.08;        // GARCH long-run floor
+  const alpha = 0.10;                            // shock feedback
+  const beta = 0.88;                             // vol persistence (clustering)
+  let sigma2 = baseVol * baseVol;
+  let mu = 0;
+  let price = inst.basePrice;
+  const bars = [];
 
   for (let i = 0; i < 60; i++) {
-    let bias, bodyVol, wickVol;
-    if (i < 22) {
-      // consolidation: flat chop, small bodies, longer relative wicks
-      bias = 0.08 * Math.sin(i / 3);
-      bodyVol = vol * 1.3;
-      wickVol = noise * 2.4;
-    } else if (i < 44) {
-      // breakout up: mostly green with pullbacks, momentum bars
-      bias = 0.72;
-      bodyVol = vol * 3.2;
-      wickVol = noise * 1.3;
-    } else {
-      // rollover / pullback: mostly red with bounces
-      bias = -0.62;
-      bodyVol = vol * 2.6;
-      wickVol = noise * 1.6;
-    }
+    // regime target drift: flat → up-trend → rollover
+    const muTarget = i < 22 ? 0 : i < 44 ? baseVol * 0.55 : -baseVol * 0.45;
+    // drift mean-reverts toward the regime target (OU), so trends accelerate & pull back
+    mu = muTarget + (mu - muTarget) * 0.82 + gaussian(rand) * baseVol * 0.12;
+
+    // volatility: clustering via GARCH + occasional spike; ignition at the breakout
+    let shock = 1;
+    if (i === 22) shock = 2.2;
+    else if (rand() < 0.05) shock = 1.6 + rand() * 0.9;
+    const sigma = Math.sqrt(sigma2) * shock;
+
+    // small overnight-style gap now and then
     let open = price;
-    if (i > 0 && rand() < 0.06) open = roundToTick(open + (rand() - 0.3) * tick * 6 * vol, tick); // occasional gap
-    const c = makeCandle(open, bias, bodyVol, wickVol, tick, rand);
+    if (i > 0 && rand() < 0.08) open = roundToTick(open * (1 + gaussian(rand) * baseVol * 0.4), tick);
+
+    const c = makeCandle(open, mu * open, sigma * open, tick, rand);
     bars.push({ ...c, index: i });
+
+    // update GARCH variance from this bar's realized return
+    const rFrac = (c.close - open) / open;
+    sigma2 = omega + alpha * (rFrac - mu) * (rFrac - mu) + beta * sigma2;
     price = c.close;
   }
   return bars;
 }
 
-// Mean-reversion / range pattern: oscillating range.
-// Decision points discovered from actual local low / high.
+// Mean-reversion / range pattern: a quieter stochastic-volatility process whose
+// drift mean-reverts toward a slowly oscillating fair value, producing a range
+// that respects support/resistance with organic pullbacks.
+// Decision points (local low / high) are discovered from the generated data.
 export function generateRangeScenario(instrumentKey = "ES", seed = 11) {
   const inst = INSTRUMENTS[instrumentKey];
   const rand = mulberry32(seed);
-  const bars = [];
-  let price = inst.basePrice;
   const tick = inst.tickSize;
-  const vol = inst.volMult * 0.6;
-  const noise = inst.noiseMult;
-  const range = tick * 15 * vol;
+  const baseVol = inst.barVol * 0.7;             // quieter inside a range
+  const omega = baseVol * baseVol * 0.06;
+  const alpha = 0.08;
+  const beta = 0.90;
+  let sigma2 = baseVol * baseVol;
+  let mu = 0;
+  let price = inst.basePrice;
   const mid = inst.basePrice;
+  const range = inst.basePrice * baseVol * 14;   // range half-width
+  const bars = [];
 
   for (let i = 0; i < 60; i++) {
+    // fair value oscillates slowly; drift is pulled back toward it (OU)
     const target = mid + Math.sin(i / 6.5) * range;
-    const bias = ((target - price) / range) * 0.85;
+    const muTarget = ((target - price) / price) * 0.06;
+    mu = muTarget + (mu - muTarget) * 0.7 + gaussian(rand) * baseVol * 0.1;
+
+    const shock = rand() < 0.05 ? 1.5 + rand() * 0.8 : 1;
+    const sigma = Math.sqrt(sigma2) * shock;
+
     let open = price;
-    if (i > 0 && rand() < 0.05) open = roundToTick(open + (rand() - 0.5) * tick * 4, tick);
-    const c = makeCandle(open, bias, vol * 1.7, noise * 1.9, tick, rand);
+    if (i > 0 && rand() < 0.05) open = roundToTick(open * (1 + gaussian(rand) * baseVol * 0.3), tick);
+
+    const c = makeCandle(open, mu * open, sigma * open, tick, rand);
     bars.push({ ...c, index: i });
+    const rFrac = (c.close - open) / open;
+    sigma2 = omega + alpha * (rFrac - mu) * (rFrac - mu) + beta * sigma2;
     price = c.close;
   }
 
