@@ -4,6 +4,8 @@ import { Check, X, ChevronRight, Brain, ArrowRight, BookOpen, BarChart3 } from "
 import ScreenShell from "@/components/contango/ScreenShell";
 import FeedbackFlash from "@/components/contango/FeedbackFlash";
 import { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
+import BranchBadgeCelebration from "@/components/contango/BranchBadgeCelebration";
+import { isBranchComplete } from "@/lib/branchProgress";
 import MindsetMeter from "@/components/contango/MindsetMeter";
 import { useContango } from "@/contexts/ContangoContext";
 import { allUnitsFlat, DIARY_ENTRIES } from "@/lib/content";
@@ -18,7 +20,7 @@ import { buildLessonChart } from "@/lib/lessonCharts";
 export default function Lesson() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary } = useContango();
+  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary, unlockBadge } = useContango();
 
   const entry = allUnitsFlat().find(e => e.unit.id === lessonId);
   const unit = entry?.unit;
@@ -33,6 +35,7 @@ export default function Lesson() {
   const [emotionXp, setEmotionXp] = useState(0);
   const [phase, setPhase] = useState("stages");          // stages | summary
   const [showCelebrate, setShowCelebrate] = useState(false);
+  const [branchCelebrate, setBranchCelebrate] = useState(null);
   const [unlockedDiaryId, setUnlockedDiaryId] = useState(null);
 
   // Build the stage list. Hooks must run before any conditional return.
@@ -96,8 +99,14 @@ export default function Lesson() {
       setUnlockedDiaryId(diary.id);
     }
     setPhase("summary");
-    setShowCelebrate(true);
-    setTimeout(() => setShowCelebrate(false), 2200);
+    const hypoth = { ...progress, completedLessons: [...(progress.completedLessons || []), unit.id] };
+    if (branch && isBranchComplete(branch, hypoth) && !(progress.badges || []).includes(branch.id)) {
+      unlockBadge(branch.id);
+      setBranchCelebrate({ branchId: branch.id });
+    } else {
+      setShowCelebrate(true);
+      setTimeout(() => setShowCelebrate(false), 2200);
+    }
     void events;
   }
 
@@ -105,6 +114,14 @@ export default function Lesson() {
     <ScreenShell showStats={false} backTo="/" title={branch.branchTitle}>
       <FeedbackFlash state={flash} />
       <CelebrationOverlay show={showCelebrate} xpGained={totalXp} onClose={() => setShowCelebrate(false)} />
+      {branchCelebrate && (
+        <BranchBadgeCelebration
+          branchId={branchCelebrate.branchId}
+          branchTitle={branch.branchTitle}
+          xpGained={totalXp}
+          onClose={() => setBranchCelebrate(null)}
+        />
+      )}
 
       {/* Focus-mode banner for psychology lessons */}
       {isPsych && phase === "stages" && (

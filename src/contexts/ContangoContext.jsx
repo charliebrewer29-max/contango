@@ -25,6 +25,7 @@ const DEFAULT_PROGRESS = {
   diaryUnlocked: [],
   lastDrillReview: null,
   srCards: {},
+  badges: [],
 };
 
 const ContangoContext = createContext(null);
@@ -100,6 +101,10 @@ export function ContangoProvider({ children }) {
     });
   }, []);
 
+  const unlockBadge = useCallback((id) => {
+    setProgress(prev => (prev.badges || []).includes(id) ? prev : { ...prev, badges: [...(prev.badges || []), id] });
+  }, []);
+
   const value = {
     progress,
     update,
@@ -112,6 +117,7 @@ export function ContangoProvider({ children }) {
     unlockDiary,
     setLastDrillReview,
     reviewCard,
+    unlockBadge,
     todayStr,
   };
 

@@ -7,6 +7,7 @@ import { MAX_HEARTS } from "@/lib/gamification";
 import { COACH_NAME } from "@/lib/contangoTheme";
 import TraderDiary from "@/components/contango/TraderDiary";
 import MindsetMeter from "@/components/contango/MindsetMeter";
+import BranchBadge, { BRANCH_BADGES } from "@/components/contango/BranchBadge";
 
 export default function Profile() {
   const { progress, update, refillHearts, resetProgress } = useContango();
@@ -30,14 +31,31 @@ export default function Profile() {
       </div>
 
       {/* stats */}
-      <div className="mb-6 grid grid-cols-2 gap-3">
-        <Stat label="Lessons done" value={progress.completedLessons.length} />
-        <Stat label="Drills done" value={progress.completedDrills.length} />
+      <div className="mb-6 grid grid-cols-3 gap-3">
+        <Stat label="Lessons" value={progress.completedLessons.length} />
+        <Stat label="Drills" value={progress.completedDrills.length} />
+        <Stat label="Badges" value={(progress.badges || []).length} />
       </div>
 
       {/* mindset */}
       <div className="mb-6 rounded-2xl border border-slate-800 bg-slate-900 p-4">
         <MindsetMeter value={progress.mindset ?? 75} />
+      </div>
+
+      {/* branch badges */}
+      <div className="mb-6">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Branch Badges</h3>
+        <div className="grid grid-cols-3 gap-3">
+          {BRANCH_BADGES.map((b) => {
+            const earned = (progress.badges || []).includes(b.id);
+            return (
+              <div key={b.id} className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900 p-3 text-center">
+                <BranchBadge badge={b} size={52} locked={!earned} />
+                <span className={`text-[11px] font-medium ${earned ? "text-slate-200" : "text-slate-600"}`}>{earned ? b.title : "Locked"}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* trader's diary */}

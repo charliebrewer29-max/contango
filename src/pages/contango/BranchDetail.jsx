@@ -4,6 +4,8 @@ import { ChevronRight, Lock, Check, Play } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
+import { isBranchComplete, branchDoneCount, branchUnitCount } from "@/lib/branchProgress";
+import BranchBadge, { badgeForBranch } from "@/components/contango/BranchBadge";
 
 // Branch detail: lists the intro lesson + concept units + drill.
 export default function BranchDetail() {
@@ -39,6 +41,30 @@ export default function BranchDetail() {
           </p>
         )}
       </div>
+
+      {(() => {
+        const badge = badgeForBranch(branch.id);
+        const complete = isBranchComplete(branch, progress);
+        const doneCount = branchDoneCount(branch, progress);
+        const totalCount = branchUnitCount(branch);
+        if (!badge) return null;
+        return (
+          <div className={`mb-6 flex items-center gap-4 rounded-2xl border p-4 ${complete ? "border-amber-500/30 bg-amber-500/5" : "border-slate-800 bg-slate-900"}`}>
+            <BranchBadge badge={badge} size={56} locked={!complete} />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-slate-100">{complete ? `${badge.title} badge earned` : badge.title}</div>
+              <div className="text-xs text-slate-500">
+                {complete ? badge.subtitle : `${doneCount}/${totalCount} complete · finish all to earn this badge`}
+              </div>
+              {!complete && (
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${(doneCount / Math.max(1, totalCount)) * 100}%` }} />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="relative space-y-3">
         {items.map((item, i) => {

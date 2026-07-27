@@ -4,6 +4,8 @@ import { ChevronRight, Check, X, Play, Pause, MessageCircle, Bot } from "lucide-
 import ScreenShell from "@/components/contango/ScreenShell";
 import CandleChart from "@/components/contango/CandleChart";
 import FeedbackFlash, { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
+import BranchBadgeCelebration from "@/components/contango/BranchBadgeCelebration";
+import { isBranchComplete } from "@/lib/branchProgress";
 import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
 import { INSTRUMENTS } from "@/lib/instruments";
@@ -13,7 +15,7 @@ import { INSTRUMENTS } from "@/lib/instruments";
 export default function Drill() {
   const { branchId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markDrillComplete, setLastDrillReview } = useContango();
+  const { recordSession, markDrillComplete, setLastDrillReview, progress, unlockBadge } = useContango();
   const branch = findBranch(branchId);
 
   const scenario = useMemo(() => branch?.buildDrill ? branch.buildDrill() : null, [branch]);
@@ -24,6 +26,7 @@ export default function Drill() {
   const [correctCount, setCorrectCount] = useState(0);
   const [phase, setPhase] = useState("replay"); // replay | decision | done
   const [showCelebrate, setShowCelebrate] = useState(false);
+  const [branchCelebrate, setBranchCelebrate] = useState(null);
   const [entryPrice, setEntryPrice] = useState(null);
   const [stopPrice, setStopPrice] = useState(null);
   const [exitPrice, setExitPrice] = useState(null);
@@ -113,8 +116,14 @@ export default function Drill() {
       total: decisionPoints.length,
     });
     setPhase("done");
-    setShowCelebrate(true);
-    setTimeout(() => setShowCelebrate(false), 2200);
+    const hypoth = { ...progress, completedDrills: [...(progress.completedDrills || []), `${branch.id}-drill`] };
+    if (isBranchComplete(branch, hypoth) && !(progress.badges || []).includes(branch.id)) {
+      unlockBadge(branch.id);
+      setBranchCelebrate({ branchId: branch.id });
+    } else {
+      setShowCelebrate(true);
+      setTimeout(() => setShowCelebrate(false), 2200);
+    }
     void events;
   }
 
@@ -128,6 +137,14 @@ export default function Drill() {
     <ScreenShell showStats={false} backTo={`/branch/${branch.id}`} title={`${branch.branchTitle} Drill`}>
       <FeedbackFlash state={flash} />
       <CelebrationOverlay show={showCelebrate} xpGained={correctCount * 8 + 15} onClose={() => setShowCelebrate(false)} />
+      {branchCelebrate && (
+        <BranchBadgeCelebration
+          branchId={branchCelebrate.branchId}
+          branchTitle={branch.branchTitle}
+          xpGained={correctCount * 8 + 15}
+          onClose={() => setBranchCelebrate(null)}
+        />
+      )}
 
       {/* instrument + risk readout */}
       <div className="mb-3 flex items-center justify-between">
