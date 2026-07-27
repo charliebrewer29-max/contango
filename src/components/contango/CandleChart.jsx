@@ -5,7 +5,7 @@ import React, { useRef, useMemo } from "react";
 // Pure SVG, no external deps.
 
 const PAD_L = 8;
-const PAD_R = 8;
+const PAD_R = 38;
 const PAD_T = 12;
 const PAD_B = 16;
 
@@ -39,7 +39,8 @@ export default function CandleChart({
 
   const xFor = (i) => PAD_L + (i / Math.max(1, bars.length - 1)) * plotW;
   const yFor = (p) => PAD_T + (1 - (p - min) / (max - min || 1)) * plotH;
-  const barW = Math.max(3, (plotW / bars.length) * 0.6);
+  const barW = Math.max(3, (plotW / bars.length) * 0.62);
+  const fmt = (p) => (Math.abs(p) >= 100 ? p.toFixed(1) : p.toFixed(2));
 
   function priceLine(price, color, label) {
     if (price == null) return null;
@@ -71,9 +72,14 @@ export default function CandleChart({
         style={{ height }}
         onClick={handleSvgClick}
       >
-        {/* grid */}
-        {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1={PAD_L} y1={PAD_T + f * plotH} x2={width - PAD_R} y2={PAD_T + f * plotH} stroke="#1e293b" strokeWidth={0.5} />
+        {/* grid + right price axis */}
+        {[0.2, 0.4, 0.6, 0.8].map((f) => (
+          <g key={f}>
+            <line x1={PAD_L} y1={PAD_T + f * plotH} x2={width - PAD_R} y2={PAD_T + f * plotH} stroke="#1e293b" strokeWidth={0.5} />
+            <text x={width - PAD_R + 3} y={PAD_T + f * plotH + 3} style={{ fontSize: 8, fontWeight: 500 }} fill="#475569" className="font-mono">
+              {fmt(max - f * (max - min))}
+            </text>
+          </g>
         ))}
 
         {/* candles */}

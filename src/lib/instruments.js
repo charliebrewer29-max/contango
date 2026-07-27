@@ -37,6 +37,24 @@ function roundToTick(price, tickSize) {
   return Math.round(price / tickSize) * tickSize;
 }
 
+// Build one realistic OHLC candle: variable body size (doji → momentum),
+// mixed direction with counter-moves, occasional long rejection wicks.
+function makeCandle(open, bias, bodyVol, wickVol, tick, rand) {
+  const goUp = rand() < 0.5 + bias * 0.45;
+  const dir = goUp ? 1 : -1;
+  const sizeRoll = rand();
+  let bodyMult;
+  if (sizeRoll < 0.12) bodyMult = 0.1 + rand() * 0.3;     // indecision / doji
+  else if (sizeRoll > 0.9) bodyMult = 1.4 + rand() * 1.3; // momentum bar
+  else bodyMult = 0.45 + rand() * 0.85;                   // normal
+  const change = dir * bodyMult * bodyVol * tick * (0.8 + rand() * 1.5);
+  const close = roundToTick(open + change, tick);
+  const wick = () => (rand() < 0.18 ? 1.6 + rand() * 2.2 : 0.15 + rand() * 1.1) * wickVol * tick;
+  const high = roundToTick(Math.max(open, close) + wick(), tick);
+  const low = roundToTick(Math.min(open, close) - wick(), tick);
+  return { open, high, low, close };
+}
+
 // Trend-following pattern: chop → clean breakout → rollover.
 // Fixed decision points at bar indices 19 and 41.
 export function generateTrendData(instrumentKey = "ES", seed = 7) {
@@ -49,23 +67,28 @@ export function generateTrendData(instrumentKey = "ES", seed = 7) {
   const noise = inst.noiseMult;
 
   for (let i = 0; i < 60; i++) {
-    let change;
+    let bias, bodyVol, wickVol;
     if (i < 22) {
-      // consolidation, gentle chop
-      change = (rand() - 0.5) * tick * 4 * noise;
+      // consolidation: flat chop, small bodies, longer relative wicks
+      bias = 0.08 * Math.sin(i / 3);
+      bodyVol = vol * 1.3;
+      wickVol = noise * 2.4;
     } else if (i < 44) {
-      // breakout up
-      change = tick * (2 + rand() * 3) * vol;
+      // breakout up: mostly green with pullbacks, momentum bars
+      bias = 0.72;
+      bodyVol = vol * 3.2;
+      wickVol = noise * 1.3;
     } else {
-      // rollover / pullback
-      change = -tick * (1 + rand() * 3) * vol;
+      // rollover / pullback: mostly red with bounces
+      bias = -0.62;
+      bodyVol = vol * 2.6;
+      wickVol = noise * 1.6;
     }
-    const open = price;
-    const close = roundToTick(open + change, tick);
-    const high = roundToTick(Math.max(open, close) + rand() * tick * 2 * noise, tick);
-    const low = roundToTick(Math.min(open, close) - rand() * tick * 2 * noise, tick);
-    bars.push({ open, high, low, close, index: i });
-    price = close;
+    let open = price;
+    if (i > 0 && rand() < 0.06) open = roundToTick(open + (rand() - 0.3) * tick * 6 * vol, tick); // occasional gap
+    const c = makeCandle(open, bias, bodyVol, wickVol, tick, rand);
+    bars.push({ ...c, index: i });
+    price = c.close;
   }
   return bars;
 }
@@ -78,25 +101,19 @@ export function generateRangeScenario(instrumentKey = "ES", seed = 11) {
   const bars = [];
   let price = inst.basePrice;
   const tick = inst.tickSize;
-  const vol = inst.volMult * 0.7;
+  const vol = inst.volMult * 0.6;
   const noise = inst.noiseMult;
-  let phase = 0;
+  const range = tick * 15 * vol;
+  const mid = inst.basePrice;
 
   for (let i = 0; i < 60; i++) {
-    // sine-like oscillation between support and resistance
-    const wave = Math.sin(i / 6.5) * tick * 14 * vol;
-    const jitter = (rand() - 0.5) * tick * 4 * noise;
-    let change = wave / 4 + jitter;
-    // mean revert toward the wave center
-    const target = inst.basePrice + Math.sin(i / 6.5) * tick * 12 * vol;
-    change = (target - price) * 0.3 + jitter;
-    const open = price;
-    const close = roundToTick(open + change, tick);
-    const high = roundToTick(Math.max(open, close) + rand() * tick * 1.5 * noise, tick);
-    const low = roundToTick(Math.min(open, close) - rand() * tick * 1.5 * noise, tick);
-    bars.push({ open, high, low, close, index: i });
-    price = close;
-    void phase;
+    const target = mid + Math.sin(i / 6.5) * range;
+    const bias = ((target - price) / range) * 0.85;
+    let open = price;
+    if (i > 0 && rand() < 0.05) open = roundToTick(open + (rand() - 0.5) * tick * 4, tick);
+    const c = makeCandle(open, bias, vol * 1.7, noise * 1.9, tick, rand);
+    bars.push({ ...c, index: i });
+    price = c.close;
   }
 
   // discover local low and high indices in the middle portion
