@@ -7,6 +7,7 @@
 import { generateTrendData, generateRangeScenario } from "./instruments";
 import { PSYCH_UNITS, DIARY_ENTRIES } from "./psychCurriculum";
 import { EXTRA_QUESTIONS, EXTRA_UNITS, EXTRA_BRANCHES } from "./extraCurriculum";
+import { EXPANDED_CARDS } from "./expandedCards";
 
 export const BRANCHES = [
   {
@@ -349,6 +350,23 @@ function normalizeUnit(unit) {
 for (const b of BRANCHES) {
   if (b.units) for (const u of b.units) normalizeUnit(u);
   if (b.introLesson) normalizeUnit(b.introLesson);
+}
+
+// Inject expanded learn cards before each unit's takeaway so lessons teach
+// substantially more before the graded test. Keeps the takeaway last.
+function injectExpandedCards(unit) {
+  const extra = EXPANDED_CARDS[unit.id];
+  if (!extra || !extra.length || !unit.cards) return;
+  const takeawayIdx = unit.cards.findIndex(c => c.type === "takeaway");
+  if (takeawayIdx === -1) {
+    unit.cards.push(...extra);
+  } else {
+    unit.cards.splice(takeawayIdx, 0, ...extra);
+  }
+}
+for (const b of BRANCHES) {
+  if (b.units) for (const u of b.units) injectExpandedCards(u);
+  if (b.introLesson) injectExpandedCards(b.introLesson);
 }
 
 export function findBranch(id) {
