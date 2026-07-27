@@ -1,5 +1,5 @@
 import React from "react";
-import { Trophy, Medal, Crown, Award, Gem } from "lucide-react";
+import { Medal, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import LeagueTrophy from "@/components/contango/LeagueTrophy";
 import { useContango } from "@/contexts/ContangoContext";
@@ -17,31 +17,21 @@ const MOCK_LEAGUE = [
 ];
 
 const TIERS = [
-  { name: "Rookie", threshold: 0, icon: Award,
-    accent: "text-slate-400", iconColor: "text-slate-200",
-    headerBorder: "border-slate-700", headerBg: "bg-slate-800/40",
-    badge: "from-slate-700 to-slate-800", ring: "ring-slate-600/40",
-    tagline: "Learning the ropes", iconSize: 26, level: 1 },
-  { name: "Bronze", threshold: 300, icon: Medal,
-    accent: "text-amber-600", iconColor: "text-amber-200",
-    headerBorder: "border-amber-700/50", headerBg: "bg-amber-900/20",
-    badge: "from-amber-700 to-amber-900", ring: "ring-amber-600/40",
-    tagline: "Warming up", iconSize: 28, level: 2 },
-  { name: "Silver", threshold: 1000, icon: Trophy,
-    accent: "text-slate-200", iconColor: "text-slate-50",
-    headerBorder: "border-slate-400/30", headerBg: "bg-slate-700/20",
-    badge: "from-slate-400 to-slate-600", ring: "ring-slate-300/40",
-    tagline: "Hitting stride", iconSize: 30, level: 3 },
-  { name: "Gold", threshold: 2500, icon: Crown,
-    accent: "text-amber-400", iconColor: "text-amber-50",
-    headerBorder: "border-amber-400/50", headerBg: "bg-amber-500/10",
-    badge: "from-amber-300 to-amber-600", ring: "ring-amber-300/60",
-    tagline: "In the money", iconSize: 32, level: 4, glow: "amber" },
-  { name: "Platinum", threshold: 5000, icon: Gem,
-    accent: "text-sky-300", iconColor: "text-sky-50",
-    headerBorder: "border-sky-300/50", headerBg: "bg-sky-400/10",
-    badge: "from-sky-300 to-cyan-600", ring: "ring-sky-200/70",
-    tagline: "Elite tier", iconSize: 34, level: 5, glow: "sky", shimmer: true },
+  { name: "Rookie", threshold: 0,
+    accent: "text-slate-400", headerBorder: "border-slate-700", headerBg: "bg-slate-800/40",
+    tagline: "Learning the ropes", iconSize: 26, ink: "#94a3b8", tint: "#16202b" },
+  { name: "Bronze", threshold: 300,
+    accent: "text-amber-600", headerBorder: "border-amber-700/50", headerBg: "bg-amber-900/20",
+    tagline: "Warming up", iconSize: 28, ink: "#d97706", tint: "#2a1a0c" },
+  { name: "Silver", threshold: 1000,
+    accent: "text-slate-200", headerBorder: "border-slate-400/30", headerBg: "bg-slate-700/20",
+    tagline: "Hitting stride", iconSize: 30, ink: "#cbd5e1", tint: "#1c2530" },
+  { name: "Gold", threshold: 2500,
+    accent: "text-amber-400", headerBorder: "border-amber-400/50", headerBg: "bg-amber-500/10",
+    tagline: "In the money", iconSize: 32, ink: "#f59e0b", tint: "#33260a" },
+  { name: "Platinum", threshold: 5000,
+    accent: "text-sky-300", headerBorder: "border-sky-300/50", headerBg: "bg-sky-400/10",
+    tagline: "Elite tier", iconSize: 34, ink: "#38bdf8", tint: "#0e2a38" },
 ];
 
 export default function Leaderboard() {
@@ -84,13 +74,10 @@ export default function Leaderboard() {
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">All tiers</h3>
         <div className="space-y-2">
           {TIERS.map(t => {
-            const TIcon = t.icon;
             const active = t.name === tier.name;
             return (
               <div key={t.name} className={`flex items-center gap-3 rounded-xl border p-2.5 ${active ? t.headerBorder : "border-slate-800"} ${active ? t.headerBg : "bg-slate-900/50"}`}>
-                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${t.badge} ring-2 ${t.ring}`}>
-                  <TIcon className={`h-4 w-4 ${t.iconColor}`} />
-                </div>
+                <LeagueTrophy tier={t} size={26} />
                 <span className={`text-sm font-medium ${active ? t.accent : "text-slate-400"}`}>{t.name}</span>
                 <span className="ml-auto font-mono text-[11px] text-slate-600">{t.threshold.toLocaleString()}+ XP</span>
                 {active && <span className="rounded-full bg-slate-950/60 px-2 py-0.5 text-[10px] font-semibold text-slate-300">you</span>}
