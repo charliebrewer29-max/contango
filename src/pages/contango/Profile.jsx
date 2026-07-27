@@ -22,16 +22,32 @@ export default function Profile() {
 
   return (
     <ScreenShell showStats={false} title="Profile & Settings" tab="profile">
-      {/* identity card */}
-      <div className="mb-6 flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
-        <div className={`flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/30 ${flair ? flair.ringClass : ""}`}>
-          <User className="h-7 w-7 text-amber-400" />
-        </div>
-        <div>
-          <div className="font-display text-lg font-semibold text-slate-100">Trader</div>
-          <div className="text-xs text-slate-500">{progress.xp} XP · {progress.streak || 0} day streak</div>
-          {flair && <div className="text-xs font-medium text-amber-300">{flair.glyph} {flair.title}</div>}
-          <div className="text-xs text-amber-400">{progress.subscription === "premium" ? "Premium" : "Free tier"}</div>
+      {/* identity card — flair showcase */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        {flair && (
+          <div className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full opacity-30 blur-3xl" style={{ background: flair.glow }} />
+        )}
+        <div className="relative flex items-center gap-4">
+          <div className={`relative flex h-16 w-16 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10 ${flair ? flair.ringClass : ""}`}>
+            <User className="h-8 w-8 text-amber-400" />
+            {flair && (
+              <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-sm leading-none">
+                {flair.glyph}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="font-display text-lg font-semibold text-slate-100">Trader</div>
+            <div className="text-xs text-slate-500">{progress.xp} XP · {progress.streak || 0} day streak</div>
+            {flair ? (
+              <div className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: `${flair.glow}22`, color: flair.glow }}>
+                {flair.glyph} {flair.title}
+              </div>
+            ) : (
+              <div className="mt-1 text-xs text-slate-600">No flair yet — keep your streak going to unlock one</div>
+            )}
+            <div className="mt-1 text-xs text-amber-400">{progress.subscription === "premium" ? "Premium" : "Free tier"}</div>
+          </div>
         </div>
       </div>
 
