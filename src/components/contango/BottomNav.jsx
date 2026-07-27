@@ -14,23 +14,25 @@ const TABS = [
 export default function BottomNav({ active }) {
   const location = useLocation();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-800 bg-slate-950/95 backdrop-blur pb-safe">
-      <div className="mx-auto flex max-w-2xl items-stretch justify-around">
-        {TABS.map((t) => {
-          const isActive = active ? t.id === active : t.match(location.pathname);
-          const Icon = t.icon;
-          return (
-            <Link key={t.id} to={t.to} className="flex flex-1 flex-col items-center gap-1 py-2.5">
-              <Icon
-                className={`h-6 w-6 ${isActive ? "text-amber-400" : "text-slate-500"}`}
-                strokeWidth={isActive ? 2.4 : 2}
-              />
-              <span className={`text-[10px] font-medium ${isActive ? "text-amber-400" : "text-slate-500"}`}>
-                {t.label}
-              </span>
-            </Link>
-          );
-        })}
+    <nav className="fixed inset-x-0 bottom-0 z-30 pb-safe">
+      <div className="mx-auto max-w-md px-4 pb-3">
+        <div className="cg-soft flex items-stretch justify-around rounded-2xl border border-slate-800/60 bg-[#0a0e16]/85 px-1.5 py-1 backdrop-blur-xl">
+          {TABS.map((t) => {
+            const isActive = active ? t.id === active : t.match(location.pathname);
+            const Icon = t.icon;
+            return (
+              <Link key={t.id} to={t.to} className={`flex flex-1 flex-col items-center gap-1 rounded-xl py-2 transition ${isActive ? "bg-amber-400/10" : "hover:bg-slate-800/40"}`}>
+                <Icon
+                  className={`h-6 w-6 ${isActive ? "text-amber-400" : "text-slate-500"}`}
+                  strokeWidth={isActive ? 2.4 : 1.9}
+                />
+                <span className={`text-[10px] font-medium ${isActive ? "text-amber-400" : "text-slate-500"}`}>
+                  {t.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

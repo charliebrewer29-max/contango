@@ -34,10 +34,10 @@ export default function StatsBar({ compact = false }) {
 
 function StatTile({ icon, value, label, color, bg }) {
   return (
-    <div className={`flex flex-col items-center justify-center rounded-2xl ${bg} border border-slate-800 py-3`}>
-      <div className={`${color} mb-0.5`}>{icon}</div>
-      <div className="font-mono text-lg font-semibold text-slate-100">{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-slate-500">{label}</div>
+    <div className={`cg-soft flex flex-col items-center justify-center rounded-2xl ${bg} border border-slate-800/60 py-3.5`}>
+      <div className={`${color} mb-1`}>{icon}</div>
+      <div className="cg-num font-mono text-lg font-semibold text-slate-100">{value}</div>
+      <div className="text-[10px] uppercase tracking-wide text-slate-500">{label}</div>
     </div>
   );
 }

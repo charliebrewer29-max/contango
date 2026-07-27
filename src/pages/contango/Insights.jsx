@@ -41,7 +41,7 @@ export default function Insights() {
   return (
     <ScreenShell showStats backTo="/" title="Insights">
       {/* summary tiles */}
-      <div className="mb-5 grid grid-cols-4 gap-2">
+      <div className="mb-6 grid grid-cols-4 gap-2.5">
         <Summary icon={<Flame className="h-4 w-4" />} value={streak} label="streak" color="text-amber-400" />
         <Summary icon={<Zap className="h-4 w-4" />} value={totalXp} label="total XP" color="text-sky-400" />
         <Summary icon={<TrendingUp className="h-4 w-4" />} value={activeDays} label="active days" color="text-emerald-400" />
@@ -54,7 +54,7 @@ export default function Insights() {
           {series.map((d) => (
             <div key={d.date} className="flex flex-1 flex-col items-center gap-1">
               <div
-                className={`h-12 w-full rounded-md ${d.active ? "bg-amber-400" : "bg-slate-800"}`}
+                className={`h-14 w-full rounded-lg ${d.active ? "bg-amber-400" : "bg-slate-800/60"}`}
                 title={`${d.date}: ${d.active ? d.dailyXp + " XP" : "no activity"}`}
               />
               <span className="text-[9px] text-slate-600">{d.label}</span>
@@ -73,13 +73,13 @@ export default function Insights() {
         <div style={{ height: 180 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={series} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <CartesianGrid stroke="#1e293b" vertical={false} />
+              <CartesianGrid stroke="rgba(148,163,184,0.12)" vertical={false} />
               <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: "#1e293b" }} tickLine={false} />
               <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={36} />
-              <Tooltip content={<XpTip />} cursor={{ fill: "#1e293b55" }} />
+              <Tooltip content={<XpTip />} cursor={{ fill: "rgba(148,163,184,0.08)" }} />
               <Bar dataKey="dailyXp" radius={[3, 3, 0, 0]} maxBarSize={26}>
                 {series.map((d, i) => (
-                  <Cell key={i} fill={d.dailyXp > 0 ? "#38bdf8" : "#1e293b"} />
+                  <Cell key={i} fill={d.dailyXp > 0 ? "#38bdf8" : "rgba(148,163,184,0.12)"} />
                 ))}
               </Bar>
             </BarChart>
@@ -98,7 +98,7 @@ export default function Insights() {
                   <stop offset="100%" stopColor="#34d399" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="#1e293b" vertical={false} />
+              <CartesianGrid stroke="rgba(148,163,184,0.12)" vertical={false} />
               <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: "#1e293b" }} tickLine={false} />
               <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={36} />
               <Tooltip content={<XpCumTip />} cursor={{ stroke: "#334155" }} />
@@ -120,7 +120,7 @@ export default function Insights() {
                   <span className="font-medium text-slate-200">{b.title}</span>
                   <span className="text-slate-500">{b.mastery}% · {b.completion}% done</span>
                 </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800/60">
                   <div
                     className="h-full rounded-full"
                     style={{ width: `${b.mastery}%`, backgroundColor: COLOR_HEX[b.color] || "#34d399" }}
@@ -144,7 +144,7 @@ export default function Insights() {
                   <span className="text-slate-300">{c.title}</span>
                   <span className="text-slate-500">{c.mastery}%{c.practiced ? "" : " · introduced"}</span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800/60">
                   <div
                     className="h-full rounded-full"
                     style={{ width: `${c.mastery}%`, backgroundColor: COLOR_HEX[c.color] || "#34d399" }}
@@ -166,7 +166,7 @@ export default function Insights() {
             <div className="space-y-4">
               {weak.length > 0 && (
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-rose-400">Needs work</p>
+                  <p className="mb-2 text-xs font-semibold tracking-wide text-rose-400">Needs work</p>
                   <div className="space-y-2">
                     {weak.map((w) => (
                       <div key={w.id} className="flex items-center justify-between text-xs">
@@ -179,7 +179,7 @@ export default function Insights() {
               )}
               {strong.length > 0 && (
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">Your strengths</p>
+                  <p className="mb-2 text-xs font-semibold tracking-wide text-emerald-400">Your strengths</p>
                   <div className="space-y-2">
                     {strong.map((w) => (
                       <div key={w.id} className="flex items-center justify-between text-xs">
@@ -200,20 +200,20 @@ export default function Insights() {
 
 function Summary({ icon, value, label, color }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 py-3">
+    <div className="cg-soft flex flex-col items-center justify-center rounded-2xl border border-slate-800/60 bg-slate-900/60 py-3.5">
       <span className={color}>{icon}</span>
-      <span className="mt-1 font-mono text-base font-bold text-slate-100">{value}</span>
-      <span className="text-[9px] uppercase tracking-wider text-slate-500">{label}</span>
+      <span className="cg-num mt-1 font-mono text-base font-bold text-slate-100">{value}</span>
+      <span className="text-[9px] uppercase tracking-wide text-slate-500">{label}</span>
     </div>
   );
 }
 
 function ChartCard({ title, icon, sub, children }) {
   return (
-    <section className="mb-5 rounded-2xl border border-slate-800 bg-slate-900 p-4">
-      <div className="mb-3 flex items-center gap-2">
+    <section className="cg-surface mb-6 rounded-2xl p-5">
+      <div className="mb-4 flex items-center gap-2.5">
         <span className="text-slate-300">{icon}</span>
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-slate-300">{title}</h2>
+        <h2 className="font-display text-sm font-semibold tracking-tight text-slate-200">{title}</h2>
         {sub && <span className="ml-auto text-xs text-slate-500">{sub}</span>}
       </div>
       {children}
@@ -229,7 +229,7 @@ function XpTip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs">
+    <div className="rounded-xl border border-slate-700/60 bg-[#0a0e16] px-3 py-2 text-xs">
       <div className="text-slate-400">{d.date}</div>
       <div className="font-mono font-semibold text-sky-400">{d.dailyXp} XP</div>
     </div>
@@ -240,7 +240,7 @@ function XpCumTip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs">
+    <div className="rounded-xl border border-slate-700/60 bg-[#0a0e16] px-3 py-2 text-xs">
       <div className="text-slate-400">{d.date}</div>
       <div className="font-mono font-semibold text-emerald-400">{d.xp} XP total</div>
     </div>

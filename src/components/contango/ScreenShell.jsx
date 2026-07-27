@@ -11,10 +11,10 @@ import ContangoLogo from "./ContangoLogo";
 export default function ScreenShell({ children, showStats = true, backTo, title, right, tab }) {
   const { progress } = useContango();
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="cg-app-bg min-h-screen text-slate-100">
       <TickerTape reducedMotion={progress.reducedMotion} />
-      <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
+      <header className="sticky top-0 z-20 border-b border-slate-800/60 bg-[#0a0e16]/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3.5">
           <div className="flex items-center gap-3">
             {backTo ? (
               <Link to={backTo} className="flex items-center gap-1 text-sm text-slate-400 hover:text-slate-100">
@@ -26,16 +26,16 @@ export default function ScreenShell({ children, showStats = true, backTo, title,
               </Link>
             )}
           </div>
-          {title && <h1 className="font-display text-sm font-semibold text-slate-300">{title}</h1>}
+          {title && <h1 className="font-display text-base font-semibold text-slate-100">{title}</h1>}
           <div className="flex items-center gap-3">{right}</div>
         </div>
       </header>
       {showStats && (
-        <div className="mx-auto max-w-2xl px-4 pt-4">
+        <div className="mx-auto max-w-2xl px-5 pt-5">
           <StatsBar />
         </div>
       )}
-      <main className={`mx-auto max-w-2xl px-4 pt-4 ${tab ? "pb-28" : "pb-24"}`}>{children}</main>
+      <main className={`mx-auto max-w-2xl px-5 pt-5 ${tab ? "pb-28" : "pb-24"}`}>{children}</main>
       {tab && <BottomNav active={tab} />}
     </div>
   );

@@ -23,17 +23,17 @@ export default function TickerTape({ reducedMotion = false }) {
 
   const items = [...quotes, ...quotes];
   return (
-    <div className="relative overflow-hidden border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+    <div className="relative overflow-hidden border-b border-slate-800/60 bg-[#0a0e16]/90 backdrop-blur">
       {!reducedMotion ? (
         <div
           ref={rafRef}
-          className="flex whitespace-nowrap py-1.5"
+          className="flex whitespace-nowrap py-2"
           style={{ animation: "tickerScroll 38s linear infinite" }}
         >
           {items.map((q, i) => {
             const up = q.change >= 0;
             return (
-              <span key={i} className="mx-4 inline-flex items-center gap-1.5 font-mono text-xs">
+              <span key={i} className="mx-5 inline-flex items-center gap-1.5 font-mono text-xs">
                 <span className="text-slate-500">{q.sym}</span>
                 <span className="text-slate-200">{q.price.toFixed(q.base < 100 ? 2 : 1)}</span>
                 <span className={up ? "text-emerald-400" : "text-rose-400"}>
@@ -44,11 +44,11 @@ export default function TickerTape({ reducedMotion = false }) {
           })}
         </div>
       ) : (
-        <div className="flex overflow-x-auto py-1.5 no-scrollbar">
+        <div className="flex overflow-x-auto py-2 no-scrollbar">
           {quotes.map((q, i) => {
             const up = q.change >= 0;
             return (
-              <span key={i} className="mx-4 inline-flex items-center gap-1.5 font-mono text-xs">
+              <span key={i} className="mx-5 inline-flex items-center gap-1.5 font-mono text-xs">
                 <span className="text-slate-500">{q.sym}</span>
                 <span className="text-slate-200">{q.price.toFixed(q.base < 100 ? 2 : 1)}</span>
                 <span className={up ? "text-emerald-400" : "text-rose-400"}>
