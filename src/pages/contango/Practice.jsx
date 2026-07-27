@@ -55,11 +55,9 @@ export default function Practice() {
     if (mode === "weak") {
       const weakIds = weakConcepts(progress).slice(0, 6).map((w) => w.id);
       pool = weakIds.length
-        ? catalog.filter((c) => {
-            const parts = c.id.split(":");
-            const uid = parts[0] === "drill" ? null : parts[1];
-            return uid && weakIds.includes(uid);
-          })
+        ? catalog.filter((c) =>
+            weakIds.includes(c.id.startsWith("drill:") ? c.id : c.id.split(":")[1])
+          )
         : [];
       if (!pool.length) pool = dueCards.length ? dueCards : catalog;
     } else {
@@ -67,10 +65,8 @@ export default function Practice() {
     }
     if (!pool.length) return;
     const accOf = (card) => {
-      const parts = card.id.split(":");
-      const uid = parts[0] === "drill" ? null : parts[1];
-      if (!uid) return null;
-      const s = (progress.stats || {})[uid];
+      const key = card.id.startsWith("drill:") ? card.id : card.id.split(":")[1];
+      const s = (progress.stats || {})[key];
       return s && s.seen ? s.correct / s.seen : null;
     };
     // adaptive order: most-lapsed first, then weakest accuracy, then shortest interval

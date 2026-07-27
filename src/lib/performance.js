@@ -2,7 +2,7 @@
 // stats recorded on every graded lesson/chart answer. Pure functions over the
 // progress object so they can feed Practice (adaptive ordering) and Insights.
 
-import { allUnitsFlat } from "./content";
+import { allUnitsFlat, BRANCHES } from "./content";
 
 const UNIT_MAP = {};
 const UNIT_BRANCH = {};
@@ -10,6 +10,8 @@ for (const { branch, unit } of allUnitsFlat()) {
   UNIT_MAP[unit.id] = unit;
   UNIT_BRANCH[unit.id] = branch;
 }
+const BRANCH_BY_ID = {};
+for (const b of BRANCHES) BRANCH_BY_ID[b.id] = b;
 
 export function unitAccuracy(progress, unitId) {
   const s = (progress?.stats || {})[unitId];
@@ -22,16 +24,29 @@ export function weakConcepts(progress, minSeen = 2) {
   const out = [];
   for (const [id, s] of Object.entries(progress?.stats || {})) {
     if (!s || !s.seen || s.seen < minSeen) continue;
-    const unit = UNIT_MAP[id];
-    if (!unit) continue;
-    out.push({
-      id,
-      title: unit.title,
-      color: UNIT_BRANCH[id]?.color,
-      accuracy: s.correct / s.seen,
-      seen: s.seen,
-      correct: s.correct,
-    });
+    if (id.startsWith("drill:")) {
+      const b = BRANCH_BY_ID[id.slice(6)];
+      if (!b) continue;
+      out.push({
+        id,
+        title: `${b.branchTitle} drill`,
+        color: b.color,
+        accuracy: s.correct / s.seen,
+        seen: s.seen,
+        correct: s.correct,
+      });
+    } else {
+      const unit = UNIT_MAP[id];
+      if (!unit) continue;
+      out.push({
+        id,
+        title: unit.title,
+        color: UNIT_BRANCH[id]?.color,
+        accuracy: s.correct / s.seen,
+        seen: s.seen,
+        correct: s.correct,
+      });
+    }
   }
   return out.sort((a, b) => a.accuracy - b.accuracy);
 }

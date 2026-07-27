@@ -21,7 +21,7 @@ import { buildLessonChart } from "@/lib/lessonCharts";
 export default function Lesson() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary, unlockBadge, recordAnswer } = useContango();
+  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary, unlockBadge, recordAnswer, reviewCard } = useContango();
 
   const entry = allUnitsFlat().find(e => e.unit.id === lessonId);
   const unit = entry?.unit;
@@ -78,6 +78,18 @@ export default function Lesson() {
     if (correct) setCorrectCount(c => c + 1);
     if (isPsych) adjustMindset(correct ? 4 : -6);
     recordAnswer(unit.id, correct);
+    if (!correct) lapseRelevantCard();
+  }
+
+  // A miss marks the matching Practice card due now so the concept is
+  // prioritized in the next review session.
+  function lapseRelevantCard() {
+    if (stage.type === "chart") {
+      if (buildLessonChart(unit.id)) reviewCard(`chart:${unit.id}`, "again");
+      return;
+    }
+    const qi = (unit.questions || []).findIndex(q => q.q === stage.q);
+    if (qi >= 0) reviewCard(`concept:${unit.id}:${qi}`, "again");
   }
 
   function chooseEmotion(idx) {

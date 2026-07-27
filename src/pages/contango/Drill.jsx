@@ -16,7 +16,7 @@ import { INSTRUMENTS } from "@/lib/instruments";
 export default function Drill() {
   const { branchId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markDrillComplete, setLastDrillReview, progress, unlockBadge } = useContango();
+  const { recordSession, markDrillComplete, setLastDrillReview, progress, unlockBadge, recordAnswer, reviewCard } = useContango();
   const branch = findBranch(branchId);
 
   const scenario = useMemo(() => branch?.buildDrill ? branch.buildDrill() : null, [branch]);
@@ -75,6 +75,11 @@ export default function Drill() {
     if (correct) setCorrectCount(c => c + 1);
     setDecisionLog(log => [...log, { barIndex: currentDP.barIndex, selected: idx, correct }]);
     decisionsRef.current.push({ barIndex: currentDP.barIndex, selected: idx, correct });
+
+    // every decision shapes mastery; a miss makes this drill surface sooner in Practice
+    const conceptKey = `drill:${branch.id}`;
+    recordAnswer(conceptKey, correct);
+    if (!correct) reviewCard(conceptKey, "again");
 
     setTimeout(() => {
       setFlash(null);
