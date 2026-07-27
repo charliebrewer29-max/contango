@@ -28,8 +28,8 @@ export const TICKER_SYMBOLS = [
 ];
 
 export const GOAL_OPTIONS = [
-  { id: "casual", label: "Casual", xp: 10, sub: "10 XP / day" },
-  { id: "regular", label: "Regular", xp: 20, sub: "20 XP / day" },
-  { id: "serious", label: "Serious", xp: 50, sub: "50 XP / day" },
-  { id: "intense", label: "Intense", xp: 100, sub: "100 XP / day" },
+  { id: "casual", label: "Casual", xp: 20, sub: "20 XP / day" },
+  { id: "regular", label: "Regular", xp: 40, sub: "40 XP / day" },
+  { id: "serious", label: "Serious", xp: 80, sub: "80 XP / day" },
+  { id: "intense", label: "Intense", xp: 150, sub: "150 XP / day" },
 ];
