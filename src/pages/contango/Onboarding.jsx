@@ -31,9 +31,9 @@ export default function Onboarding() {
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         {step === 0 && (
           <div className="flex flex-1 flex-col items-center justify-center text-center" style={{ animation: "fadeIn 0.5s ease-out" }}>
-            <ContangoLogo size="xl" showWord animated className="mb-1" />
-            <h1 className="font-display text-2xl font-bold tracking-tight text-slate-500 uppercase">Futures, learned.</h1>
-            <p className="mt-3 text-lg text-slate-300">Learn futures trading the way you'd learn a language.</p>
+            <ContangoLogo size="xl" showWord animated className="mb-2" />
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-[0.18em] text-amber-400">Futures, learned.</h1>
+            <p className="mt-3 text-xl font-semibold text-slate-100">Master futures trading, one bar at a time.</p>
             <p className="mt-6 max-w-xs text-sm text-slate-500">Bite-sized lessons, chart-replay drills, and an AI coach — all simulated, all educational. No real money, ever.</p>
             <button onClick={() => setStep(1)} className="mt-10 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
               Get Started
