@@ -14,10 +14,10 @@ import { allUnitsFlat, DIARY_ENTRIES } from "@/lib/content";
 import CandleChart from "@/components/contango/CandleChart";
 import { buildLessonChart } from "@/lib/lessonCharts";
 
-// Lesson engine — two phases.
+// Lesson engine - two phases.
 // LEARN: teach / emotion / widget / reveal. No scoring, no hearts, free
 // navigation (back + forward), tap through at your own pace. Learning is a
-// safe space — the moment it costs a heart, people rush it to get to the test.
+// safe space - the moment it costs a heart, people rush it to get to the test.
 // ANSWER: quiz / chart. Graded, forward-only, hearts on the line. Only the
 // proving is scored.
 const LEARN_TYPES = new Set(["teach", "emotion", "widget", "reveal"]);
@@ -293,7 +293,7 @@ export default function Lesson() {
           </div>
           <h1 className="font-display text-2xl font-bold text-slate-100">Ready to prove it?</h1>
           <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-slate-400">
-            The next cards are graded. You can't go back, and a wrong answer costs a heart. There's no timer — take your time on each one.
+            The next cards are graded. You can't go back, and a wrong answer costs a heart. There's no timer - take your time on each one.
           </p>
           <button onClick={() => { setSelected(null); setPhase("answer"); }}
             className="mt-7 w-full rounded-xl bg-amber-400 py-4 font-display font-bold text-slate-950 transition hover:bg-amber-300">
@@ -422,7 +422,7 @@ export default function Lesson() {
               <div className="text-xs text-slate-500">XP earned</div>
             </div>
             <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-              <div className="font-mono text-2xl font-bold text-emerald-400">{quizTotal > 0 ? `${correctCount}/${quizTotal}` : "—"}</div>
+              <div className="font-mono text-2xl font-bold text-emerald-400">{quizTotal > 0 ? `${correctCount}/${quizTotal}` : "-"}</div>
               <div className="text-xs text-slate-500">correct</div>
             </div>
           </div>

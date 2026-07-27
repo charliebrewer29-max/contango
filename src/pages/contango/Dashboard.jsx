@@ -34,7 +34,7 @@ export default function Dashboard() {
           <div className="flex-1">
             <p className="t-eyebrow text-slate-500">Today's goal</p>
             <p className="cg-num font-mono text-3xl font-bold tracking-tight text-slate-100">{progress.dailyXp || 0}<span className="text-sm font-medium text-slate-500"> / {progress.dailyGoal} XP</span></p>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-400">{dailyPct >= 100 ? "Goal done — nice work today!" : `${progress.dailyGoal - (progress.dailyXp || 0)} XP to go`}</p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-400">{dailyPct >= 100 ? "Goal done - nice work today!" : `${progress.dailyGoal - (progress.dailyXp || 0)} XP to go`}</p>
           </div>
         </div>
         {nextLesson && (
@@ -69,7 +69,7 @@ export default function Dashboard() {
           </div>
           <div className="text-[13px] leading-relaxed text-slate-400">
             {isPremium(progress)
-              ? (practiceDue > 0 ? `${practiceDue} card${practiceDue === 1 ? "" : "s"} ready to review` : "All caught up — review ahead whenever you like")
+              ? (practiceDue > 0 ? `${practiceDue} card${practiceDue === 1 ? "" : "s"} ready to review` : "All caught up - review ahead whenever you like")
               : "Unlimited sim sandbox, no hearts. Part of Premium."}
           </div>
         </div>
@@ -85,7 +85,7 @@ export default function Dashboard() {
             {!isPremium(progress) && <span className="rounded bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-400">Premium</span>}
           </div>
           <div className="text-[13px] leading-relaxed text-slate-400">
-            {isPremium(progress) ? "Your full decision history with win-rate analytics" : "Free shows your last session — full history with Premium"}
+            {isPremium(progress) ? "Your full decision history with win-rate analytics" : "Free shows your last session - full history with Premium"}
           </div>
         </div>
         <ChevronRight className="h-5 w-5 text-slate-500" />
@@ -112,7 +112,7 @@ export default function Dashboard() {
 
       {/* Footer disclaimer */}
       <p className="mt-8 text-center text-[11px] leading-[1.7] text-slate-600">
-        Everything here is simulated and educational — no real money, no live trading, no trade signals.<br />
+        Everything here is simulated and educational - no real money, no live trading, no trade signals.<br />
         Contango isn't affiliated with TradingView.
       </p>
     </ScreenShell>

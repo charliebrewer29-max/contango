@@ -57,8 +57,8 @@ export default function Practice() {
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
           <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
           <h2 className="font-display text-xl font-bold text-slate-100">Practice is Premium</h2>
-          <p className="mt-2 text-sm text-slate-400">Practice mode is your unlimited sim sandbox — review every concept and chart as often as you like, with no hearts on the line. It's part of Premium.</p>
-          <p className="mt-2 text-xs text-slate-500">Hearts still apply on the graded curriculum path for everyone — that's the daily-loss-limit discipline you're learning.</p>
+          <p className="mt-2 text-sm text-slate-400">Practice mode is your unlimited sim sandbox - review every concept and chart as often as you like, with no hearts on the line. It's part of Premium.</p>
+          <p className="mt-2 text-xs text-slate-500">Hearts still apply on the graded curriculum path for everyone - that's the daily-loss-limit discipline you're learning.</p>
           <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
         </div>
       </ScreenShell>
@@ -124,14 +124,14 @@ export default function Practice() {
           <Repeat className="h-7 w-7 text-sky-400" />
           <div>
             <div className="font-display font-semibold text-slate-100">Spaced Practice</div>
-            <div className="text-xs text-slate-500">Resurfaces what you've learned on an expanding schedule — before you forget it.</div>
+            <div className="text-xs text-slate-500">Resurfaces what you've learned on an expanding schedule - before you forget it.</div>
           </div>
         </div>
 
         {catalog.length === 0 ? (
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center">
             <Sparkles className="mx-auto mb-3 h-8 w-8 text-slate-600" />
-            <p className="text-sm text-slate-300">Complete a lesson first — practice pulls from concepts and charts you've already learned.</p>
+            <p className="text-sm text-slate-300">Complete a lesson first - practice pulls from concepts and charts you've already learned.</p>
             <Link to="/" className="mt-5 inline-flex rounded-xl bg-amber-400 px-5 py-3 font-semibold text-slate-950">Go to lessons</Link>
           </div>
         ) : (
@@ -184,7 +184,7 @@ export default function Practice() {
 
             {dueCards.length === 0 && (
               <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-300">
-                <Check className="h-4 w-4" /> All caught up — next review {fmtDue(nextDueMs(srCards))}.
+                <Check className="h-4 w-4" /> All caught up - next review {fmtDue(nextDueMs(srCards))}.
               </div>
             )}
           </>
@@ -225,7 +225,7 @@ export default function Practice() {
         </div>
         <div className="mx-auto mt-5 flex max-w-xs items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs text-slate-400">
           <CalendarClock className="h-4 w-4 text-slate-500" />
-          {dueCards.length ? `${dueCards.length} cards still due` : `All caught up — next review ${fmtDue(nextDueMs(srCards))}`}
+          {dueCards.length ? `${dueCards.length} cards still due` : `All caught up - next review ${fmtDue(nextDueMs(srCards))}`}
         </div>
         <div className="mx-auto mt-6 max-w-xs space-y-2">
           <button

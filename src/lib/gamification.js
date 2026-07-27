@@ -1,4 +1,4 @@
-// Gamification engine — XP / streak / hearts (spec Section 6)
+// Gamification engine - XP / streak / hearts (spec Section 6)
 
 import { STREAK_REWARDS } from "./streakRewards";
 
@@ -87,7 +87,7 @@ export function applyProgress(progress, { correct, total, completedType }) {
       events.push({ type: "streak-milestone", streak: next.streak });
     }
 
-    // streak milestone rewards — unlock cosmetic flair; auto-equip the first
+    // streak milestone rewards - unlock cosmetic flair; auto-equip the first
     // one earned so the profile reflects progress immediately.
     const newlyUnlocked = [];
     for (const r of STREAK_REWARDS) {

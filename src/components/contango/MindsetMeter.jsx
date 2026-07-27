@@ -1,7 +1,7 @@
 import React from "react";
 import { Brain } from "lucide-react";
 
-// MindsetMeter — the "mental state" indicator. Fluctuates with disciplined
+// MindsetMeter - the "mental state" indicator. Fluctuates with disciplined
 // vs impulsive choices in psychology lessons. Visualizes burnout / tilt risk.
 // value: 0-100. 75+ Calm/Green, 50-74 Focused/Amber, 25-49 Tilting/Orange,
 // <25 Panic/Rose.

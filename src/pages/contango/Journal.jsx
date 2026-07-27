@@ -8,7 +8,7 @@ import { isPremium } from "@/lib/subscription";
 // Trade Journal: aggregates every drill decision the learner has logged.
 // Free sees the last session; Premium sees the full history + win-rate
 // analytics by strategy, instrument, and decision type. The history is the
-// product — it compounds in value the longer someone subscribes.
+// product - it compounds in value the longer someone subscribes.
 
 function decisionType(prompt = "") {
   const p = prompt.toLowerCase();
@@ -91,7 +91,7 @@ export default function Journal() {
             <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 text-center">
               <Crown className="mx-auto mb-2 h-8 w-8 text-amber-400" />
               <p className="text-sm text-slate-300">
-                You're seeing your last session. Premium unlocks the full history plus win-rate analytics by strategy, instrument, and decision type — and it gets more valuable the longer you subscribe.
+                You're seeing your last session. Premium unlocks the full history plus win-rate analytics by strategy, instrument, and decision type - and it gets more valuable the longer you subscribe.
               </p>
               <Link to="/paywall" className="mt-4 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
             </div>

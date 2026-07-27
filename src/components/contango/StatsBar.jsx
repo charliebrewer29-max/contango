@@ -3,7 +3,7 @@ import { Flame, Heart, Zap, Star } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { MAX_HEARTS } from "@/lib/gamification";
 
-// Stats bar: streak, hearts, XP — the persistent gamification readout.
+// Stats bar: streak, hearts, XP - the persistent gamification readout.
 export default function StatsBar({ compact = false }) {
   const { progress } = useContango();
 

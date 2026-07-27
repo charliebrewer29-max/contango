@@ -1,6 +1,6 @@
 import React from "react";
 
-// LeagueTrophy — hand-drawn style minted-coin badges.
+// LeagueTrophy - hand-drawn style minted-coin badges.
 // Each league has a distinct motif with its own personality, drawn as simple
 // strokes (round caps, soft fills) so it reads as crafted, not generated:
 //   Rookie  → sprout   (new growth, just starting)
@@ -8,7 +8,7 @@ import React from "react";
 //   Silver  → summit flag (hitting stride)
 //   Gold    → crown    (in the money)
 //   Platinum→ gem      (elite)
-// No gradients or glow — a quiet, human feel.
+// No gradients or glow - a quiet, human feel.
 
 const Motif = {
   Rookie: ({ ink }) => (

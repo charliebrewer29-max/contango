@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-// sendDailyReminders — invoked hourly by the "Daily Reminders" workflow.
+// sendDailyReminders - invoked hourly by the "Daily Reminders" workflow.
 // For each enabled reminder whose chosen hour matches the current hour in
 // the user's own timezone (and that hasn't already sent today), compose a
 // progress-aware email and send it, then stamp last_sent_date.
@@ -43,11 +43,11 @@ function composeEmail(r) {
     lines.push("Open Contango and pick up where you left off.");
   }
   lines.push("");
-  lines.push("Even ten minutes keeps the momentum — small, consistent reps are how traders are built.");
+  lines.push("Even ten minutes keeps the momentum - small, consistent reps are how traders are built.");
   lines.push("");
-  lines.push("— Tango, your trading mentor");
+  lines.push("- Tango, your trading mentor");
   lines.push("");
-  lines.push("(Simulated educational practice only — no real trades, no signals.)");
+  lines.push("(Simulated educational practice only - no real trades, no signals.)");
   return lines.join("\n");
 }
 
@@ -76,7 +76,7 @@ export default async function(req) {
 
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: r.email,
-          subject: 'Contango — your daily practice nudge',
+          subject: 'Contango - your daily practice nudge',
           body: composeEmail(r),
           from_name: 'Tango',
         });

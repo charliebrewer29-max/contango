@@ -30,7 +30,7 @@ export default function BranchDetail() {
           <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
           <h2 className="font-display text-xl font-bold text-slate-100">A Premium branch</h2>
           <p className="mt-2 text-sm text-slate-400">{branch.blurb}</p>
-          <p className="mt-1 text-xs text-slate-500">Free learners get the first two strategy branches. Unlock every branch — plus the journal, the coach's memory, and messy-market drills — with Premium.</p>
+          <p className="mt-1 text-xs text-slate-500">Free learners get the first two strategy branches. Unlock every branch - plus the journal, the coach's memory, and messy-market drills - with Premium.</p>
           <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
         </div>
       </ScreenShell>

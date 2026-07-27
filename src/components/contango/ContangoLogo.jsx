@@ -1,8 +1,8 @@
 import React from "react";
 
-// ContangoLogo — the "breakout" mark: ascending candlestick bars that
+// ContangoLogo - the "breakout" mark: ascending candlestick bars that
 // culminate in an up-right arrowhead. One confident idea: markets rising
-// into a breakout. Bold, geometric, no gradients or glow — crafted, not
+// into a breakout. Bold, geometric, no gradients or glow - crafted, not
 // generated. Variants: size sm|md|lg|xl, showWord, animated.
 
 const SIZES = {
@@ -21,11 +21,11 @@ export default function ContangoLogo({ size = "md", showWord = false, animated =
         <svg viewBox="0 0 48 48" width={s.box} height={s.box} fill="none" className={animated ? "cg-anim" : ""}>
           {/* badge */}
           <rect x="1.5" y="1.5" width="45" height="45" rx="13" stroke="#222936" strokeWidth="1.5" fill="#0b1117" />
-          {/* ascending bars — the run-up */}
+          {/* ascending bars - the run-up */}
           <rect className="cg-bar b1" x="9"  y="32" width="5.5" height="7"  rx="1.6" fill="#34d399" fillOpacity="0.55" />
           <rect className="cg-bar b2" x="16.5" y="25" width="5.5" height="14" rx="1.6" fill="#34d399" fillOpacity="0.78" />
           <rect className="cg-bar b3" x="24"  y="17" width="5.5" height="22" rx="1.6" fill="#34d399" />
-          {/* breakout arrowhead — up-right */}
+          {/* breakout arrowhead - up-right */}
           <polygon className="cg-arrow" points="40,9 30.5,9 40,18.5" fill="#6ee7b7" />
         </svg>
       </span>

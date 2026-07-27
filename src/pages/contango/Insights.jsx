@@ -63,7 +63,7 @@ export default function Insights() {
         </div>
         <p className="mt-3 text-xs text-slate-500">
           {streak > 0
-            ? `You're on a ${streak}-day roll — keep the chain alive.`
+            ? `You're on a ${streak}-day roll - keep the chain alive.`
             : "Complete a lesson or drill to start a streak."}
         </p>
       </ChartCard>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-// Interactive lesson widgets — the one thing a trading app can do that
+// Interactive lesson widgets - the one thing a trading app can do that
 // Duolingo can't: let learners drag the number they get wrong and watch it.
 // All three are learn-phase widgets: no grading, no hearts, free exploration.
 // The rule (spec): for every lesson, find the one number people get wrong,
@@ -71,7 +71,7 @@ function LeverageWidget() {
       {wiped && (
         <div className="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-center" style={{ animation: "fadeIn 0.3s ease-out" }}>
           <p className="text-sm font-semibold text-rose-300">
-            Your ${deposit} is gone{owe > 0.5 ? ` — and you'd owe $${Math.round(owe)}` : ""}.
+            Your ${deposit} is gone{owe > 0.5 ? ` - and you'd owe $${Math.round(owe)}` : ""}.
           </p>
           <p className="mt-1 text-xs text-slate-400">Leverage is symmetric: it magnifies gains and losses by the same amount.</p>
         </div>
@@ -98,7 +98,7 @@ function TickWidget() {
         <ContractCol name="ES" perTick="$12.50" points={points} dollars={es} accent="text-sky-400" />
         <ContractCol name="MES" perTick="$1.25" points={points} dollars={mes} accent="text-amber-400" />
       </div>
-      <p className="mt-4 text-center text-xs text-slate-500">Same ticks, same points — but ES dollars are 10× MES dollars.</p>
+      <p className="mt-4 text-center text-xs text-slate-500">Same ticks, same points - but ES dollars are 10× MES dollars.</p>
     </div>
   );
 }
@@ -127,7 +127,7 @@ function MicroWidget() {
           <div className="font-mono text-2xl font-bold text-emerald-400">${mes.toFixed(2)}</div>
         </div>
       </div>
-      <p className="mt-4 text-center text-xs text-amber-400">The Micro is one-tenth the size — the same error costs a tenth as much.</p>
+      <p className="mt-4 text-center text-xs text-amber-400">The Micro is one-tenth the size - the same error costs a tenth as much.</p>
     </div>
   );
 }

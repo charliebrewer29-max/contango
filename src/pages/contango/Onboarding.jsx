@@ -12,6 +12,7 @@ export default function Onboarding() {
   const [why, setWhy] = useState("curiosity");
   const [goal, setGoal] = useState("regular");
   const [acknowledged, setAcknowledged] = useState(false);
+  const [ageOk, setAgeOk] = useState(false);
   const { update } = useContango();
   const navigate = useNavigate();
 
@@ -22,14 +23,14 @@ export default function Onboarding() {
   ];
 
   const WHY_NUDGE = {
-    curiosity: "Got it — after the basics, we'll point you to the Instrument Tour so you can explore the markets.",
-    considering: "Smart — after the basics, we'll prioritize Risk & Psychology before you ever risk real capital.",
-    "already-trade": "Nice — after the basics, we'll send you to the strategy branches to sharpen your edge.",
+    curiosity: "Got it - after the basics, we'll point you to the Instrument Tour so you can explore the markets.",
+    considering: "Smart - after the basics, we'll prioritize Risk & Psychology before you ever risk real capital.",
+    "already-trade": "Nice - after the basics, we'll send you to the strategy branches to sharpen your edge.",
   };
 
   function finish() {
     const recommendedBranch = WHY_OPTIONS.find(o => o.id === why)?.branch || null;
-    update({ onboardingDone: true, why, dailyGoal: GOAL_OPTIONS.find(g => g.id === goal).xp, goal, recommendedBranch });
+    update({ onboardingDone: true, why, dailyGoal: GOAL_OPTIONS.find(g => g.id === goal).xp, goal, recommendedBranch, ageConfirmed: ageOk });
     navigate("/lesson/contracts");
   }
 
@@ -46,7 +47,7 @@ export default function Onboarding() {
             <ContangoLogo size="xl" showWord animated className="mb-2" />
             <h1 className="font-display text-2xl font-extrabold uppercase tracking-[0.18em] text-amber-400">Futures, learned.</h1>
             <p className="mt-3 text-xl font-semibold text-slate-100">Master futures trading, easier than ever.</p>
-            <p className="mt-6 max-w-xs text-sm text-slate-500">Bite-sized lessons, chart-replay drills, and an AI coach — all simulated, all educational. No real money, ever.</p>
+            <p className="mt-6 max-w-xs text-sm text-slate-500">Bite-sized lessons, chart-replay drills, and an AI coach - all simulated, all educational. No real money, ever.</p>
             <button onClick={() => setStep(1)} className="mt-10 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
               Get Started
             </button>
@@ -64,14 +65,18 @@ export default function Onboarding() {
               <li className="flex gap-3"><span className="text-amber-400">●</span> All market data here is <span className="font-semibold text-slate-100">simulated</span>. None of it reflects live prices.</li>
               <li className="flex gap-3"><span className="text-amber-400">●</span> Contango never touches real money. No broker, no orders, no balances.</li>
               <li className="flex gap-3"><span className="text-amber-400">●</span> Nothing here is a trade signal or "buy/sell this now" recommendation.</li>
-              <li className="flex gap-3"><span className="text-amber-400">●</span> This is for learning how markets and strategies work — before risking real capital.</li>
+              <li className="flex gap-3"><span className="text-amber-400">●</span> This is for learning how markets and strategies work - before risking real capital.</li>
             </ul>
             <label className="mt-8 flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 cursor-pointer">
               <input type="checkbox" checked={acknowledged} onChange={(e) => setAcknowledged(e.target.checked)} className="mt-0.5 h-4 w-4 accent-amber-400" />
               <span className="text-sm text-slate-300">I understand this is a simulated educational tool and not financial advice.</span>
             </label>
+            <label className="mt-3 flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 cursor-pointer">
+              <input type="checkbox" checked={ageOk} onChange={(e) => setAgeOk(e.target.checked)} className="mt-0.5 h-4 w-4 accent-amber-400" />
+              <span className="text-sm text-slate-300">I am 17 or older.</span>
+            </label>
             <button
-              disabled={!acknowledged}
+              disabled={!(acknowledged && ageOk)}
               onClick={() => setStep(2)}
               className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30 disabled:hover:bg-amber-400"
             >

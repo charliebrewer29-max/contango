@@ -2,7 +2,7 @@ import React from "react";
 import { BookText, Lock } from "lucide-react";
 import { DIARY_ENTRIES } from "@/lib/psychCurriculum";
 
-// Trader's Diary — narrative "entries" the user unlocks by completing
+// Trader's Diary - narrative "entries" the user unlocks by completing
 // psychology lessons. Gives a tangible sense of growth beyond XP.
 // Each entry is a one-line truth a real trader would write to themselves.
 
@@ -37,7 +37,7 @@ export default function TraderDiary({ unlocked = [] }) {
                   </span>
                 )}
                 <span className={`text-sm font-medium ${isOpen ? "text-slate-100" : "text-slate-500"}`}>
-                  {isOpen ? entry.title : "Locked — complete the lesson to unlock"}
+                  {isOpen ? entry.title : "Locked - complete the lesson to unlock"}
                 </span>
               </div>
               {isOpen && (

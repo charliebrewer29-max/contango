@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { TICKER_SYMBOLS } from "@/lib/contangoTheme";
 
-// Persistent scrolling ticker tape — the signature ambient-motion element.
+// Persistent scrolling ticker tape - the signature ambient-motion element.
 // Respects reduced-motion setting via a prop (driven by user prefs).
 export default function TickerTape({ reducedMotion = false }) {
   const [quotes, setQuotes] = useState(() =>

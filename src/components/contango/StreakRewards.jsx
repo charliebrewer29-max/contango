@@ -3,7 +3,7 @@ import { Lock, Check } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { STREAK_REWARDS } from "@/lib/streakRewards";
 
-// StreakRewards — grid of long-term streak milestones. Unlocked tiers can be
+// StreakRewards - grid of long-term streak milestones. Unlocked tiers can be
 // equipped as cosmetic flair (ring + title) on the profile identity card.
 export default function StreakRewards() {
   const { progress, update } = useContango();

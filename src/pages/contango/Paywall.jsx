@@ -6,7 +6,7 @@ import { COACH_NAME } from "@/lib/contangoTheme";
 import { TRIAL_DAYS, isPremium, trialDaysLeft } from "@/lib/subscription";
 
 // Paywall: the full premium split (spec Section 9). Hearts stay on the graded
-// path for everyone — Premium buys the unlimited Practice sandbox, not a
+// path for everyone - Premium buys the unlimited Practice sandbox, not a
 // discipline-removal. Long 21-day trial, trial-first default.
 export default function Paywall() {
   const navigate = useNavigate();
@@ -16,12 +16,12 @@ export default function Paywall() {
   function subscribe() { goPremium(); navigate("/"); }
 
   const perks = [
-    { icon: <Repeat className="h-4 w-4" />, text: "Unlimited Practice mode — your sim sandbox, no hearts" },
+    { icon: <Repeat className="h-4 w-4" />, text: "Unlimited Practice mode - your sim sandbox, no hearts" },
     { icon: <BookOpen className="h-4 w-4" />, text: "Every strategy branch, not just the first two" },
-    { icon: <BarChart3 className="h-4 w-4" />, text: "All instruments — NQ, CL, GC (and ES)" },
+    { icon: <BarChart3 className="h-4 w-4" />, text: "All instruments - NQ, CL, GC (and ES)" },
     { icon: <Sparkles className="h-4 w-4" />, text: `${COACH_NAME} that remembers your history across sessions` },
     { icon: <LineChart className="h-4 w-4" />, text: "Full trade journal with win-rate analytics" },
-    { icon: <Waves className="h-4 w-4" />, text: "Messy market mode — false breakouts & news spikes" },
+    { icon: <Waves className="h-4 w-4" />, text: "Messy market mode - false breakouts & news spikes" },
     { icon: <CalendarClock className="h-4 w-4" />, text: "Monthly streak repair" },
     { icon: <Crown className="h-4 w-4" />, text: "No ads, ever" },
   ];

@@ -8,7 +8,7 @@ import { base44 } from "@/api/base44Client";
 // First message the user sends the agent so it can tailor guidance to them.
 function buildOpener(progress) {
   const whyMap = {
-    curiosity: "curiosity — just learning how futures work",
+    curiosity: "curiosity - just learning how futures work",
     considering: "considering trading with real capital someday",
     "already-trade": "already trading and filling knowledge gaps",
   };
@@ -118,7 +118,7 @@ export default function OnboardingGuide() {
         </button>
       </div>
       <p className="mt-2 text-center text-[11px] text-slate-600">
-        Simulated education only — never real trades or personalized signals.
+        Simulated education only - never real trades or personalized signals.
       </p>
     </ScreenShell>
   );

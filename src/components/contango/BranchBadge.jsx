@@ -1,6 +1,6 @@
 import React from "react";
 
-// BranchBadge — hand-drawn minted-coin badges, one unique motif per
+// BranchBadge - hand-drawn minted-coin badges, one unique motif per
 // curriculum branch. Same crafted feel as LeagueTrophy: soft fills, round
 // caps, no gradients or glow. Locked variants render muted so an unearned
 // badge still reads as a badge, just out of reach.

@@ -20,6 +20,7 @@ import OnboardingGuide from '@/pages/contango/OnboardingGuide';
 import Practice from '@/pages/contango/Practice';
 import Insights from '@/pages/contango/Insights';
 import Journal from '@/pages/contango/Journal';
+import Legal from '@/pages/contango/Legal';
 
 function App() {
 
@@ -44,6 +45,7 @@ function App() {
               <Route path="/practice" element={<Practice />} />
               <Route path="/insights" element={<Insights />} />
               <Route path="/journal" element={<Journal />} />
+              <Route path="/legal" element={<Legal />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </ContangoProvider>

@@ -1,4 +1,4 @@
-// Contango design tokens — ported from spec Section 3
+// Contango design tokens - ported from spec Section 3
 // Colors map directly to Tailwind slate/emerald/rose/amber/sky palettes.
 
 export const COLORS = {

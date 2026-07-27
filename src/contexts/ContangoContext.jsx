@@ -101,7 +101,7 @@ export function ContangoProvider({ children }) {
     setProgress(prev => ({ ...prev, lastDrillReview: review }));
   }, []);
 
-  // Spaced-repetition: update one card's review schedule (no XP here — that's batched at session end).
+  // Spaced-repetition: update one card's review schedule (no XP here - that's batched at session end).
   const reviewCard = useCallback((cardId, grade) => {
     setProgress(prev => {
       const prevCard = (prev.srCards || {})[cardId];

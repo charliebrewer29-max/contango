@@ -55,7 +55,7 @@ export default function SkillTree() {
                   {!foundationUnlocked && <Lock className="h-3 w-3 text-slate-600" />}
                 </div>
                 <p className="truncate text-[13px] leading-snug text-slate-500">
-                  {premiumLocked ? "Premium branch — unlock with Premium" : branch.blurb}
+                  {premiumLocked ? "Premium branch - unlock with Premium" : branch.blurb}
                 </p>
               </div>
               {isBranchDone(branch, progress) && <Check className="h-4 w-4 text-emerald-400" />}

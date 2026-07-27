@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, ChevronRight, BookOpen } from "lucide-react";
+import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, Bot, ChevronRight, BookOpen } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { MAX_HEARTS } from "@/lib/gamification";
@@ -12,10 +12,45 @@ import BranchBadge, { BRANCH_BADGES } from "@/components/contango/BranchBadge";
 import ReminderSettings from "@/components/contango/ReminderSettings";
 import StreakRewards from "@/components/contango/StreakRewards";
 import { getEquippedFlair } from "@/lib/streakRewards";
+import { base44 } from "@/api/base44Client";
+import { fetchMe, hasConsent, setConsent } from "@/lib/aiConsent";
 
 export default function Profile() {
   const { progress, update, refillHearts, resetProgress, repairStreak } = useContango();
   const flair = getEquippedFlair(progress);
+  const flow = isPremium(progress) ? "history" : "session";
+  const [aiOn, setAiOn] = React.useState(false);
+  const [aiBusy, setAiBusy] = React.useState(false);
+
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const me = await fetchMe();
+        if (alive) setAiOn(hasConsent(me, flow));
+      } catch (_e) { /* not logged in yet */ }
+    })();
+    return () => { alive = false; };
+  }, [flow]);
+
+  async function toggleConsent() {
+    setAiBusy(true);
+    try {
+      const next = !aiOn;
+      await setConsent(next, flow);
+      setAiOn(next);
+    } finally { setAiBusy(false); }
+  }
+
+  async function deleteAccount() {
+    if (!confirm("Delete your account and data? This clears your progress and reminders and signs you out. This cannot be undone.")) return;
+    try {
+      const reminders = await base44.entities.Reminder.filter({});
+      for (const r of reminders) { try { await base44.entities.Reminder.delete(r.id); } catch (_e) {} }
+    } catch (_e) {}
+    resetProgress();
+    try { await base44.auth.logout(); } catch (_e) {}
+  }
 
   function toggle(field) {
     update({ [field]: !progress[field] });
@@ -23,7 +58,7 @@ export default function Profile() {
 
   return (
     <ScreenShell showStats={false} title="Profile & Settings" tab="profile">
-      {/* identity card — flair showcase */}
+      {/* identity card - flair showcase */}
       <div className="relative mb-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5">
         {flair && (
           <div className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full opacity-30 blur-3xl" style={{ background: flair.glow }} />
@@ -45,7 +80,7 @@ export default function Profile() {
                 {flair.glyph} {flair.title}
               </div>
             ) : (
-              <div className="mt-1 text-xs text-slate-600">No flair yet — keep your streak going to unlock one</div>
+              <div className="mt-1 text-xs text-slate-600">No flair yet - keep your streak going to unlock one</div>
             )}
             <div className="mt-1 text-xs text-amber-400">{progress.subscription === "premium" ? "Premium" : progress.subscription === "trial" ? "Free trial" : "Free tier"}</div>
           </div>
@@ -86,6 +121,18 @@ export default function Profile() {
 
       {/* trader's diary */}
       <TraderDiary unlocked={progress.diaryUnlocked || []} />
+
+      {/* privacy */}
+      <Section title="Privacy">
+        <Toggle icon={<Bot className="h-4 w-4 text-sky-400" />} label="AI coach feedback" desc={aiOn ? "Allowed - sends drill data to Anthropic" : "Off - AI coach is disabled"} on={aiOn} onClick={toggleConsent} />
+        <Link to="/legal" className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-600">
+          <div className="flex-1">
+            <div className="text-sm font-medium text-slate-100">Privacy Policy & Terms</div>
+            <div className="text-xs text-slate-500">Data sharing, AI consent, account deletion</div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-600" />
+        </Link>
+      </Section>
 
       {/* preferences */}
       <Section title="Preferences">
@@ -134,6 +181,13 @@ export default function Profile() {
           <div className="flex-1">
             <div className="text-sm font-medium text-slate-200">Reset progress</div>
             <div className="text-xs text-slate-500">Clears XP, streaks, and completion</div>
+          </div>
+        </button>
+        <button onClick={deleteAccount} className="flex w-full items-center gap-3 rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 text-left hover:bg-rose-500/10">
+          <LogOut className="h-5 w-5 text-rose-400" />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-rose-300">Delete account & data</div>
+            <div className="text-xs text-slate-500">Clears progress and reminders, signs you out</div>
           </div>
         </button>
       </Section>

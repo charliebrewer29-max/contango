@@ -4,7 +4,7 @@ import { useContango } from "@/contexts/ContangoContext";
 import { base44 } from "@/api/base44Client";
 import { getMyReminder, saveReminder, buildSnapshot } from "@/lib/reminders";
 
-// Daily reminders settings — one private Reminder record per user. Lets the
+// Daily reminders settings - one private Reminder record per user. Lets the
 // learner toggle reminders on, pick a time, and confirm the email they go to.
 // Saving also pushes a fresh progress snapshot so reminder emails stay
 // personalized (streak, daily goal, lessons done, next lesson, badges).
@@ -66,7 +66,7 @@ export default function ReminderSettings() {
           <div className="flex-1">
             <div className="text-sm font-medium text-slate-200">Practice nudge</div>
             <div className="text-xs text-slate-500">
-              {status === "on" ? `On · sends around ${label12} your time` : status === "error" ? "Couldn't save — try again" : "A daily email to keep your streak alive"}
+              {status === "on" ? `On · sends around ${label12} your time` : status === "error" ? "Couldn't save - try again" : "A daily email to keep your streak alive"}
             </div>
           </div>
           <button

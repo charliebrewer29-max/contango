@@ -4,7 +4,7 @@ import ScreenShell from "@/components/contango/ScreenShell";
 import LeagueTrophy from "@/components/contango/LeagueTrophy";
 import { useContango } from "@/contexts/ContangoContext";
 
-// Mock leagues screen — weekly cohorts ranked by XP, matchmaking feel.
+// Mock leagues screen - weekly cohorts ranked by XP, matchmaking feel.
 const MOCK_LEAGUE = [
   { name: "MarginCallMike", xp: 1840, you: false },
   { name: "FadingFiona", xp: 1620, you: false },
@@ -86,7 +86,7 @@ export default function Leaderboard() {
           })}
         </div>
       </div>
-      <p className="mt-6 text-center text-[11px] text-slate-600">Matchmaking pairs you by activity level, not skill — everyone starts winnable.</p>
+      <p className="mt-6 text-center text-[11px] text-slate-600">Matchmaking pairs you by activity level, not skill - everyone starts winnable.</p>
     </ScreenShell>
   );
 }

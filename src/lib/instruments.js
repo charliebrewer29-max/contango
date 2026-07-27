@@ -6,7 +6,7 @@ export const INSTRUMENTS = {
         moves: "Fed policy, FOMC, CPI, employment data, earnings, broad risk sentiment",
         character: "Deepest liquidity, tightest spreads. Trends relatively orderly. The right first instrument for every strategy branch." },
   NQ: { name: "E-mini Nasdaq-100", basePrice: 21340.75, tickSize: 0.25, tickValue: 5.0, volMult: 1.8, noiseMult: 1.3, barVol: 0.0010,
-        moves: "Same macro drivers as ES but tech-weighted — extra sensitivity to rates and big-tech earnings",
+        moves: "Same macro drivers as ES but tech-weighted - extra sensitivity to rates and big-tech earnings",
         character: "ES with the volatility turned up. Same setups appear, but they move faster and need wider stops." },
   CL: { name: "Crude Oil (WTI)", basePrice: 71.42, tickSize: 0.01, tickValue: 10.0, volMult: 1.5, noiseMult: 1.9, barVol: 0.0020,
         moves: "EIA Wednesday 10:30am ET, API Tuesday 4:30pm, OPEC+, geopolitical supply disruption, dollar strength",
@@ -153,7 +153,7 @@ export function generateRangeScenario(instrumentKey = "ES", seed = 11, messy = f
   return { bars, lowIdx, highIdx };
 }
 
-// Used by practice mode — infinite variation
+// Used by practice mode - infinite variation
 export function generatePracticeData(pattern, instrumentKey, seed) {
   if (pattern === "consolidation-then-breakout") return generateTrendData(instrumentKey, seed);
   if (pattern === "mean-reversion-range") return generateRangeScenario(instrumentKey, seed);
