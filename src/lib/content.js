@@ -23,6 +23,14 @@ export const BRANCHES = [
         type: "concept",
         title: "Contracts & Leverage",
         info: "A futures contract is an agreement to buy or sell a set amount of something at a future date, at a price you lock in today. As a day trader you rarely take delivery — you close the trade well before expiration. The idea that changes everything is margin: instead of putting up the full contract value, you put up a small fraction of it. That fraction is leverage, and it's why a small price move becomes a large dollar move. Leverage doesn't play favorites — it magnifies your gains and your losses by exactly the same amount.",
+        stages: [
+          { type: "teach", heading: "Contracts & Leverage", body: "A futures contract is an agreement to buy or sell a set amount of something at a future date, at a price you lock in today. As a day trader you rarely take delivery — you close the trade well before expiration. The idea that changes everything is margin: instead of putting up the full contract value, you put up a small fraction of it. That fraction is leverage, and it's why a small price move becomes a large dollar move. Leverage doesn't play favorites — it magnifies your gains and your losses by exactly the same amount." },
+          { type: "widget", widget: "leverage", heading: "Feel the leverage", body: "You put up $500 to control a $50,000 ES contract. Drag the market move and watch your deposit. This is the one number every new trader gets wrong — until they drag it." },
+          { type: "reveal", prompt: "Leverage is symmetric. If +1% doubles your $500, what does −1% do?", answer: "It wipes your $500 out. And −1.5%? You'd owe your broker $250. Leverage magnifies gains and losses by exactly the same amount." },
+          { type: "quiz", q: "As a day trader, what do you do with a futures contract before expiration?", options: ["Take physical delivery", "Exit the position before expiration", "Hold it forever", "Convert it to stock"], correct: 1 },
+          { type: "quiz", q: "What is margin in futures trading?", options: ["A fee paid to the broker", "The full value of the contract", "A fraction of contract value put up as collateral", "A government tax"], correct: 2 },
+          { type: "quiz", q: "Why does leverage amplify both gains and losses?", options: ["Because it only applies to gains", "Because you control a large position with a small deposit", "Because the broker covers losses", "Because margin changes daily"], correct: 1 },
+        ],
         questions: [
           { q: "As a day trader, what do you do with a futures contract before expiration?", options: ["Take physical delivery", "Exit the position before expiration", "Hold it forever", "Convert it to stock"], correct: 1 },
           { q: "What is margin in futures trading?", options: ["A fee paid to the broker", "The full value of the contract", "A fraction of contract value put up as collateral", "A government tax"], correct: 2 },
@@ -34,6 +42,14 @@ export const BRANCHES = [
         type: "concept",
         title: "Tick Value & Specs",
         info: "Every futures contract has a tick size — the smallest amount its price can move — and a tick value — the dollars each tick is worth. For the E-mini S&P 500 (ES), the tick size is 0.25 points and each tick is $12.50. So a 4-point move (16 ticks) is $200 per contract. Knowing your tick math turns 'the market moved 2 points' into 'that's $100 per contract' — which is the number that actually matters to your account.",
+        stages: [
+          { type: "teach", heading: "Tick Value & Specs", body: "Every futures contract has a tick size — the smallest amount its price can move — and a tick value — the dollars each tick is worth. For the E-mini S&P 500 (ES), the tick size is 0.25 points and each tick is $12.50. So a 4-point move (16 ticks) is $200 per contract. Knowing your tick math turns 'the market moved 2 points' into 'that's $100 per contract' — which is the number that actually matters to your account." },
+          { type: "widget", widget: "tick", heading: "Drag the ticks", body: "ES ticks are worth $12.50 each; MES (the Micro) ticks are $1.25. Drag and watch price, points, and dollars move together — for both contracts at once." },
+          { type: "reveal", prompt: "ES moves 2 points — that's 8 ticks. How many dollars is that per contract?", answer: "$100. 8 × $12.50 = $100 per ES contract. That's the number that matters to your account — not 'the market moved 2 points.'" },
+          { type: "quiz", q: "What is the tick size of the ES contract?", options: ["1.00 point", "0.50 point", "0.25 point", "0.10 point"], correct: 2 },
+          { type: "quiz", q: "How much is one ES tick worth in dollars?", options: ["$5.00", "$12.50", "$10.00", "$50.00"], correct: 1 },
+          { type: "quiz", q: "If ES moves 2 points (8 ticks), how much is that per contract?", options: ["$25", "$50", "$100", "$200"], correct: 2 },
+        ],
         questions: [
           { q: "What is the tick size of the ES contract?", options: ["1.00 point", "0.50 point", "0.25 point", "0.10 point"], correct: 2 },
           { q: "How much is one ES tick worth in dollars?", options: ["$5.00", "$12.50", "$10.00", "$50.00"], correct: 1 },
@@ -45,6 +61,14 @@ export const BRANCHES = [
         type: "concept",
         title: "Micro Contracts",
         info: "Every major futures contract has a Micro version at one-tenth the size. MES is one-tenth of ES, so its tick is $1.25 instead of $12.50. A 20-tick mistake costs $25 on MES instead of $250 on ES. This is the honest answer to 'how much do I need to start?' — Micros make real practice affordable, and they let you size a position precisely instead of jumping straight from 1 contract to 2.",
+        stages: [
+          { type: "teach", heading: "Micro Contracts", body: "Every major futures contract has a Micro version at one-tenth the size. MES is one-tenth of ES, so its tick is $1.25 instead of $12.50. A 20-tick mistake costs $25 on MES instead of $250 on ES. This is the honest answer to 'how much do I need to start?' — Micros make real practice affordable, and they let you size a position precisely instead of jumping straight from 1 contract to 2." },
+          { type: "widget", widget: "micro", heading: "Same mistake, two contracts", body: "Drag 'how wrong you were' and see the same mistake priced on ES versus MES. The Micro is one-tenth the size — the same error costs a tenth as much." },
+          { type: "reveal", prompt: "A 20-tick mistake costs $250 on ES. What does it cost on MES?", answer: "$25. MES is one-tenth of ES, so the same mistake costs one-tenth — $25 instead of $250. That's why Micros make real practice affordable." },
+          { type: "quiz", q: "What is the tick value of MES (Micro ES)?", options: ["$12.50", "$1.25", "$5.00", "$0.50"], correct: 1 },
+          { type: "quiz", q: "How many Micro contracts equal one full-size ES?", options: ["5", "10", "20", "100"], correct: 1 },
+          { type: "quiz", q: "Why do Micros matter for beginners?", options: ["They have higher leverage", "They make practice affordable and allow precise sizing", "They move faster", "They have no margin requirement"], correct: 1 },
+        ],
         questions: [
           { q: "What is the tick value of MES (Micro ES)?", options: ["$12.50", "$1.25", "$5.00", "$0.50"], correct: 1 },
           { q: "How many Micro contracts equal one full-size ES?", options: ["5", "10", "20", "100"], correct: 1 },
