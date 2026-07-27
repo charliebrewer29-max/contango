@@ -27,8 +27,13 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-24 -top-32 h-80 w-80 rounded-full bg-amber-500/20 blur-3xl" style={{ animation: "drift1 18s ease-in-out infinite" }} />
+        <div className="absolute -right-24 top-1/3 h-72 w-72 rounded-full bg-emerald-500/15 blur-3xl" style={{ animation: "drift2 22s ease-in-out infinite" }} />
+        <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-rose-500/15 blur-3xl" style={{ animation: "drift3 26s ease-in-out infinite" }} />
+      </div>
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         {step === 0 && (
           <div className="flex flex-1 flex-col items-center justify-center text-center" style={{ animation: "fadeIn 0.5s ease-out" }}>
             <ContangoLogo size="xl" showWord animated className="mb-2" />
@@ -120,7 +125,7 @@ export default function Onboarding() {
           </div>
         )}
       </div>
-      <style>{`@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }`}</style>
+      <style>{`@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} } @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(60px,40px) scale(1.15)} } @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-50px,30px) scale(1.1)} } @keyframes drift3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(40px,-50px) scale(1.2)} }`}</style>
     </div>
   );
 }
