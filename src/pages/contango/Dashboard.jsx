@@ -19,7 +19,7 @@ export default function Dashboard() {
   const dailyPct = Math.min(100, Math.round(((progress.dailyXp || 0) / Math.max(1, progress.dailyGoal)) * 100));
 
   return (
-    <ScreenShell showStats>
+    <ScreenShell showStats tab="learn">
       {/* Daily goal ring + continue */}
       <section className="mb-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <div className="flex items-center gap-5">

@@ -29,7 +29,7 @@ export default function Leaderboard() {
   const yourRank = league.findIndex(m => m.you) + 1;
 
   return (
-    <ScreenShell showStats title="Leagues">
+    <ScreenShell showStats title="Leagues" tab="leagues">
       <div className="mb-5 flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
         <Trophy className="h-8 w-8 text-amber-400" />
         <div>

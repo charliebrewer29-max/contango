@@ -55,7 +55,7 @@ export default function Coach() {
   }
 
   return (
-    <ScreenShell showStats={false} backTo="/" title={`${COACH_NAME} · AI Coach`}>
+    <ScreenShell showStats={false} title={`${COACH_NAME} · AI Coach`} tab="coach">
       <div className="mb-3 flex items-center gap-2 text-sky-400">
         <Sparkles className="h-5 w-5" />
         <span className="font-display text-sm font-semibold">{COACH_NAME}</span>

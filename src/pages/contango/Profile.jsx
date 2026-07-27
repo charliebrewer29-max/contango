@@ -14,7 +14,7 @@ export default function Profile() {
   }
 
   return (
-    <ScreenShell showStats={false} title="Profile & Settings">
+    <ScreenShell showStats={false} title="Profile & Settings" tab="profile">
       {/* identity card */}
       <div className="mb-6 flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/30">

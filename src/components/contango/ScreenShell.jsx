@@ -4,9 +4,10 @@ import { ChevronLeft } from "lucide-react";
 import TickerTape from "./TickerTape";
 import StatsBar from "./StatsBar";
 import { useContango } from "@/contexts/ContangoContext";
+import BottomNav from "./BottomNav";
 
 // Screen shell: ticker tape + optional stats + back nav + content.
-export default function ScreenShell({ children, showStats = true, backTo, title, right }) {
+export default function ScreenShell({ children, showStats = true, backTo, title, right, tab }) {
   const { progress } = useContango();
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -33,7 +34,8 @@ export default function ScreenShell({ children, showStats = true, backTo, title,
           <StatsBar />
         </div>
       )}
-      <main className="mx-auto max-w-2xl px-4 pb-24 pt-4">{children}</main>
+      <main className={`mx-auto max-w-2xl px-4 pt-4 ${tab ? "pb-28" : "pb-24"}`}>{children}</main>
+      {tab && <BottomNav active={tab} />}
     </div>
   );
 }
