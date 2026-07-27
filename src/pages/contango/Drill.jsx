@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ChevronRight, Check, X, Play, Pause, MessageCircle } from "lucide-react";
+import { ChevronRight, Check, X, Play, Pause, MessageCircle, Bot } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import CandleChart from "@/components/contango/CandleChart";
 import FeedbackFlash, { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
@@ -13,7 +13,7 @@ import { INSTRUMENTS } from "@/lib/instruments";
 export default function Drill() {
   const { branchId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markDrillComplete } = useContango();
+  const { recordSession, markDrillComplete, setLastDrillReview } = useContango();
   const branch = findBranch(branchId);
 
   const scenario = useMemo(() => branch?.buildDrill ? branch.buildDrill() : null, [branch]);
@@ -29,6 +29,7 @@ export default function Drill() {
   const [exitPrice, setExitPrice] = useState(null);
   const [decisionLog, setDecisionLog] = useState([]);
   const playRef = useRef(null);
+  const decisionsRef = useRef([]);
 
   if (!scenario) {
     return <ScreenShell><div className="text-slate-400">Drill not found.</div></ScreenShell>;
@@ -69,6 +70,7 @@ export default function Drill() {
     setFlash(correct ? "correct" : "wrong");
     if (correct) setCorrectCount(c => c + 1);
     setDecisionLog(log => [...log, { barIndex: currentDP.barIndex, selected: idx, correct }]);
+    decisionsRef.current.push({ barIndex: currentDP.barIndex, selected: idx, correct });
 
     setTimeout(() => {
       setFlash(null);
@@ -95,6 +97,21 @@ export default function Drill() {
   function finishDrill(finalCorrect) {
     const events = recordSession({ correct: finalCorrect, total: decisionPoints.length, completedType: "drill" });
     markDrillComplete(`${branch.id}-drill`);
+    setLastDrillReview({
+      branchId: branch.id,
+      branchTitle: branch.branchTitle,
+      instrument,
+      decisions: decisionPoints.map((dp, i) => ({
+        barIndex: dp.barIndex,
+        prompt: dp.prompt,
+        options: dp.options,
+        correct: dp.correct,
+        selected: decisionsRef.current[i]?.selected ?? null,
+        isCorrect: decisionsRef.current[i]?.correct ?? null,
+      })),
+      correctCount: finalCorrect,
+      total: decisionPoints.length,
+    });
     setPhase("done");
     setShowCelebrate(true);
     setTimeout(() => setShowCelebrate(false), 2200);
@@ -207,7 +224,10 @@ export default function Drill() {
             </div>
           )}
           <div className="mt-6 space-y-2">
-            <Link to={`/coach?branch=${branch.id}`} className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 py-3.5 font-semibold text-white transition hover:bg-sky-400">
+            <Link to="/drill-coach" className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3.5 font-semibold text-white transition hover:bg-emerald-400">
+              <Bot className="h-5 w-5" /> Review my mistakes
+            </Link>
+            <Link to={`/coach?branch=${branch.id}`} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-800 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-700">
               <MessageCircle className="h-5 w-5" /> Reflect with AI coach
             </Link>
             <button onClick={() => navigate("/")} className="w-full rounded-xl bg-slate-800 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-700">

@@ -22,6 +22,7 @@ const DEFAULT_PROGRESS = {
   subscription: "free",
   mindset: 75,
   diaryUnlocked: [],
+  lastDrillReview: null,
 };
 
 const ContangoContext = createContext(null);
@@ -84,6 +85,10 @@ export function ContangoProvider({ children }) {
       { ...prev, diaryUnlocked: [...(prev.diaryUnlocked || []), id] });
   }, []);
 
+  const setLastDrillReview = useCallback((review) => {
+    setProgress(prev => ({ ...prev, lastDrillReview: review }));
+  }, []);
+
   const value = {
     progress,
     update,
@@ -94,6 +99,7 @@ export function ContangoProvider({ children }) {
     resetProgress,
     adjustMindset,
     unlockDiary,
+    setLastDrillReview,
     todayStr,
   };
 
