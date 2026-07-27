@@ -24,7 +24,7 @@ export default function SkillTree() {
   const foundationDone = progress.completedLessons.length > 0;
 
   return (
-    <div className="flex flex-col items-center gap-2 py-4">
+    <div className="flex flex-col items-center gap-2.5 py-5">
       {BRANCHES.map((branch, idx) => {
         const unlocked = branch.unlockRequires.length === 0 ||
           (branch.unlockRequires.includes("foundation-complete") && foundationDone);
@@ -38,7 +38,7 @@ export default function SkillTree() {
           <div key={branch.id} className="w-full" style={{ transform: `translateX(${offset}px)` }}>
             <Link
               to={unlocked ? `/branch/${branch.id}` : "#"}
-              className={`flex items-center gap-3 rounded-2xl border p-3 transition ${
+              className={`flex items-center gap-3 rounded-2xl border p-3.5 transition ${
                 unlocked ? `${c.bg} ${c.ring} hover:scale-[1.01]` : "border-slate-800 bg-slate-900/40 opacity-50"
               } ${isNext ? "animate-pulse shadow-lg " + c.glow : ""}`}
             >
@@ -47,10 +47,10 @@ export default function SkillTree() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate font-display text-sm font-semibold text-slate-100">{branch.branchTitle}</span>
+                  <span className="truncate font-display text-[15px] font-semibold tracking-tight text-slate-100">{branch.branchTitle}</span>
                   {!unlocked && <Lock className="h-3 w-3 text-slate-600" />}
                 </div>
-                <p className="truncate text-xs text-slate-500">{branch.blurb}</p>
+                <p className="truncate text-[13px] leading-snug text-slate-500">{branch.blurb}</p>
               </div>
               {isBranchDone(branch, progress) && <Check className="h-4 w-4 text-emerald-400" />}
             </Link>
