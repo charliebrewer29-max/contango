@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Play, Flame, Trophy, User, ChevronRight, Target } from "lucide-react";
+import { Play, Flame, Trophy, User, ChevronRight, Target, Compass } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import SkillTree from "@/components/contango/SkillTree";
 import { useContango } from "@/contexts/ContangoContext";
@@ -40,6 +40,17 @@ export default function Dashboard() {
           </Link>
         )}
       </section>
+
+      {!progress.firstLessonDone && (
+        <Link to="/guide" className="mb-6 flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 transition hover:bg-amber-500/10">
+          <Compass className="h-6 w-6 shrink-0 text-amber-400" />
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-slate-100">New here? Chat with a guide</div>
+            <div className="text-xs text-slate-400">Get oriented and find your best starting point.</div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-500" />
+        </Link>
+      )}
 
       {/* Quick actions */}
       <div className="mb-6 grid grid-cols-3 gap-3">
