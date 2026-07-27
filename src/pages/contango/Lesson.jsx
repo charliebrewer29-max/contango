@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Check, X, ChevronRight, Brain, ArrowRight, BookOpen } from "lucide-react";
+import { Check, X, ChevronRight, Brain, ArrowRight, BookOpen, BarChart3 } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import FeedbackFlash from "@/components/contango/FeedbackFlash";
 import { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
 import MindsetMeter from "@/components/contango/MindsetMeter";
 import { useContango } from "@/contexts/ContangoContext";
 import { allUnitsFlat, DIARY_ENTRIES } from "@/lib/content";
+import CandleChart from "@/components/contango/CandleChart";
+import { buildLessonChart } from "@/lib/lessonCharts";
 
 // Lesson screen — a stage-based learning engine.
 // Stages interleave teaching ("teach"), reflective psychology ("emotion"),
@@ -38,6 +40,8 @@ export default function Lesson() {
     if (!unit) return [];
     if (unit.stages) return unit.stages;
     const s = [{ type: "teach", heading: unit.title, body: unit.info }];
+    const chart = buildLessonChart(unit.id);
+    if (chart) s.push(chart);
     for (const q of (unit.questions || [])) s.push({ type: "quiz", ...q });
     return s;
   }, [unit]);
@@ -193,6 +197,55 @@ export default function Lesson() {
                     Continue <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* ---- CHART stage (practice reading a real chart) ---- */}
+          {stage.type === "chart" && (
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-emerald-400">
+                <BarChart3 className="h-4 w-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Read the chart</span>
+              </div>
+              <CandleChart
+                bars={stage.bars}
+                revealTo={stage.revealTo ?? stage.bars.length}
+                entryPrice={selected !== null ? stage.entryPrice : null}
+                stopPrice={selected !== null ? stage.stopPrice : null}
+                height={220}
+              />
+              <p className="mt-4 font-medium text-slate-100">{stage.prompt}</p>
+              <div className="mt-3 space-y-3">
+                {stage.options.map((opt, i) => {
+                  const isCorrect = i === stage.correct;
+                  const isSelected = i === selected;
+                  let cls = "border-slate-800 bg-slate-900 hover:border-slate-600";
+                  if (selected !== null) {
+                    if (isCorrect) cls = "border-emerald-500 bg-emerald-500/10";
+                    else if (isSelected) cls = "border-rose-500 bg-rose-500/10";
+                    else cls = "border-slate-800 bg-slate-900 opacity-50";
+                  }
+                  return (
+                    <button key={i} onClick={() => answerQuiz(i)} disabled={selected !== null}
+                      className={`flex w-full items-center justify-between rounded-xl border p-4 text-left transition ${cls}`}>
+                      <span className="text-sm text-slate-200">{opt}</span>
+                      {selected !== null && isCorrect && <Check className="h-5 w-5 text-emerald-400" />}
+                      {selected !== null && isSelected && !isCorrect && <X className="h-5 w-5 text-rose-400" />}
+                    </button>
+                  );
+                })}
+              </div>
+              {selected !== null && stage.note && (
+                <div className="mt-4 rounded-xl border border-slate-700 bg-slate-900 p-4" style={{ animation: "fadeIn 0.3s ease-out" }}>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-emerald-400">Coach's note</p>
+                  <p className="text-sm leading-relaxed text-slate-300">{stage.note}</p>
+                </div>
+              )}
+              {selected !== null && (
+                <button onClick={advance} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
+                  {stageIdx + 1 < stages.length ? "Continue" : "Finish"} <ChevronRight className="h-5 w-5" />
+                </button>
               )}
             </div>
           )}
