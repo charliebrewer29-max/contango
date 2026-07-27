@@ -72,6 +72,14 @@ export function applyProgress(progress, { correct, total, completedType }) {
     // daily goal progress
     next.dailyXp = next.lastActiveDate === today ? (next.dailyXp || 0) + xpGained : xpGained;
 
+    // rolling daily history for Insights charts (one entry per day, last 30 days)
+    const hist = Array.isArray(next.history) ? [...next.history] : [];
+    const snap = { date: today, xp: next.xp, dailyXp: next.dailyXp, streak: next.streak };
+    const hi = hist.findIndex(h => h.date === today);
+    if (hi >= 0) hist[hi] = snap; else hist.push(snap);
+    if (hist.length > 30) hist.splice(0, hist.length - 30);
+    next.history = hist;
+
     // milestone celebration
     if ([7, 30, 100].includes(next.streak)) {
       events.push({ type: "streak-milestone", streak: next.streak });

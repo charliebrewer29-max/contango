@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, Navigate } from "react-router-dom";
-import { Play, Flame, Trophy, User, ChevronRight, Target, Compass, Repeat } from "lucide-react";
+import { Play, Flame, Trophy, User, ChevronRight, Target, Compass, Repeat, BarChart3 } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import SkillTree from "@/components/contango/SkillTree";
 import { useContango } from "@/contexts/ContangoContext";
@@ -70,10 +70,11 @@ export default function Dashboard() {
       </Link>
 
       {/* Quick actions */}
-      <div className="mb-6 grid grid-cols-3 gap-3">
+      <div className="mb-6 grid grid-cols-4 gap-2">
         <QuickLink to="/leaderboard" icon={<Trophy className="h-5 w-5" />} label="Leagues" color="text-amber-400" />
         <QuickLink to="/coach" icon={<Flame className="h-5 w-5" />} label="Coach" color="text-sky-400" />
         <QuickLink to="/profile" icon={<User className="h-5 w-5" />} label="Profile" color="text-slate-300" />
+        <QuickLink to="/insights" icon={<BarChart3 className="h-5 w-5" />} label="Insights" color="text-emerald-400" />
       </div>
 
       {/* Skill tree */}

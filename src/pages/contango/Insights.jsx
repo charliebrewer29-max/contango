@@ -1,0 +1,208 @@
+import React from "react";
+import { BarChart3, Flame, Zap, Brain, TrendingUp } from "lucide-react";
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
+  AreaChart, Area,
+} from "recharts";
+import ScreenShell from "@/components/contango/ScreenShell";
+import { useContango } from "@/contexts/ContangoContext";
+import { lastNDays, branchMastery, conceptMastery } from "@/lib/insights";
+
+const COLOR_HEX = {
+  amber: "#fbbf24",
+  rose: "#fb7185",
+  sky: "#38bdf8",
+  violet: "#a78bfa",
+  emerald: "#34d399",
+};
+
+const AXIS_TICK = { fill: "#64748b", fontSize: 11 };
+
+export default function Insights() {
+  const { progress } = useContango();
+  const series = React.useMemo(() => lastNDays(14, progress.history), [progress.history]);
+  const branches = React.useMemo(
+    () => branchMastery(progress),
+    [progress.srCards, progress.completedLessons, progress.completedDrills]
+  );
+  const concepts = React.useMemo(
+    () => conceptMastery(progress),
+    [progress.srCards, progress.completedLessons]
+  );
+
+  const totalXp = progress.xp || 0;
+  const streak = progress.streak || 0;
+  const activeDays = (progress.history || []).length;
+  const avgMastery = branches.length
+    ? Math.round(branches.reduce((s, b) => s + b.mastery, 0) / branches.length)
+    : 0;
+
+  return (
+    <ScreenShell showStats backTo="/" title="Insights">
+      {/* summary tiles */}
+      <div className="mb-5 grid grid-cols-4 gap-2">
+        <Summary icon={<Flame className="h-4 w-4" />} value={streak} label="streak" color="text-amber-400" />
+        <Summary icon={<Zap className="h-4 w-4" />} value={totalXp} label="total XP" color="text-sky-400" />
+        <Summary icon={<TrendingUp className="h-4 w-4" />} value={activeDays} label="active days" color="text-emerald-400" />
+        <Summary icon={<Brain className="h-4 w-4" />} value={`${avgMastery}%`} label="mastery" color="text-violet-400" />
+      </div>
+
+      {/* streak strip */}
+      <ChartCard title="Daily streak" icon={<Flame className="h-4 w-4 text-amber-400" />} sub={`${streak}-day`}>
+        <div className="flex items-end justify-between gap-1">
+          {series.map((d) => (
+            <div key={d.date} className="flex flex-1 flex-col items-center gap-1">
+              <div
+                className={`h-12 w-full rounded-md ${d.active ? "bg-amber-400" : "bg-slate-800"}`}
+                title={`${d.date}: ${d.active ? d.dailyXp + " XP" : "no activity"}`}
+              />
+              <span className="text-[9px] text-slate-600">{d.label}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          {streak > 0
+            ? `You're on a ${streak}-day roll — keep the chain alive.`
+            : "Complete a lesson or drill to start a streak."}
+        </p>
+      </ChartCard>
+
+      {/* daily XP */}
+      <ChartCard title="Daily XP gains" icon={<Zap className="h-4 w-4 text-sky-400" />} sub="last 14 days">
+        <div style={{ height: 180 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={series} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <CartesianGrid stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: "#1e293b" }} tickLine={false} />
+              <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={36} />
+              <Tooltip content={<XpTip />} cursor={{ fill: "#1e293b55" }} />
+              <Bar dataKey="dailyXp" radius={[3, 3, 0, 0]} maxBarSize={26}>
+                {series.map((d, i) => (
+                  <Cell key={i} fill={d.dailyXp > 0 ? "#38bdf8" : "#1e293b"} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartCard>
+
+      {/* cumulative XP */}
+      <ChartCard title="Total XP growth" icon={<TrendingUp className="h-4 w-4 text-emerald-400" />} sub={`${totalXp} XP`}>
+        <div style={{ height: 180 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={series} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="xpFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#34d399" stopOpacity={0.5} />
+                  <stop offset="100%" stopColor="#34d399" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: "#1e293b" }} tickLine={false} />
+              <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={36} />
+              <Tooltip content={<XpCumTip />} cursor={{ stroke: "#334155" }} />
+              <Area type="monotone" dataKey="xp" stroke="#34d399" strokeWidth={2} fill="url(#xpFill)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartCard>
+
+      {/* branch mastery */}
+      <ChartCard title="Mastery by branch" icon={<Brain className="h-4 w-4 text-violet-400" />}>
+        {branches.length === 0 ? (
+          <Empty text="Finish a lesson and review it in Practice to build mastery." />
+        ) : (
+          <div className="space-y-3">
+            {branches.map((b) => (
+              <div key={b.id}>
+                <div className="mb-1 flex items-center justify-between text-xs">
+                  <span className="font-medium text-slate-200">{b.title}</span>
+                  <span className="text-slate-500">{b.mastery}% · {b.completion}% done</span>
+                </div>
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${b.mastery}%`, backgroundColor: COLOR_HEX[b.color] || "#34d399" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </ChartCard>
+
+      {/* per-concept mastery */}
+      <ChartCard title="Concept mastery" icon={<BarChart3 className="h-4 w-4 text-emerald-400" />}>
+        {concepts.length === 0 ? (
+          <Empty text="No concepts in review yet." />
+        ) : (
+          <div className="space-y-2.5">
+            {concepts.map((c) => (
+              <div key={c.id}>
+                <div className="mb-1 flex items-center justify-between text-xs">
+                  <span className="text-slate-300">{c.title}</span>
+                  <span className="text-slate-500">{c.mastery}%{c.practiced ? "" : " · introduced"}</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${c.mastery}%`, backgroundColor: COLOR_HEX[c.color] || "#34d399" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </ChartCard>
+    </ScreenShell>
+  );
+}
+
+function Summary({ icon, value, label, color }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 py-3">
+      <span className={color}>{icon}</span>
+      <span className="mt-1 font-mono text-base font-bold text-slate-100">{value}</span>
+      <span className="text-[9px] uppercase tracking-wider text-slate-500">{label}</span>
+    </div>
+  );
+}
+
+function ChartCard({ title, icon, sub, children }) {
+  return (
+    <section className="mb-5 rounded-2xl border border-slate-800 bg-slate-900 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="text-slate-300">{icon}</span>
+        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-slate-300">{title}</h2>
+        {sub && <span className="ml-auto text-xs text-slate-500">{sub}</span>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Empty({ text }) {
+  return <p className="py-6 text-center text-sm text-slate-500">{text}</p>;
+}
+
+function XpTip({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs">
+      <div className="text-slate-400">{d.date}</div>
+      <div className="font-mono font-semibold text-sky-400">{d.dailyXp} XP</div>
+    </div>
+  );
+}
+
+function XpCumTip({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs">
+      <div className="text-slate-400">{d.date}</div>
+      <div className="font-mono font-semibold text-emerald-400">{d.xp} XP total</div>
+    </div>
+  );
+}
