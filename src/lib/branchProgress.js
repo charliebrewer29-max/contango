@@ -48,6 +48,20 @@ export function findNextLesson(progress) {
       if (!(progress.completedLessons || []).includes(u.id)) return { id: u.id, title: u.title };
     }
   }
+  // Honor the onboarding "why" choice: after Foundation, surface the
+  // recommended branch next instead of strict curriculum order.
+  const recId = progress.recommendedBranch;
+  const rec = recId && BRANCHES.find(b => b.id === recId);
+  if (rec) {
+    if (rec.introLesson && !(progress.completedLessons || []).includes(rec.introLesson.id)) {
+      return { id: rec.introLesson.id, title: rec.branchTitle };
+    }
+    if (rec.units) {
+      for (const u of rec.units) {
+        if (!(progress.completedLessons || []).includes(u.id)) return { id: u.id, title: u.title };
+      }
+    }
+  }
   for (const b of BRANCHES) {
     if (b.introLesson && !(progress.completedLessons || []).includes(b.introLesson.id)) {
       return { id: b.introLesson.id, title: b.branchTitle };

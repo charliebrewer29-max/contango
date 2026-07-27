@@ -16,13 +16,20 @@ export default function Onboarding() {
   const navigate = useNavigate();
 
   const WHY_OPTIONS = [
-    { id: "curiosity", label: "Curiosity", desc: "Just learning how futures work" },
-    { id: "considering", label: "Considering trading", desc: "Thinking about real capital someday" },
-    { id: "already-trade", label: "Already trade", desc: "Filling gaps in my knowledge" },
+    { id: "curiosity", label: "Curiosity", desc: "Just learning how futures work", branch: "instruments" },
+    { id: "considering", label: "Considering trading", desc: "Thinking about real capital someday", branch: "risk-psych" },
+    { id: "already-trade", label: "Already trade", desc: "Filling gaps in my knowledge", branch: "trend" },
   ];
 
+  const WHY_NUDGE = {
+    curiosity: "Got it — after the basics, we'll point you to the Instrument Tour so you can explore the markets.",
+    considering: "Smart — after the basics, we'll prioritize Risk & Psychology before you ever risk real capital.",
+    "already-trade": "Nice — after the basics, we'll send you to the strategy branches to sharpen your edge.",
+  };
+
   function finish() {
-    update({ onboardingDone: true, why, dailyGoal: GOAL_OPTIONS.find(g => g.id === goal).xp, goal });
+    const recommendedBranch = WHY_OPTIONS.find(o => o.id === why)?.branch || null;
+    update({ onboardingDone: true, why, dailyGoal: GOAL_OPTIONS.find(g => g.id === goal).xp, goal, recommendedBranch });
     navigate("/lesson/contracts");
   }
 
@@ -76,7 +83,7 @@ export default function Onboarding() {
         {step === 2 && (
           <div className="flex flex-1 flex-col justify-center">
             <h2 className="font-display text-2xl font-bold">Why are you learning?</h2>
-            <p className="mt-2 text-sm text-slate-400">We'll use this to suggest where to start — it won't change the content.</p>
+            <p className="mt-2 text-sm text-slate-400">We'll tailor your suggested path based on this.</p>
             <div className="mt-6 space-y-3">
               {WHY_OPTIONS.map(o => (
                 <button
@@ -94,6 +101,11 @@ export default function Onboarding() {
                 </button>
               ))}
             </div>
+            {why && (
+              <p className="mt-4 rounded-lg border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-xs text-amber-300">
+                {WHY_NUDGE[why]}
+              </p>
+            )}
             <button onClick={() => setStep(3)} className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
               Continue
             </button>
