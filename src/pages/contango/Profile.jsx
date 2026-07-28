@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, Bot, ChevronRight, BookOpen } from "lucide-react";
+import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, Bot, ChevronRight, BookOpen, Pencil } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { MAX_HEARTS } from "@/lib/gamification";
@@ -14,13 +14,17 @@ import StreakRewards from "@/components/contango/StreakRewards";
 import { getEquippedFlair } from "@/lib/streakRewards";
 import { base44 } from "@/api/base44Client";
 import { fetchMe, hasConsent, setConsent } from "@/lib/aiConsent";
+import { avatarById } from "@/components/contango/avatars";
+import AvatarPicker from "@/components/contango/AvatarPicker";
 
 export default function Profile() {
   const { progress, update, refillHearts, resetProgress, repairStreak } = useContango();
   const flair = getEquippedFlair(progress);
+  const avatar = avatarById(progress.avatar);
   const flow = isPremium(progress) ? "history" : "session";
   const [aiOn, setAiOn] = React.useState(false);
   const [aiBusy, setAiBusy] = React.useState(false);
+  const [pickerOpen, setPickerOpen] = React.useState(false);
 
   React.useEffect(() => {
     let alive = true;
@@ -67,7 +71,14 @@ export default function Profile() {
         )}
         <div className="relative flex items-center gap-4">
           <div className={`relative flex h-16 w-16 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10 ${flair ? flair.ringClass : ""}`}>
-            <User className="h-8 w-8 text-amber-400" />
+            {avatar ? (
+              <span className="text-3xl leading-none">{avatar.emoji}</span>
+            ) : (
+              <User className="h-8 w-8 text-amber-400" />
+            )}
+            <button onClick={() => setPickerOpen(true)} aria-label="Change avatar" className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700">
+              <Pencil className="h-3 w-3" />
+            </button>
             {flair && (
               <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-sm leading-none">
                 {flair.glyph}
@@ -198,6 +209,8 @@ export default function Profile() {
         Contango is a simulated educational tool. No real money, no live trading, no trade signals.<br />
         Not affiliated with TradingView.
       </p>
+
+      <AvatarPicker open={pickerOpen} onClose={() => setPickerOpen(false)} />
     </ScreenShell>
   );
 }
