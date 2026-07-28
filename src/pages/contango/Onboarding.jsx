@@ -23,9 +23,9 @@ export default function Onboarding() {
 
 
   const WHY_NUDGE = {
-    curiosity: "Got it - after the basics, we'll point you to the Instrument Tour so you can explore the markets.",
-    considering: "Smart - after the basics, we'll prioritize Risk & Psychology before you ever risk real capital.",
-    "already-trade": "Nice - after the basics, we'll send you to the strategy branches to sharpen your edge."
+    curiosity: "Got it - after the basics, we'll point you to the Instrument Tour, then start you on the discipline drills that separate the 3%.",
+    considering: "Smart - after the basics, we'll prioritize Risk & Psychology and the discipline drills before you ever risk real capital.",
+    "already-trade": "Nice - after the basics, we'll send you to the strategy branches, then drill the behavioral habits that keep the 3% ahead."
   };
 
   function finish() {
@@ -61,11 +61,12 @@ export default function Onboarding() {
               <span className="font-display text-sm font-semibold uppercase tracking-wider">Before we start</span>
             </div>
             <h2 className="font-display text-2xl font-bold">This is education, not advice</h2>
+            <p className="mt-3 text-sm text-slate-400">Most people who try day trading lose money. We're not here to sell you a shortcut - we're here to train the discipline most traders never build.</p>
             <ul className="mt-6 space-y-4 text-sm text-slate-300">
               <li className="flex gap-3"><span className="text-amber-400">●</span> All market data here is <span className="font-semibold text-slate-100">simulated</span>. None of it reflects live prices.</li>
               <li className="flex gap-3"><span className="text-amber-400">●</span> Contango never touches real money. No broker, no orders, no balances.</li>
               <li className="flex gap-3"><span className="text-amber-400">●</span> Nothing here is a trade signal or "buy/sell this now" recommendation.</li>
-              <li className="flex gap-3"><span className="text-amber-400">●</span> This is for learning how markets and strategies work - before risking real capital.</li>
+              <li className="flex gap-3"><span className="text-amber-400">●</span> This is for learning how markets and strategies work, and drilling the discipline to trade them, before risking real capital.</li>
             </ul>
             <label className="mt-8 flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 cursor-pointer">
               <input type="checkbox" checked={acknowledged} onChange={(e) => setAcknowledged(e.target.checked)} className="mt-0.5 h-4 w-4 accent-amber-400" />
@@ -88,7 +89,7 @@ export default function Onboarding() {
         {step === 2 &&
         <div className="flex flex-1 flex-col justify-center">
             <h2 className="font-display text-2xl font-bold">Why are you learning?</h2>
-            <p className="mt-2 text-sm text-slate-400">We'll tailor your suggested path based on this.</p>
+            <p className="mt-2 text-sm text-slate-400">We'll tailor your path - and flag the discipline traps that tend to trip people like you.</p>
             <div className="mt-6 space-y-3">
               {WHY_OPTIONS.map((o) =>
             <button
@@ -120,7 +121,7 @@ export default function Onboarding() {
         {step === 3 &&
         <div className="flex flex-1 flex-col justify-center">
             <h2 className="font-display text-2xl font-bold">Set a daily goal</h2>
-            <p className="mt-2 text-sm text-slate-400">Pick something achievable. You can change it anytime in settings.</p>
+            <p className="mt-2 text-sm text-slate-400">Discipline is built in small, daily reps - not sporadic marathons. Pick something achievable; you can change it anytime in settings.</p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               {GOAL_OPTIONS.map((g) =>
             <button
