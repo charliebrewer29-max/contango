@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ChevronRight, Check, X, Play, MessageCircle, Bot, Crown } from "lucide-react";
+import { ChevronRight, Check, X, Play, MessageCircle, Bot, Crown, ShieldCheck } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import CandleChart from "@/components/contango/CandleChart";
 import FeedbackFlash, { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
@@ -37,6 +37,7 @@ export default function Drill() {
   const [decisionLog, setDecisionLog] = useState([]);
   const playRef = useRef(null);
   const decisionsRef = useRef([]);
+  const dpShownAt = useRef(null);
 
   // Bars to reveal when a decision point is active. For tap points, reveal
   // through the end of the tap zone so the whole entry zone is visible.
@@ -57,6 +58,12 @@ export default function Drill() {
     decisionsRef.current = [];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instrument, difficulty]);
+
+  // Stamp when each decision point becomes active so we can measure decision
+  // time as a discipline signal (patience + post-error tilt detection).
+  useEffect(() => {
+    if (phase === "decision") dpShownAt.current = Date.now();
+  }, [phase, dpIdx]);
 
   if (!scenario) {
     return <ScreenShell><div className="text-slate-400">Drill not found.</div></ScreenShell>;
@@ -110,8 +117,9 @@ export default function Drill() {
     const correct = idx === currentDP.correct;
     setFlash(correct ? "correct" : "wrong");
     if (correct) setCorrectCount(c => c + 1);
-    setDecisionLog(log => [...log, { barIndex: currentDP.barIndex, selected: idx, correct }]);
-    decisionsRef.current.push({ barIndex: currentDP.barIndex, selected: idx, correct });
+    const decisionTimeMs = dpShownAt.current ? Date.now() - dpShownAt.current : null;
+    setDecisionLog(log => [...log, { barIndex: currentDP.barIndex, selected: idx, correct, decisionTimeMs }]);
+    decisionsRef.current.push({ barIndex: currentDP.barIndex, selected: idx, correct, decisionTimeMs });
 
     // every decision shapes mastery; a miss makes this drill surface sooner in Practice
     const conceptKey = `drill:${branch.id}`;
@@ -150,12 +158,15 @@ export default function Drill() {
     const inZone = idx >= currentDP.zoneStart && idx <= currentDP.zoneEnd;
     setFlash(inZone ? "correct" : "wrong");
     if (inZone) setCorrectCount(c => c + 1);
-    setDecisionLog(log => [...log, { barIndex: idx, selected: idx, correct: inZone, type: "tap" }]);
-    decisionsRef.current.push({ barIndex: idx, selected: idx, correct: inZone, type: "tap" });
+    const decisionTimeMs = dpShownAt.current ? Date.now() - dpShownAt.current : null;
     const entryBar = bars[idx];
     setEntryPrice(entryBar.close);
     const lookStart = Math.max(0, idx - 10);
-    setStopPrice(Math.min(...bars.slice(lookStart, idx).map(b => b.low)));
+    const computedStop = Math.min(...bars.slice(lookStart, idx).map(b => b.low));
+    setStopPrice(computedStop);
+    const stopDistancePoints = Math.abs(entryBar.close - computedStop);
+    setDecisionLog(log => [...log, { barIndex: idx, selected: idx, correct: inZone, type: "tap", decisionTimeMs, stopDistancePoints }]);
+    decisionsRef.current.push({ barIndex: idx, selected: idx, correct: inZone, type: "tap", decisionTimeMs, stopDistancePoints });
     const conceptKey = `drill:${branch.id}`;
     recordAnswer(conceptKey, inZone);
     if (!inZone) reviewCard(conceptKey, "again");
@@ -182,11 +193,14 @@ export default function Drill() {
       instrument,
       decisions: decisionPoints.map((dp, i) => ({
         barIndex: dp.barIndex,
+        type: dp.type || "mcq",
         prompt: dp.prompt,
         options: dp.options,
         correct: dp.correct,
         selected: decisionsRef.current[i]?.selected ?? null,
         isCorrect: decisionsRef.current[i]?.correct ?? null,
+        decisionTimeMs: decisionsRef.current[i]?.decisionTimeMs ?? null,
+        stopDistancePoints: decisionsRef.current[i]?.stopDistancePoints ?? null,
       })),
       correctCount: finalCorrect,
       total: decisionPoints.length,
@@ -381,6 +395,9 @@ export default function Drill() {
             </Link>
             <Link to={`/coach?branch=${branch.id}`} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-800 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-700">
               <MessageCircle className="h-5 w-5" /> Reflect with AI coach
+            </Link>
+            <Link to="/discipline" className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-800 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-700">
+              <ShieldCheck className="h-5 w-5" /> Discipline Profile
             </Link>
             <button onClick={() => navigate("/")} className="w-full rounded-xl bg-slate-800 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-700">
               Back to dashboard

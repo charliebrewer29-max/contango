@@ -22,6 +22,7 @@ import Practice from '@/pages/contango/Practice';
 import Insights from '@/pages/contango/Insights';
 import Journal from '@/pages/contango/Journal';
 import Legal from '@/pages/contango/Legal';
+import Discipline from '@/pages/contango/Discipline';
 
 // Route area with subtle slide transitions keyed by path. AnimatePresence
 // mode="wait" lets the outgoing page exit before the next one slides in.
@@ -52,6 +53,7 @@ function AnimatedRoutes() {
           <Route path="/insights" element={<Insights />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="/legal" element={<Legal />} />
+          <Route path="/discipline" element={<Discipline />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>

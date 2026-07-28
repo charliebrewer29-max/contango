@@ -1,5 +1,6 @@
 import React from "react";
-import { BarChart3, Flame, Zap, Brain, TrendingUp, Target } from "lucide-react";
+import { Link } from "react-router-dom";
+import { BarChart3, Flame, Zap, Brain, TrendingUp, Target, ShieldCheck } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
   AreaChart, Area,
@@ -8,6 +9,7 @@ import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { lastNDays, branchMastery, conceptMastery } from "@/lib/insights";
 import { weakConcepts, strongConcepts } from "@/lib/performance";
+import { disciplineProfile } from "@/lib/discipline";
 
 const COLOR_HEX = {
   amber: "#fbbf24",
@@ -30,6 +32,7 @@ export default function Insights() {
     () => conceptMastery(progress),
     [progress.srCards, progress.completedLessons]
   );
+  const discipline = React.useMemo(() => disciplineProfile(progress), [progress.drillHistory]);
 
   const totalXp = progress.xp || 0;
   const streak = progress.streak || 0;
@@ -47,6 +50,21 @@ export default function Insights() {
         <Summary icon={<TrendingUp className="h-4 w-4" />} value={activeDays} label="active days" color="text-emerald-400" />
         <Summary icon={<Brain className="h-4 w-4" />} value={`${avgMastery}%`} label="mastery" color="text-violet-400" />
       </div>
+
+      {/* discipline profile */}
+      <Link to="/discipline" className="mb-6 block">
+        <div className="cg-surface flex items-center gap-4 rounded-2xl p-5 transition hover:border-slate-600">
+          <ShieldCheck className="h-8 w-8 text-amber-400" />
+          <div className="flex-1">
+            <h2 className="font-display text-sm font-semibold text-slate-200">Discipline Profile</h2>
+            <p className="text-xs text-slate-500">Execution discipline - the skill that separates traders who last.</p>
+          </div>
+          <div className="text-right">
+            <div className={`font-mono text-2xl font-bold ${discipline.empty ? "text-slate-600" : dColor(discipline.overall)}`}>{discipline.empty ? "--" : discipline.overall}</div>
+            <div className="text-[10px] uppercase tracking-wide text-slate-600">overall</div>
+          </div>
+        </div>
+      </Link>
 
       {/* streak strip */}
       <ChartCard title="Daily streak" icon={<Flame className="h-4 w-4 text-amber-400" />} sub={`${streak}-day`}>
@@ -196,6 +214,12 @@ export default function Insights() {
       </ChartCard>
     </ScreenShell>
   );
+}
+
+function dColor(s) {
+  if (s >= 80) return "text-emerald-400";
+  if (s >= 60) return "text-amber-400";
+  return "text-rose-400";
 }
 
 function Summary({ icon, value, label, color }) {
