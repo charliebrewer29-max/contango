@@ -137,7 +137,8 @@ export default function BranchNode({ branch, icon: Icon, offset, progress }) {
                   style={{ width: `${s.pct}%`, backgroundColor: barColor, transition: "width 0.6s ease-out, background-color 0.4s ease-out" }}
                 />
               </div>
-              <span className="cg-num font-mono text-[11px] text-slate-500">{s.done}/{s.total}</span>
+              <span className="cg-num font-mono text-[11px] font-semibold text-slate-300">{s.pct}%</span>
+              <span className="cg-num font-mono text-[11px] text-slate-600">{s.done}/{s.total}</span>
             </div>
           )}
         </div>
