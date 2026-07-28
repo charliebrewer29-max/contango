@@ -8,7 +8,7 @@ import {
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { lastNDays, branchMastery, conceptMastery } from "@/lib/insights";
-import { weakConcepts, strongConcepts } from "@/lib/performance";
+import { weakConcepts } from "@/lib/performance";
 import { disciplineProfile } from "@/lib/discipline";
 import { isPremium } from "@/lib/subscription";
 
@@ -42,6 +42,11 @@ export default function Insights() {
     ? Math.round(branches.reduce((s, b) => s + b.mastery, 0) / branches.length)
     : 0;
 
+  // Chart domains: hide Y-axis labels when the data is all zero so we never
+  // render a stack of "0"s; otherwise pin to the real data max as integers.
+  const maxDailyXp = Math.max(0, ...series.map((d) => d.dailyXp));
+  const maxXp = Math.max(0, ...series.map((d) => d.xp));
+
   return (
     <ScreenShell showStats backTo="/" title="Insights">
       {/* summary tiles */}
@@ -61,8 +66,14 @@ export default function Insights() {
             <p className="text-xs text-slate-500">Execution discipline - the skill that separates traders who last.</p>
           </div>
           <div className="text-right">
-            <div className={`font-mono text-2xl font-bold ${discipline.empty ? "text-slate-600" : dColor(discipline.overall)}`}>{discipline.empty ? "--" : discipline.overall}</div>
-            <div className="text-[10px] uppercase tracking-wide text-slate-600">overall</div>
+            {discipline.empty ? (
+              <div className="text-xs font-medium text-slate-500">Not enough data yet</div>
+            ) : (
+              <>
+                <div className={`font-mono text-2xl font-bold ${dColor(discipline.overall)}`}>{discipline.overall}</div>
+                <div className="text-[10px] uppercase tracking-wide text-slate-600">overall</div>
+              </>
+            )}
           </div>
         </div>
       </Link>
@@ -106,7 +117,15 @@ export default function Insights() {
             <BarChart data={series} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <CartesianGrid stroke="rgba(148,163,184,0.12)" vertical={false} />
               <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: "#1e293b" }} tickLine={false} />
-              <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={36} />
+              <YAxis
+                tick={maxDailyXp > 0 ? AXIS_TICK : false}
+                axisLine={false}
+                tickLine={false}
+                width={36}
+                domain={maxDailyXp > 0 ? [0, maxDailyXp] : [0, 1]}
+                allowDecimals={false}
+                tickCount={4}
+              />
               <Tooltip content={<XpTip />} cursor={{ fill: "rgba(148,163,184,0.08)" }} />
               <Bar dataKey="dailyXp" radius={[3, 3, 0, 0]} maxBarSize={26}>
                 {series.map((d, i) => (
@@ -131,7 +150,15 @@ export default function Insights() {
               </defs>
               <CartesianGrid stroke="rgba(148,163,184,0.12)" vertical={false} />
               <XAxis dataKey="label" tick={AXIS_TICK} axisLine={{ stroke: "#1e293b" }} tickLine={false} />
-              <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={36} />
+              <YAxis
+                tick={maxXp > 0 ? AXIS_TICK : false}
+                axisLine={false}
+                tickLine={false}
+                width={36}
+                domain={maxXp > 0 ? [0, maxXp] : [0, 1]}
+                allowDecimals={false}
+                tickCount={4}
+              />
               <Tooltip content={<XpCumTip />} cursor={{ stroke: "#334155" }} />
               <Area type="monotone" dataKey="xp" stroke="#34d399" strokeWidth={2} fill="url(#xpFill)" />
             </AreaChart>
@@ -149,12 +176,12 @@ export default function Insights() {
               <div key={b.id}>
                 <div className="mb-1 flex items-center justify-between text-xs">
                   <span className="font-medium text-slate-200">{b.title}</span>
-                  <span className="text-slate-500">{b.mastery}% · {b.completion}% done</span>
+                  <span className="text-slate-500">{b.completion}% complete</span>
                 </div>
                 <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800/60">
                   <div
                     className="h-full rounded-full"
-                    style={{ width: `${b.mastery}%`, backgroundColor: COLOR_HEX[b.color] || "#34d399" }}
+                    style={{ width: `${b.completion}%`, backgroundColor: COLOR_HEX[b.color] || "#34d399" }}
                   />
                 </div>
               </div>
@@ -189,10 +216,20 @@ export default function Insights() {
 
       <ChartCard title="Strengths & weak spots" icon={<Target className="h-4 w-4 text-rose-400" />}>
         {(() => {
-          const weak = weakConcepts(progress).slice(0, 3);
-          const strong = strongConcepts(progress).slice(0, 3);
-          if (!weak.length && !strong.length)
-            return <Empty text="Answer lesson questions to see where you shine and where to focus." />;
+          // Need >= 3 attempts on a concept before its score means anything,
+          // and at least 3 scored concepts before the section is worth showing.
+          const rated = weakConcepts(progress, 3);
+          if (rated.length < 3)
+            return <Empty text="Complete a few more drills to see your strengths and weak spots." />;
+          // Threshold split so a concept can never appear in both lists.
+          const strong = rated
+            .filter((w) => w.accuracy >= 0.7)
+            .sort((a, b) => b.accuracy - a.accuracy)
+            .slice(0, 3);
+          const weak = rated
+            .filter((w) => w.accuracy < 0.7)
+            .sort((a, b) => a.accuracy - b.accuracy)
+            .slice(0, 3);
           return (
             <div className="space-y-4">
               {weak.length > 0 && (
