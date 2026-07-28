@@ -5,7 +5,7 @@ import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { disciplineProfile } from "@/lib/discipline";
 
-// Discipline Profile — the flagship differentiator. Measures execution
+// Discipline Profile - the flagship differentiator. Measures execution
 // behavior from drill decisions, not strategy knowledge, because behavior
 // is what the research says actually separates traders who last.
 export default function Discipline() {
@@ -14,7 +14,7 @@ export default function Discipline() {
 
   return (
     <ScreenShell showStats backTo="/" title="Discipline Profile">
-      {/* honest framing — leads with the failure statistic, no earnings claims */}
+      {/* honest framing - leads with the failure statistic, no earnings claims */}
       <div className="mb-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <div className="mb-2 flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-amber-400" />

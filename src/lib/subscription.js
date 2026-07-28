@@ -4,7 +4,7 @@
 
 import { BRANCHES } from "./content";
 
-export const TRIAL_DAYS = 21;          // long trial: 17–32d window converts ~70% better
+export const TRIAL_DAYS = 21;          // long trial: 17-32d window converts ~70% better
 export const FREE_COACH_DAILY = 3;     // free coach calls per day, session-only
 export const FREE_STRATEGY_COUNT = 2;  // free learners get the first two strategy branches
 export const FREE_INSTRUMENTS = ["ES"];

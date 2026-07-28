@@ -37,7 +37,7 @@ function roundToTick(price, tickSize) {
   return Math.round(price / tickSize) * tickSize;
 }
 
-// Standard-normal sample via Box–Muller (real bar returns are ~normal with fat tails).
+// Standard-normal sample via Box-Muller (real bar returns are ~normal with fat tails).
 function gaussian(rand) {
   const u = Math.max(1e-9, rand());
   const v = rand();
@@ -61,7 +61,7 @@ function makeCandle(open, mu, sigma, tick, rand) {
 }
 
 // Trend-following pattern modeled as a stochastic-volatility process:
-// a mean-reverting (Ornstein–Uhlenbeck) drift rides a GARCH(1,1) volatility with
+// a mean-reverting (Ornstein-Uhlenbeck) drift rides a GARCH(1,1) volatility with
 // clustering and a spike at the breakout, so trends accelerate and pull back
 // like real markets. Chop → breakout up → rollover.
 // Fixed decision points at bar indices 19 and 41.

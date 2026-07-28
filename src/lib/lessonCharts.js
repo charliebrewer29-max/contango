@@ -62,7 +62,7 @@ export function buildLessonChart(unitId) {
         type: "chart", instrument: "ES", bars, revealTo: bars.length,
         prompt: "Overnight (ETH) sessions are thinner than the cash session. Which is true of overnight trading?",
         options: ["Tighter spreads and more volume", "Wider spreads and lower liquidity", "No trading is allowed", "Identical to RTH"], correct: 1,
-        note: "Overnight, fewer people are trading, so spreads widen and the order book thins out. Real liquidity crowds into RTH (9:30am–4:00pm ET). You can feel it live: tight spreads, deep books, frequent prints. That's liquidity you can trust.",
+        note: "Overnight, fewer people are trading, so spreads widen and the order book thins out. Real liquidity crowds into RTH (9:30am-4:00pm ET). You can feel it live: tight spreads, deep books, frequent prints. That's liquidity you can trust.",
       };
     }
     case "es-profile": {

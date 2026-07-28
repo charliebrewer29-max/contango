@@ -1,4 +1,4 @@
-// Discipline Engine — derives a behavioral profile from drill history.
+// Discipline Engine - derives a behavioral profile from drill history.
 //
 // The research consensus (Chague/De-Losso/Giovannetti; Barber & Odean; FINRA)
 // is that day traders fail on discipline and psychology, not strategy

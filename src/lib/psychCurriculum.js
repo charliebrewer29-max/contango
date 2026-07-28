@@ -309,7 +309,7 @@ export const PSYCH_UNITS = [
       {
         type: "teach",
         heading: "You can be wrong most of the time and still win",
-        body: "Target roughly 1.5–2x the amount you risk. With a 2:1 reward-to-risk, you can be wrong more than half the time and still be profitable - a system doesn't need a high win rate to work. The drill: given an entry and a stop, where does the target have to be to justify the trade?",
+        body: "Target roughly 1.5-2x the amount you risk. With a 2:1 reward-to-risk, you can be wrong more than half the time and still be profitable - a system doesn't need a high win rate to work. The drill: given an entry and a stop, where does the target have to be to justify the trade?",
       },
       {
         type: "emotion",
@@ -326,9 +326,9 @@ export const PSYCH_UNITS = [
       {
         type: "quiz",
         q: "What's a healthy minimum reward-to-risk target?",
-        options: ["0.5:1", "1:1", "1.5–2:1", "10:1"],
+        options: ["0.5:1", "1:1", "1.5-2:1", "10:1"],
         correct: 2,
-        notes: ["Too low - you need a very high win rate to survive.", "Break-even territory after costs.", "Right. 1.5–2:1 lets you be wrong often and still profit.", "10:1 is a lottery ticket, not a plan."],
+        notes: ["Too low - you need a very high win rate to survive.", "Break-even territory after costs.", "Right. 1.5-2:1 lets you be wrong often and still profit.", "10:1 is a lottery ticket, not a plan."],
       },
       {
         type: "quiz",

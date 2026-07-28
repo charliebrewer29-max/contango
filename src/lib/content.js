@@ -91,7 +91,7 @@ export const BRANCHES = [
         id: "sessions",
         type: "concept",
         title: "Sessions & Liquidity",
-        info: "Futures trade almost 24 hours, but liquidity isn't constant. Regular Trading Hours (RTH) for equity index futures is the US cash session, roughly 9:30am–4:00pm ET - that's where the volume and liquidity live. Overnight (ETH) is thinner, with wider spreads. You can gauge liquidity in real time by watching spread tightness, order depth, how often trades print, and volume versus open interest.",
+        info: "Futures trade almost 24 hours, but liquidity isn't constant. Regular Trading Hours (RTH) for equity index futures is the US cash session, roughly 9:30am-4:00pm ET - that's where the volume and liquidity live. Overnight (ETH) is thinner, with wider spreads. You can gauge liquidity in real time by watching spread tightness, order depth, how often trades print, and volume versus open interest.",
         questions: [
           { q: "When are US equity index futures most liquid?", options: ["Overnight ETH", "During RTH (US cash session)", "Weekends", "Market open only"], correct: 1 },
           { q: "Which is NOT a way to gauge real-time liquidity?", options: ["Bid/ask spread", "Resting order depth", "Trade frequency", "Your account balance"], correct: 3 },
