@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { MAX_HEARTS, applyProgress, todayStr } from "@/lib/gamification";
 import { scheduleCard } from "@/lib/spacedRepetition";
 import { isPremium } from "@/lib/subscription";
+import { branchForLessonId } from "@/lib/branchMastery";
+import { isBranchComplete } from "@/lib/branchProgress";
 
 const STORAGE_KEY = "contango_progress_v1";
 
@@ -35,6 +37,8 @@ const DEFAULT_PROGRESS = {
   drillHistory: [],
   streakRepairMonth: null,
   coachMemory: [],
+  branchReps: {},
+  branchLastTouched: {},
 };
 
 const ContangoContext = createContext(null);
@@ -80,8 +84,21 @@ export function ContangoProvider({ children }) {
   }, []);
 
   const markLessonComplete = useCallback((lessonId) => {
-    setProgress(prev => prev.completedLessons.includes(lessonId) ? prev :
-      { ...prev, completedLessons: [...prev.completedLessons, lessonId] });
+    setProgress(prev => {
+      if (prev.completedLessons.includes(lessonId)) return prev;
+      const branch = branchForLessonId(lessonId);
+      const next = { ...prev, completedLessons: [...prev.completedLessons, lessonId] };
+      if (branch) {
+        // Touching the branch refreshes its staleness clock.
+        next.branchLastTouched = { ...(prev.branchLastTouched || {}), [branch.id]: new Date().toISOString() };
+        // Core branches (no drill) earn their first "rep" the moment they're
+        // fully completed - strategy branches accrue reps via logDrill instead.
+        if (!branch.buildDrill && isBranchComplete(branch, next)) {
+          next.branchReps = { ...(prev.branchReps || {}), [branch.id]: ((prev.branchReps || {})[branch.id] || 0) + 1 };
+        }
+      }
+      return next;
+    });
   }, []);
 
   const markDrillComplete = useCallback((drillId) => {
@@ -154,7 +171,15 @@ export function ContangoProvider({ children }) {
     setProgress(prev => {
       const hist = [...(prev.drillHistory || []), { ...entry, date: new Date().toISOString() }];
       if (hist.length > 100) hist.shift();
-      return { ...prev, drillHistory: hist };
+      const bid = entry?.branchId;
+      const next = { ...prev, drillHistory: hist };
+      if (bid) {
+        // Every drill run is one "rep" of that branch (mastery) and refreshes
+        // its last-touched timestamp so a finished branch stops cracking.
+        next.branchLastTouched = { ...(prev.branchLastTouched || {}), [bid]: new Date().toISOString() };
+        next.branchReps = { ...(prev.branchReps || {}), [bid]: ((prev.branchReps || {})[bid] || 0) + 1 };
+      }
+      return next;
     });
   }, []);
 
