@@ -23,7 +23,13 @@ export default function TickerTape({ reducedMotion = false }) {
 
   const items = [...quotes, ...quotes];
   return (
-    <div className="relative overflow-hidden border-b border-slate-800/60 bg-[#0a0e16]/90 backdrop-blur">
+    <div
+      className="relative overflow-hidden border-b border-slate-800/60 bg-[#0a0e16]/90 backdrop-blur"
+      style={{
+        WebkitMaskImage: "linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent)",
+        maskImage: "linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent)",
+      }}
+    >
       {!reducedMotion ? (
         <div
           ref={rafRef}
@@ -33,7 +39,7 @@ export default function TickerTape({ reducedMotion = false }) {
           {items.map((q, i) => {
             const up = q.change >= 0;
             return (
-              <span key={i} className="mx-5 inline-flex items-center gap-1.5 font-mono text-xs">
+              <span key={i} className="mx-6 inline-flex items-center gap-1.5 font-mono text-xs">
                 <span className="text-slate-500">{q.sym}</span>
                 <span className="text-slate-200">{q.price.toFixed(q.base < 100 ? 2 : 1)}</span>
                 <span className={up ? "text-emerald-400" : "text-rose-400"}>
@@ -48,7 +54,7 @@ export default function TickerTape({ reducedMotion = false }) {
           {quotes.map((q, i) => {
             const up = q.change >= 0;
             return (
-              <span key={i} className="mx-5 inline-flex items-center gap-1.5 font-mono text-xs">
+              <span key={i} className="mx-6 inline-flex items-center gap-1.5 font-mono text-xs">
                 <span className="text-slate-500">{q.sym}</span>
                 <span className="text-slate-200">{q.price.toFixed(q.base < 100 ? 2 : 1)}</span>
                 <span className={up ? "text-emerald-400" : "text-rose-400"}>
