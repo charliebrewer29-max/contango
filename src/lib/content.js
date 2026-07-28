@@ -280,6 +280,80 @@ export const BRANCHES = [
         { q: "Where does the stop go structurally?", options: ["Above the entry", "Below the breakout level", "At the entry price", "There is no stop"], correct: 1 },
       ],
     },
+    units: [
+      {
+        id: "trend-identify",
+        type: "concept",
+        title: "Spotting a Real Trend",
+        info: "A trend isn't a few green candles - it's a structural pattern of higher highs and higher lows (uptrend) or lower highs and lower lows (downtrend). Confirm it with a sloped moving average (a 20 or 50 EMA trending up) and, if you like, ADX above 25. The honest rule: if you can't draw a clean line under the pullbacks without it crossing price repeatedly, you're not in a trend - you're in chop, and trend-following strategies will bleed there. Read the structure first; the strategy comes second.",
+        questions: [
+          { q: "An uptrend is defined by:", options: ["Random green candles", "Higher highs and higher lows", "A flat moving average", "Tight spreads"], correct: 1 },
+          { q: "A sloped 20 or 50 EMA confirms:", options: ["Nothing", "The direction of the trend", "Your stop level", "The tick value"], correct: 1 },
+          { q: "If your trendline keeps getting crossed by price, you're likely:", options: ["In a strong trend", "In chop, not a trend", "About to break out", "At the day high"], correct: 1 },
+          { q: "ADX above ~25 generally signals:", options: ["A range", "A trending market", "Low volume", "A reversal"], correct: 1 },
+        ],
+      },
+      {
+        id: "trend-pullback",
+        type: "concept",
+        title: "Pullback Entries",
+        info: "Chasing the breakout candle is the most common way new trend traders lose - you buy the worst price with the widest stop. The pullback entry fixes that: after a breakout, wait for price to retrace to the moving average, a prior swing, or a broken level that flipped, and enter when that level holds with a rejection candle. You get a better entry, a tighter stop (just beyond the pullback), and you skip the breakouts that never look back. The cost: you miss the runaway trends. The trade is worth it - better risk/reward beats catching every move.",
+        questions: [
+          { q: "The pullback entry waits for:", options: ["The spike", "Price to retrace to a level and hold", "The exact top", "The close only"], correct: 1 },
+          { q: "Why enter on a pullback over the breakout candle?", options: ["Guaranteed profit", "Better price and tighter stop", "Higher leverage", "No stop needed"], correct: 1 },
+          { q: "A rejection candle at the pullback means:", options: ["The trend is over", "The level held - potential entry", "A margin call", "A limit order"], correct: 1 },
+          { q: "The cost of waiting for a pullback:", options: ["Worse risk/reward", "You miss breakouts that never retrace", "Higher fees", "Slower fills"], correct: 1 },
+        ],
+      },
+      {
+        id: "trend-breakout-entry",
+        type: "concept",
+        title: "Breakout Entry Mechanics",
+        info: "A breakout entry is a close beyond the prior swing high (long) or swing low (short) - not a poke that snaps right back. The close is the confirmation; intrabar spikes through the level are noise. You enter on the close of the confirmation bar (or the next bar's open), the stop goes below the breakout level (long) or the most recent swing, and you size so the stop distance equals your planned dollar risk. The mistake that wrecks trend-following is 'anticipating' the breakout before the close - buying into the level before it's confirmed. Confirm first, enter second.",
+        questions: [
+          { q: "A valid breakout trigger is:", options: ["Any poke beyond the level", "A close beyond the prior swing high/low", "A limit order at the level", "A spike that fades"], correct: 1 },
+          { q: "Where does the stop go on a breakout long?", options: ["Above the swing high", "Below the breakout level / recent swing", "At the entry", "No stop"], correct: 1 },
+          { q: "Anticipating the breakout means:", options: ["Waiting for the close", "Entering before the level is confirmed", "Using a stop", "Trailing"], correct: 1 },
+          { q: "Position size on a breakout should be based on:", options: ["Your confidence", "The stop distance vs your planned dollar risk", "The tick value alone", "The time of day"], correct: 1 },
+        ],
+      },
+      {
+        id: "trend-trailing-stop",
+        type: "concept",
+        title: "Trailing the Stop",
+        info: "Trailing is what makes trend-following pay - it's how you turn a small winner into a big one without giving it all back. The mechanics: once the trend resumes with a fresh higher low (long), move the stop up under that low. Repeat as each new higher low prints. Options: a moving-average trail (stop just under the 20 EMA), a swing-low trail, or an ATR multiple trail (e.g., 2x ATR). The rule: never move the stop against the trade - only in the direction of the trend. Move to break-even only after a real follow-through, not at the first tick of green. Let the winner work.",
+        questions: [
+          { q: "Trailing under successive higher lows (long) lets you:", options: ["Add aggressively", "Let the winner run while protecting gains", "Remove the stop", "Chase the top"], correct: 1 },
+          { q: "An ATR trailing stop uses:", options: ["A fixed dollar amount", "A multiple of average true range", "The day high", "Tick value"], correct: 1 },
+          { q: "You should only move a trailing stop:", options: ["Against the trade", "In the direction of the trend", "At the open", "Never"], correct: 1 },
+          { q: "Moving to break-even too early (first green tick) often:", options: ["Locks in a big win", "Shakes you out before the real move", "Guarantees profit", "Is required"], correct: 1 },
+        ],
+      },
+      {
+        id: "trend-regime",
+        type: "concept",
+        title: "When to Trend-Follow (and When Not To)",
+        info: "Trend-following is a regime strategy - it pays in trending regimes and bleeds in ranging ones. Before you deploy it, ask: is this market trending? Look at the slope of a 20/50 EMA, ADX, and the structure of highs and lows. In a flat, range-bound market, every breakout reverses - that's the whipsaw, and it's where trend-followers die by a thousand cuts. The discipline is to stand aside when the regime isn't trending, or switch to a range strategy (mean reversion). You don't have to trade every bar; you have to trade the bars that fit your strategy.",
+        questions: [
+          { q: "Trend-following works best in:", options: ["A ranging market", "A trending regime", "Low volume", "Overnight only"], correct: 1 },
+          { q: "In a flat, range-bound market, breakouts tend to:", options: ["Run for days", "Reverse (whipsaw)", "Never happen", "Hit targets instantly"], correct: 1 },
+          { q: "ADX below ~20 and a flat EMA suggest:", options: ["A strong trend", "A range - stand aside or switch strategy", "A breakout", "A gap"], correct: 1 },
+          { q: "The discipline when the regime isn't trending:", options: ["Size up to compensate", "Stand aside or trade a range strategy", "Hold losers", "Chase harder"], correct: 1 },
+        ],
+      },
+      {
+        id: "trend-whipsaw",
+        type: "concept",
+        title: "Whipsaws & the Chop Trap",
+        info: "A whipsaw is a breakout that triggers your entry and stop, then immediately reverses - the signature cost of trend-following. You can't avoid them entirely; the edge is to filter and size so a string of small losses can't sink you. Filters: require a close (not a poke), demand volume follow-through, prefer breakouts from compression (low volatility) over breakouts from already-extended moves, and skip obvious levels where stop-runs cluster. Sizing: risk a fixed, small fraction per trade so 5-6 whipsaws in a row is a drawdown, not a blown account. Whipsaws are the price of admission - budget for them.",
+        questions: [
+          { q: "A whipsaw is:", options: ["A slow trend", "A breakout that triggers entry and stop, then reverses", "A limit order", "An overnight gap"], correct: 1 },
+          { q: "A filter that reduces whipsaws:", options: ["Entering on a poke", "Requiring a close and volume follow-through", "Widening the stop", "Trading extended moves"], correct: 1 },
+          { q: "Breakouts from compression tend to be:", options: ["More likely to whipsaw", "More reliable than breakouts from extended moves", "Always fakeouts", "Unrelated to whipsaws"], correct: 1 },
+          { q: "The role of position sizing vs whipsaws:", options: ["It doesn't matter", "A fixed small risk per trade keeps a string of losses survivable", "Size up after each loss", "Avoid stops"], correct: 1 },
+        ],
+      },
+    ],
     buildDrill: (instrumentKey = "ES", difficulty = "medium") => {
       const bars = generateTrendData(instrumentKey, 7, difficulty);
       const lowBeforeBreakout = Math.min(...bars.slice(0, 22).map(b => b.low));
@@ -405,6 +479,12 @@ const TAKEAWAYS = {
   "opening-drive": "On a trend day direction is set early - enter the continuation break of the opening-drive pullback.",
   "momentum-ignition": "Enter the retest after ignition, not the climax candle - FOMO at ignition is where accounts get wrecked.",
   "momentum-exhaustion": "Exhaustion is your exit, not an entry - take profits into strength; the give-back after a climax is fast.",
+  "trend-identify": "A trend is higher highs and higher lows with a sloped average - confirm the structure before you commit to 'trend.'",
+  "trend-pullback": "Enter the pullback that holds, not the spike - better price, tighter stop, less chasing.",
+  "trend-breakout-entry": "A breakout needs a close beyond the prior swing, not a poke - confirmation is the entry, anticipation is the trap.",
+  "trend-trailing-stop": "Trail under successive higher lows and let the winner run - the trailing stop is what makes trend-following pay.",
+  "trend-regime": "Trend-following pays in a trending regime and bleeds in a range - read the regime before you deploy the strategy.",
+  "trend-whipsaw": "Whipsaws are the cost of trend-following - filter with confirmation and size so a string of small losses can't sink you.",
 };
 function normalizeUnit(unit) {
   if (unit.cards) return; // already canonical
