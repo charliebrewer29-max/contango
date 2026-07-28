@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { ChevronRight, Lock, Check, Play, Crown } from "lucide-react";
+import { ChevronRight, ChevronLeft, Lock, Check, Play, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
@@ -51,6 +51,9 @@ export default function BranchDetail() {
 
   return (
     <ScreenShell showStats backTo="/" title={branch.branchTitle}>
+      <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-slate-200">
+        <ChevronLeft className="h-4 w-4" /> Home
+      </Link>
       <div className="mb-6">
         <p className="text-sm text-slate-400">{branch.blurb}</p>
         {!unlocked && (
