@@ -22,8 +22,6 @@ const BRANCH_STYLE = {
 
 // Gold ring shades for mastered branches (level 2 silver, level 3 gold).
 const MASTERY_STROKE = { 2: "#fcd34d", 3: "#fbbf24" };
-const MASTERY_RING = { 2: "border-amber-300/50", 3: "border-amber-400/60" };
-const MASTERY_GLOW = { 2: "shadow-amber-400/25", 3: "shadow-amber-400/30" };
 
 function statusText(s, branch) {
   if (s.cracked) return "Cracking - review to restore";
@@ -51,14 +49,13 @@ function CrackOverlay({ intensity }) {
   );
 }
 
-export default function BranchNode({ branch, icon: Icon, offset, progress }) {
+export default function BranchNode({ branch, icon: Icon, progress, isNext = false }) {
   const foundationDone = (progress.completedLessons || []).length > 0;
   const foundationUnlocked = branch.unlockRequires.length === 0 ||
     (branch.unlockRequires.includes("foundation-complete") && foundationDone);
   const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, progress);
   const unlocked = foundationUnlocked && !premiumLocked;
   const s = branchMasteryStatus(progress, branch);
-  const isNext = unlocked && !s.finished;
 
   const style = BRANCH_STYLE[branch.color] || BRANCH_STYLE.amber;
   const ringStroke = s.level >= 2 ? MASTERY_STROKE[s.level] : style.stroke;
@@ -69,26 +66,24 @@ export default function BranchNode({ branch, icon: Icon, offset, progress }) {
   const circ = 2 * Math.PI * r;
   const dashOffset = circ - (s.pct / 100) * circ;
 
-  // card chrome classes (all literal so Tailwind keeps them)
+  // card chrome classes (all literal so Tailwind keeps them).
+  // One uniform neutral border for every unlocked card; a single accent
+  // (brighter border + lighter bg) marks the one branch to do next.
   let cardBg, cardRing, cardGlow;
   if (!unlocked) {
     cardBg = "bg-slate-900/40";
     cardRing = "border-slate-800";
-  } else if (s.cracked) {
-    cardBg = "bg-slate-900/50";
-    cardRing = "border-slate-700";
-  } else if (s.level >= 2) {
-    cardBg = "bg-amber-500/10";
-    cardRing = MASTERY_RING[s.level];
-    cardGlow = MASTERY_GLOW[s.level];
+  } else if (isNext) {
+    cardBg = "bg-amber-500/5";
+    cardRing = "border-amber-400/70";
+    cardGlow = "shadow-amber-500/20";
   } else {
-    cardBg = style.bg;
-    cardRing = style.ring;
-    cardGlow = style.glow;
+    cardBg = "bg-slate-900/60";
+    cardRing = "border-slate-800";
   }
 
   return (
-    <div className="w-full" style={{ transform: `translateX(${offset}px)` }}>
+    <div className="w-full">
       <Link
         to={unlocked ? `/branch/${branch.id}` : premiumLocked ? "/paywall" : "#"}
         className={`relative flex items-center gap-3 overflow-hidden rounded-2xl border p-3.5 transition ${
@@ -126,7 +121,10 @@ export default function BranchNode({ branch, icon: Icon, offset, progress }) {
             {premiumLocked && <Crown className="h-3.5 w-3.5 text-amber-400" />}
             {!foundationUnlocked && <Lock className="h-3 w-3 text-slate-600" />}
           </div>
-          <p className={`truncate text-[13px] leading-snug ${s.cracked ? "text-amber-400/90" : "text-slate-500"}`}>
+          <p
+            className={`text-[13px] leading-snug ${s.cracked ? "text-amber-400/90" : "text-slate-500"}`}
+            style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+          >
             {premiumLocked ? "Premium branch - unlock with Premium" : statusText(s, branch)}
           </p>
           {unlocked && s.total > 0 && (
