@@ -95,6 +95,7 @@ export default function Lesson() {
   // ---- ANSWER navigation: forward only, graded ----
   function answerNext() {
     setSelected(null);
+    setFlash(null); // clear so the next correct answer re-triggers the sound
     if (answerIdx + 1 < answerStages.length) setAnswerIdx(answerIdx + 1);
     else finish();
   }
