@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { Play, Flame, Trophy, User, ChevronRight, Target, Compass, Repeat, BarChart3, BookOpen } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import SkillTree from "@/components/contango/SkillTree";
+import DisciplineHero from "@/components/contango/DisciplineHero";
 import AdBanner from "@/components/contango/AdBanner";
 import { useContango } from "@/contexts/ContangoContext";
 import { BRANCHES } from "@/lib/content";
@@ -27,6 +28,8 @@ export default function Dashboard() {
 
   return (
     <ScreenShell showStats tab="learn">
+      <DisciplineHero />
+
       {/* Daily goal ring + continue */}
       <section className="mb-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <div className="flex items-center gap-5">
@@ -102,9 +105,10 @@ export default function Dashboard() {
       {/* Skill tree */}
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-slate-400">Your learning path</h2>
+          <h2 className="font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-slate-400">The skills the disciplined 3% use</h2>
           <Target className="h-4 w-4 text-slate-600" />
         </div>
+        <p className="mb-3 text-xs leading-relaxed text-slate-500">Strategy branches are the vehicle - you drill each one until the behavior is automatic.</p>
         <SkillTree />
       </section>
 

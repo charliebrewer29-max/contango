@@ -291,6 +291,7 @@ export const BRANCHES = [
           { barIndex: 19, type: "mcq", prompt: "Price is just consolidating - no breakout yet. What's the right move?", options: ["Buy now - anticipate the breakout", "Wait for a confirmed close beyond the range", "Sell short the range", "Buy with maximum size"], correct: 1 },
           { barIndex: 24, type: "tap", prompt: "The breakout just closed beyond the range. Tap directly on the chart where you'd enter.", zoneStart: 22, zoneEnd: 26 },
           { barIndex: 41, type: "mcq", prompt: "We broke out and ran up, now we're pulling back. Where does the trailing stop sit?", options: ["Above the entry", "Below the recent swing low", "At the original breakout level", "No stop - let it run forever"], correct: 1 },
+          { barIndex: 58, type: "exit-tap", prompt: "You're in the breakout long. Tap where you'd exit this trade." },
         ],
         entryZone: { zoneStart: 22, zoneEnd: 26 },
         stopPrice: lowBeforeBreakout,

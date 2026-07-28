@@ -35,6 +35,8 @@ export default function Drill() {
   const [stopPrice, setStopPrice] = useState(null);
   const [exitPrice, setExitPrice] = useState(null);
   const [decisionLog, setDecisionLog] = useState([]);
+  const [entryBarIdx, setEntryBarIdx] = useState(null);
+  const [lastExit, setLastExit] = useState(null);
   const playRef = useRef(null);
   const decisionsRef = useRef([]);
   const dpShownAt = useRef(null);
@@ -43,6 +45,7 @@ export default function Drill() {
   // through the end of the tap zone so the whole entry zone is visible.
   function revealTarget(dp, n) {
     if (!dp) return n || 15;
+    if (dp.type === "exit-tap") return n; // reveal the full outcome so the user can pick an exit
     if (dp.type === "tap" && dp.zoneEnd != null) return Math.min(n, Math.max(dp.barIndex, dp.zoneEnd) + 1);
     return Math.min(n, dp.barIndex + 1);
   }
@@ -54,7 +57,7 @@ export default function Drill() {
     setRevealTo(revealTarget(scenario.decisionPoints[0], scenario.bars.length));
     setDpIdx(0); setSelected(null); setPhase("replay");
     setEntryPrice(null); setStopPrice(null); setExitPrice(null);
-    setDecisionLog([]); setFlash(null);
+    setDecisionLog([]); setFlash(null); setEntryBarIdx(null); setLastExit(null);
     decisionsRef.current = [];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instrument, difficulty]);
@@ -84,6 +87,7 @@ export default function Drill() {
 
   const { bars, decisionPoints, stopPrice: scenarioStop } = scenario;
   const inst = INSTRUMENTS[instrument] || INSTRUMENTS.ES;
+  const gradedCount = decisionPoints.filter(dp => dp.type !== "exit-tap").length;
   const currentDP = decisionPoints[dpIdx];
 
   // auto-reveal animation
@@ -164,6 +168,7 @@ export default function Drill() {
     const lookStart = Math.max(0, idx - 10);
     const computedStop = Math.min(...bars.slice(lookStart, idx).map(b => b.low));
     setStopPrice(computedStop);
+    setEntryBarIdx(idx);
     const stopDistancePoints = Math.abs(entryBar.close - computedStop);
     setDecisionLog(log => [...log, { barIndex: idx, selected: idx, correct: inZone, type: "tap", decisionTimeMs, stopDistancePoints }]);
     decisionsRef.current.push({ barIndex: idx, selected: idx, correct: inZone, type: "tap", decisionTimeMs, stopDistancePoints });
@@ -184,8 +189,50 @@ export default function Drill() {
     }, 1200);
   }
 
+  // exit-tap decision: the user picks where to exit. Not graded right/wrong -
+  // it's behavioral. We compute realized P&L and whether they cut a winner
+  // early (price kept running after the exit) or held a loser (the stop was
+  // hit but they rode it lower). Logged for the Discipline Engine.
+  function answerExitTap(idx) {
+    if (selected !== null) return;
+    setSelected(idx);
+    const entry = entryPrice;
+    const stop = stopPrice;
+    const exitClose = bars[idx].close;
+    const dir = 1; // breakout long
+    const realized = (exitClose - entry) * dir;
+    const start = (entryBarIdx != null ? entryBarIdx : 0) + 1;
+    let stopHit = false;
+    for (let i = start; i <= idx; i++) {
+      if (stop != null && bars[i].low <= stop) stopHit = true;
+    }
+    let bestAfter = -Infinity;
+    for (let i = idx + 1; i < bars.length; i++) if (bars[i].close > bestAfter) bestAfter = bars[i].close;
+    const continued = bestAfter > -Infinity ? (bestAfter - exitClose) * dir : 0;
+    let classification = "clean";
+    if (stopHit && realized < 0) classification = "held_loser";
+    else if (realized > 0 && continued >= Math.max(realized, inst.tickSize * 4)) classification = "cut_winner";
+    const decisionTimeMs = dpShownAt.current ? Date.now() - dpShownAt.current : null;
+    const rec = { barIndex: idx, selected: idx, type: "exit-tap", decisionTimeMs, realized, classification, stopHit, continued, entryPrice: entry, stopPrice: stop, exitClose };
+    setDecisionLog(log => [...log, rec]);
+    decisionsRef.current.push(rec);
+    setLastExit({ classification, realized, exitClose });
+    setExitPrice(exitClose);
+    setTimeout(() => {
+      setFlash(null);
+      if (dpIdx + 1 >= decisionPoints.length) {
+        finishDrill(correctCount);
+      } else {
+        setDpIdx(dpIdx + 1);
+        setSelected(null);
+        setPhase("replay");
+        setTimeout(startReveal, 300);
+      }
+    }, 1200);
+  }
+
   function finishDrill(finalCorrect) {
-    const events = recordSession({ correct: finalCorrect, total: decisionPoints.length, completedType: "drill" });
+    const events = recordSession({ correct: finalCorrect, total: gradedCount, completedType: "drill" });
     markDrillComplete(`${branch.id}-drill`);
     const review = {
       branchId: branch.id,
@@ -201,9 +248,11 @@ export default function Drill() {
         isCorrect: decisionsRef.current[i]?.correct ?? null,
         decisionTimeMs: decisionsRef.current[i]?.decisionTimeMs ?? null,
         stopDistancePoints: decisionsRef.current[i]?.stopDistancePoints ?? null,
+        realized: decisionsRef.current[i]?.realized ?? null,
+        classification: decisionsRef.current[i]?.classification ?? null,
       })),
       correctCount: finalCorrect,
-      total: decisionPoints.length,
+      total: gradedCount,
     };
     setLastDrillReview(review);
     logDrill(review);
@@ -290,9 +339,15 @@ export default function Drill() {
         stopPrice={stopPrice}
         exitPrice={exitPrice}
         height={260}
-        tapMode={phase === "decision" && currentDP?.type === "tap" && selected === null ? { zoneStart: currentDP.zoneStart, zoneEnd: currentDP.zoneEnd } : null}
-        onTapZone={answerTap}
-        selectedBar={phase === "decision" && currentDP?.type === "tap" ? selected : null}
+        tapMode={
+          phase === "decision" && (currentDP?.type === "tap" || currentDP?.type === "exit-tap") && selected === null
+            ? (currentDP.type === "exit-tap"
+                ? { zoneStart: (entryBarIdx != null ? entryBarIdx : currentDP.barIndex) + 1, zoneEnd: bars.length - 1 }
+                : { zoneStart: currentDP.zoneStart, zoneEnd: currentDP.zoneEnd })
+            : null
+        }
+        onTapZone={phase === "decision" && currentDP?.type === "exit-tap" ? answerExitTap : answerTap}
+        selectedBar={phase === "decision" && (currentDP?.type === "tap" || currentDP?.type === "exit-tap") ? selected : null}
       />
 
       {/* replay controls / progress */}
@@ -311,7 +366,7 @@ export default function Drill() {
       )}
 
       {/* decision point MCQ */}
-      {phase === "decision" && currentDP && (
+      {phase === "decision" && currentDP?.type === "mcq" && (
         <div className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/5 p-4" style={{ animation: "fadeIn 0.3s ease-out" }}>
           <div className="mb-1 flex items-center gap-2 text-sky-400">
             <span className="text-xs font-semibold uppercase tracking-wider">Decision point {dpIdx + 1}</span>
@@ -361,6 +416,25 @@ export default function Drill() {
         </div>
       )}
 
+      {/* exit-tap decision point: pick where to exit; behavioral, not graded */}
+      {phase === "decision" && currentDP?.type === "exit-tap" && (
+        <div className="mt-4 rounded-xl border border-violet-500/30 bg-violet-500/5 p-4" style={{ animation: "fadeIn 0.3s ease-out" }}>
+          <div className="mb-1 flex items-center gap-2 text-violet-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">Decision point {dpIdx + 1} · tap to exit</span>
+          </div>
+          <p className="font-medium text-slate-100">{currentDP.prompt}</p>
+          {selected === null ? (
+            <p className="mt-2 text-xs text-slate-500">You're in the trade. Tap where you'd take your exit. We'll measure whether you cut a winner early or held a loser.</p>
+          ) : lastExit ? (
+            <div className="mt-3 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm">
+              {lastExit.classification === "cut_winner" && <span className="text-amber-400">You cut this winner early - price kept running after your exit.</span>}
+              {lastExit.classification === "held_loser" && <span className="text-rose-400">You held this loser past your stop.</span>}
+              {lastExit.classification === "clean" && <span className="text-emerald-400">Clean exit - you took the move and got out.</span>}
+            </div>
+          ) : null}
+        </div>
+      )}
+
       {/* done summary */}
       {phase === "done" && (
         <div className="mt-6 text-center" style={{ animation: "fadeIn 0.5s ease-out" }}>
@@ -374,7 +448,7 @@ export default function Drill() {
               <div className="text-xs text-slate-500">XP</div>
             </div>
             <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-              <div className="font-mono text-2xl font-bold text-emerald-400">{correctCount}/{decisionPoints.length}</div>
+              <div className="font-mono text-2xl font-bold text-emerald-400">{correctCount}/{gradedCount}</div>
               <div className="text-xs text-slate-500">correct</div>
             </div>
           </div>
@@ -387,6 +461,12 @@ export default function Drill() {
               <Row label="Risk (ticks)" value={`${Math.abs(entryPrice - stopPrice).toFixed(2)} pts`} />
               <Row label="Full contract" value={`$${(Math.abs(entryPrice - stopPrice) / inst.tickSize * inst.tickValue).toFixed(2)}`} accent="text-rose-400" />
               <Row label="Micro contract" value={`$${(Math.abs(entryPrice - stopPrice) / inst.tickSize * inst.tickValue / 10).toFixed(2)}`} accent="text-amber-400" />
+              {exitPrice != null && (
+                <>
+                  <Row label="Exit" value={`${exitPrice.toFixed(2)}`} />
+                  <Row label="P&L / contract" value={`${(exitPrice - entryPrice >= 0 ? "+" : "")}${((exitPrice - entryPrice) / inst.tickSize * inst.tickValue).toFixed(2)}`} accent={exitPrice - entryPrice >= 0 ? "text-emerald-400" : "text-rose-400"} />
+                </>
+              )}
             </div>
           )}
           <div className="mt-6 space-y-2">

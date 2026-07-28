@@ -94,6 +94,29 @@ function consistencyFromDrills(history) {
   return { score: round(s), label: "Consistency", blurb };
 }
 
+// Exit discipline: how you exit trades. Detects the two behavioral failures
+// the research flags most - cutting winners early (exiting before the full
+// move runs) and holding losers (riding a trade past the stop instead of
+// cutting it). Only the user's own exit taps feed this, so it measures real
+// behavior, not a right/wrong answer.
+function exitDisciplineFromExits(decisions) {
+  const exits = decisions.filter(d => d.type === "exit-tap" && d.classification);
+  if (exits.length < 2) return { empty: true, label: "Exit discipline", score: NEUTRAL, blurb: "Complete a few tap-entry drills to measure how you exit trades." };
+  let cutWinners = 0, heldLosers = 0, clean = 0;
+  for (const e of exits) {
+    if (e.classification === "cut_winner") cutWinners++;
+    else if (e.classification === "held_loser") heldLosers++;
+    else clean++;
+  }
+  const score = clamp(Math.round((clean / exits.length) * 100));
+  let blurb;
+  if (cutWinners > 0 && heldLosers > 0) blurb = `You've cut ${cutWinners} winner${cutWinners === 1 ? "" : "s"} early and held ${heldLosers} loser${heldLosers === 1 ? "" : "s"} - that's your pattern.`;
+  else if (cutWinners > 0) blurb = `You've cut ${cutWinners} winner${cutWinners === 1 ? "" : "s"} early - exiting before the full move runs.`;
+  else if (heldLosers > 0) blurb = `You've held ${heldLosers} loser${heldLosers === 1 ? "" : "s"} past your stop - cutting trades too late.`;
+  else blurb = "You exit cleanly - no premature profit-taking, no loser-riding.";
+  return { empty: false, score, label: "Exit discipline", blurb, cutWinners, heldLosers };
+}
+
 export function disciplineProfile(progress) {
   const history = (progress?.drillHistory || []).filter(Boolean);
   if (!history.length) return { empty: true, metrics: [], overall: null, weakest: null, drillCount: 0, decisionCount: 0 };
@@ -106,6 +129,8 @@ export function disciplineProfile(progress) {
     riskSizingFromTaps(decisions),
     consistencyFromDrills(history),
   ];
+  const exitMetric = exitDisciplineFromExits(decisions);
+  if (!exitMetric.empty) metrics.push(exitMetric);
   const overall = round(metrics.reduce((a, m) => a + m.score, 0) / metrics.length);
   const weakest = metrics.reduce((a, m) => (m.score < a.score ? m : a), metrics[0]);
   return { empty: false, metrics, overall, weakest, drillCount: history.length, decisionCount: decisions.length };
