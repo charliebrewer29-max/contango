@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Zap, ShieldCheck } from "lucide-react";
+import { ChevronRight, Zap, ShieldCheck, Check } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { GOAL_OPTIONS, COACH_NAME } from "@/lib/contangoTheme";
 import ContangoLogo from "@/components/contango/ContangoLogo";
@@ -62,18 +62,26 @@ export default function Onboarding() {
             </div>
             <h2 className="font-display text-2xl font-bold">This is education, not advice</h2>
             <p className="mt-3 text-sm text-slate-400">Most people who try day trading lose money. We're not here to sell you a shortcut - we're here to train the discipline most traders never build.</p>
-            <ul className="mt-6 space-y-4 text-sm text-slate-300">
-              <li className="flex gap-3"><span className="text-amber-400">●</span> All market data here is <span className="font-semibold text-slate-100">simulated</span>. None of it reflects live prices.</li>
+            <ul className="mt-6 space-y-3 leading-snug text-sm text-slate-300">
+              <li className="flex gap-3"><span className="text-amber-400">●</span><span>All market data here is <span className="font-semibold text-slate-100">simulated</span>. None of it reflects live prices.</span></li>
               <li className="flex gap-3"><span className="text-amber-400">●</span> Contango never touches real money. No broker, no orders, no balances.</li>
               <li className="flex gap-3"><span className="text-amber-400">●</span> Nothing here is a trade signal or "buy/sell this now" recommendation.</li>
               <li className="flex gap-3"><span className="text-amber-400">●</span> This is for learning how markets and strategies work, and drilling the discipline to trade them, before risking real capital.</li>
             </ul>
-            <label className="mt-8 flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 cursor-pointer">
-              <input type="checkbox" checked={acknowledged} onChange={(e) => setAcknowledged(e.target.checked)} className="mt-0.5 h-4 w-4 accent-amber-400" />
+            <label className="mt-8 flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 cursor-pointer">
+              <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                <input type="checkbox" checked={acknowledged} onChange={(e) => setAcknowledged(e.target.checked)} className="peer absolute inset-0 m-0 cursor-pointer appearance-none" />
+                <span className="pointer-events-none absolute inset-0 rounded-[5px] border border-slate-600 bg-slate-800 transition-colors peer-checked:border-amber-400 peer-checked:bg-amber-400" />
+                <Check className="pointer-events-none absolute h-3.5 w-3.5 text-slate-950 opacity-0 transition-opacity peer-checked:opacity-100" strokeWidth={3} />
+              </span>
               <span className="text-sm text-slate-300">I understand this is a simulated educational tool and not financial advice.</span>
             </label>
-            <label className="mt-3 flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 cursor-pointer">
-              <input type="checkbox" checked={ageOk} onChange={(e) => setAgeOk(e.target.checked)} className="mt-0.5 h-4 w-4 accent-amber-400" />
+            <label className="mt-3 flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 cursor-pointer">
+              <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                <input type="checkbox" checked={ageOk} onChange={(e) => setAgeOk(e.target.checked)} className="peer absolute inset-0 m-0 cursor-pointer appearance-none" />
+                <span className="pointer-events-none absolute inset-0 rounded-[5px] border border-slate-600 bg-slate-800 transition-colors peer-checked:border-amber-400 peer-checked:bg-amber-400" />
+                <Check className="pointer-events-none absolute h-3.5 w-3.5 text-slate-950 opacity-0 transition-opacity peer-checked:opacity-100" strokeWidth={3} />
+              </span>
               <span className="text-sm text-slate-300">I am 17 or older.</span>
             </label>
             <button
