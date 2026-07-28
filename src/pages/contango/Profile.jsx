@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, Bot, ChevronRight, BookOpen, Pencil } from "lucide-react";
+import { User, Settings, Bell, Eye, Volume2, Vibrate, Crown, Trash2, LogOut, Bot, ChevronRight, BookOpen, Pencil, BarChart3, Repeat } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { MAX_HEARTS } from "@/lib/gamification";
@@ -100,6 +100,16 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* Insights - quick access near the top (no home in the bottom nav) */}
+      <Link to="/insights" className="mb-6 flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900 p-4 transition hover:border-slate-600">
+        <BarChart3 className="h-5 w-5 text-emerald-400" />
+        <div className="flex-1">
+          <div className="text-sm font-medium text-slate-100">Insights</div>
+          <div className="text-xs text-slate-500">Your performance data, mastery, and discipline profile</div>
+        </div>
+        <ChevronRight className="h-5 w-5 text-slate-600" />
+      </Link>
+
       {/* stats */}
       <div className="mb-6 grid grid-cols-3 gap-3">
         <Stat label="Lessons" value={progress.completedLessons.length} />
@@ -163,6 +173,14 @@ export default function Profile() {
               {progress.subscription === "premium" ? "Premium active" : progress.subscription === "trial" ? `Free trial · ${trialDaysLeft(progress)} days left` : "Free tier"}
             </div>
             <div className="text-xs text-slate-500">Practice sandbox, all branches, {COACH_NAME} memory, full journal</div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-600" />
+        </Link>
+        <Link to={isPremium(progress) ? "/practice" : "/paywall"} className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-600">
+          <Repeat className="h-5 w-5 text-sky-400" />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-slate-100">Spaced Practice</div>
+            <div className="text-xs text-slate-500">{isPremium(progress) ? "Unlimited sim sandbox, no hearts" : "Unlimited sim sandbox - part of Premium"}</div>
           </div>
           <ChevronRight className="h-5 w-5 text-slate-600" />
         </Link>

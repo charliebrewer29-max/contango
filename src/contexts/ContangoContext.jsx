@@ -39,6 +39,7 @@ const DEFAULT_PROGRESS = {
   coachMemory: [],
   branchReps: {},
   branchLastTouched: {},
+  disciplineBannerDismissed: false,
 };
 
 const ContangoContext = createContext(null);

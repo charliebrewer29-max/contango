@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { BarChart3, Flame, Zap, Brain, TrendingUp, Target, ShieldCheck } from "lucide-react";
+import { BarChart3, Flame, Zap, Brain, TrendingUp, Target, ShieldCheck, BookOpen, ChevronRight } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
   AreaChart, Area,
@@ -10,6 +10,7 @@ import { useContango } from "@/contexts/ContangoContext";
 import { lastNDays, branchMastery, conceptMastery } from "@/lib/insights";
 import { weakConcepts, strongConcepts } from "@/lib/performance";
 import { disciplineProfile } from "@/lib/discipline";
+import { isPremium } from "@/lib/subscription";
 
 const COLOR_HEX = {
   amber: "#fbbf24",
@@ -63,6 +64,18 @@ export default function Insights() {
             <div className={`font-mono text-2xl font-bold ${discipline.empty ? "text-slate-600" : dColor(discipline.overall)}`}>{discipline.empty ? "--" : discipline.overall}</div>
             <div className="text-[10px] uppercase tracking-wide text-slate-600">overall</div>
           </div>
+        </div>
+      </Link>
+
+      {/* trade journal */}
+      <Link to="/journal" className="mb-6 block">
+        <div className="cg-surface flex items-center gap-4 rounded-2xl p-5 transition hover:border-slate-600">
+          <BookOpen className="h-8 w-8 text-emerald-400" />
+          <div className="flex-1">
+            <h2 className="font-display text-sm font-semibold text-slate-200">Trade Journal</h2>
+            <p className="text-xs text-slate-500">{isPremium(progress) ? "Your full decision history with win-rate analytics" : "Your last session - full history with Premium"}</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-600" />
         </div>
       </Link>
 
