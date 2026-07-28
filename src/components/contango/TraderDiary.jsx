@@ -3,11 +3,12 @@ import { BookText, Lock } from "lucide-react";
 import { DIARY_ENTRIES } from "@/lib/psychCurriculum";
 
 // Trader's Diary - narrative "entries" the user unlocks by completing
-// psychology lessons. Gives a tangible sense of growth beyond XP.
-// Each entry is a one-line truth a real trader would write to themselves.
-
+// psychology lessons. Only unlocked entries render as rows; locked entries
+// collapse into a single summary line with a count, so an empty diary
+// never looks like five duplicated "Locked" rows.
 export default function TraderDiary({ unlocked = [] }) {
   const list = DIARY_ENTRIES || [];
+  const opened = list.filter((e) => unlocked.includes(e.id));
 
   return (
     <div className="mb-6">
@@ -15,39 +16,24 @@ export default function TraderDiary({ unlocked = [] }) {
         <BookText className="h-4 w-4" /> Trader's Diary
       </h3>
       <div className="space-y-2">
-        {list.map((entry) => {
-          const isOpen = unlocked.includes(entry.id);
-          return (
-            <div
-              key={entry.id}
-              className={`rounded-xl border p-4 transition ${
-                isOpen
-                  ? "border-amber-500/30 bg-amber-500/5"
-                  : "border-slate-800 bg-slate-900/50 opacity-60"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                {isOpen ? (
-                  <span className="text-amber-400">
-                    <BookText className="h-4 w-4" />
-                  </span>
-                ) : (
-                  <span className="text-slate-600">
-                    <Lock className="h-4 w-4" />
-                  </span>
-                )}
-                <span className={`text-sm font-medium ${isOpen ? "text-slate-100" : "text-slate-500"}`}>
-                  {isOpen ? entry.title : "Locked - complete the lesson to unlock"}
-                </span>
-              </div>
-              {isOpen && (
-                <p className="mt-2 pl-6 text-[13px] italic leading-relaxed text-slate-300">
-                  “{entry.body}”
-                </p>
-              )}
+        {opened.map((entry) => (
+          <div key={entry.id} className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+            <div className="flex items-center gap-2">
+              <BookText className="h-4 w-4 text-amber-400" />
+              <span className="text-sm font-medium text-slate-100">{entry.title}</span>
             </div>
-          );
-        })}
+            <p className="mt-2 pl-6 text-[13px] italic leading-relaxed text-slate-300">
+              “{entry.body}”
+            </p>
+          </div>
+        ))}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+          <div className="flex items-center gap-2">
+            <Lock className="h-4 w-4 text-slate-600" />
+            <span className="text-sm text-slate-500">Complete lessons to unlock diary entries</span>
+          </div>
+          <div className="mt-1 pl-6 font-mono text-xs text-slate-600">{opened.length} of {list.length} unlocked</div>
+        </div>
       </div>
     </div>
   );
