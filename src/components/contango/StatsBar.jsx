@@ -1,9 +1,11 @@
 import React from "react";
-import { Flame, Heart, Zap, Star } from "lucide-react";
+import { Flame, Heart, Star } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { MAX_HEARTS } from "@/lib/gamification";
 
 // Stats bar: streak, hearts, XP - the persistent gamification readout.
+// Dense by design: small monospace type, tight spacing, minimal padding so
+// it reads as a data surface, not a content card.
 export default function StatsBar({ compact = false }) {
   const { progress } = useContango();
 
@@ -17,27 +19,29 @@ export default function StatsBar({ compact = false }) {
           <Heart className="h-4 w-4 fill-rose-400/30" /> {progress.hearts}
         </span>
         <span className="inline-flex items-center gap-1 text-sky-400">
-          <Zap className="h-4 w-4" /> {progress.xp}
+          <Star className="h-4 w-4" /> {progress.xp}
         </span>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-      <StatTile icon={<Flame className="h-5 w-5" />} value={progress.streak || 0} label="day streak" color="text-amber-400" bg="bg-amber-500/10" />
-      <StatTile icon={<Heart className="h-5 w-5 fill-rose-400/20" />} value={`${progress.hearts}/${MAX_HEARTS}`} label="hearts" color="text-rose-400" bg="bg-rose-500/10" />
-      <StatTile icon={<Star className="h-5 w-5" />} value={progress.xp} label="total XP" color="text-sky-400" bg="bg-sky-500/10" />
+    <div className="grid grid-cols-3 gap-1.5">
+      <StatTile icon={<Flame className="h-3.5 w-3.5" />} value={progress.streak || 0} label="day streak" color="text-amber-400" bg="bg-amber-500/10" />
+      <StatTile icon={<Heart className="h-3.5 w-3.5 fill-rose-400/20" />} value={`${progress.hearts}/${MAX_HEARTS}`} label="hearts" color="text-rose-400" bg="bg-rose-500/10" />
+      <StatTile icon={<Star className="h-3.5 w-3.5" />} value={progress.xp} label="total XP" color="text-sky-400" bg="bg-sky-500/10" />
     </div>
   );
 }
 
 function StatTile({ icon, value, label, color, bg }) {
   return (
-    <div className={`cg-soft flex flex-col items-center justify-center rounded-2xl ${bg} border border-slate-800/60 py-3.5`}>
-      <div className={`${color} mb-1`}>{icon}</div>
-      <div className="cg-num font-mono text-lg font-semibold text-slate-100">{value}</div>
-      <div className="text-[10px] uppercase tracking-wide text-slate-500">{label}</div>
+    <div
+      title={label}
+      className={`flex items-center justify-center gap-1.5 rounded-lg ${bg} border border-slate-800/60 px-2 py-2`}
+    >
+      <span className={color}>{icon}</span>
+      <span className="cg-num font-mono text-sm font-semibold text-slate-100">{value}</span>
     </div>
   );
 }
