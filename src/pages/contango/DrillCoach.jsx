@@ -104,14 +104,14 @@ export default function DrillCoach() {
 
   if (error) {
     return (
-      <ScreenShell showStats={false} title="Drill Coach" tab="coach">
+      <ScreenShell showStats={false} title="Drill Coach" tab="coach" backTo="/">
         <div className="mt-12 text-center text-sm text-slate-400">{error}</div>
       </ScreenShell>
     );
   }
 
   return (
-    <ScreenShell showStats={false} title="Drill Coach" tab="coach">
+    <ScreenShell showStats={false} title="Drill Coach" tab="coach" backTo="/">
       <div className="mb-3 flex items-center gap-2 text-emerald-400">
         <Bot className="h-5 w-5" />
         <span className="font-display text-sm font-semibold">Drill Coach</span>

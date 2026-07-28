@@ -65,14 +65,14 @@ export default function OnboardingGuide() {
 
   if (error) {
     return (
-      <ScreenShell showStats={false} title="Onboarding Guide" tab="learn">
+      <ScreenShell showStats={false} title="Onboarding Guide" tab="learn" backTo="/">
         <div className="mt-12 text-center text-sm text-slate-400">{error}</div>
       </ScreenShell>
     );
   }
 
   return (
-    <ScreenShell showStats={false} title="Onboarding Guide" tab="learn">
+    <ScreenShell showStats={false} title="Onboarding Guide" tab="learn" backTo="/">
       <div className="mb-3 flex items-center gap-2 text-amber-400">
         <Compass className="h-5 w-5" />
         <span className="font-display text-sm font-semibold">Onboarding Guide</span>
