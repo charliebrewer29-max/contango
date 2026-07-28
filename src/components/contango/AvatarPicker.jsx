@@ -9,9 +9,9 @@ export default function AvatarPicker({ open, onClose }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/80 backdrop-blur-sm sm:items-center" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-t-3xl border border-slate-800 bg-slate-900 p-5 sm:rounded-3xl"
+        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl border border-slate-800 bg-slate-900 p-5 cg-scroll"
         onClick={(e) => e.stopPropagation()}
         style={{ animation: "slideUp 0.28s ease-out" }}
       >
