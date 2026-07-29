@@ -102,17 +102,28 @@ export function ContangoProvider({ children }) {
     setOfflineListener(setOffline);
     let alive = true;
     (async () => {
-      const [res, ent] = await Promise.all([
-        loadProgress(DEFAULT_PROGRESS),
-        ensureServerTime().then(() => fetchEntitlement().catch(() => null)),
-      ]);
-      if (!alive) return;
-      setOffline(res.offline);
-      enableSaving(true);
-      setEntitlement(ent);
-      setEntitlementLoading(false);
-      setProgress(withDailyReset(res.data, getServerOffset(), ent));
-      setLoading(false);
+      try {
+        const [res, ent] = await Promise.all([
+          loadProgress(DEFAULT_PROGRESS),
+          ensureServerTime().then(() => fetchEntitlement().catch(() => null)),
+        ]);
+        if (!alive) return;
+        setOffline(res.offline);
+        enableSaving(true);
+        setEntitlement(ent);
+        setProgress(withDailyReset(res.data, getServerOffset(), ent));
+      } catch {
+        // loadProgress or ensureServerTime rejected: the server row did not
+        // resolve. Reflect that in the UI, but do NOT enableSaving(true) here
+        // — enabling writes after a failed row lookup risks creating a
+        // duplicate Progress row. Saving stays local-only on failure.
+        if (alive) setOffline(true);
+      } finally {
+        if (alive) {
+          setEntitlementLoading(false);
+          setLoading(false);
+        }
+      }
     })();
     return () => { alive = false; };
   }, []);
