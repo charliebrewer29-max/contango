@@ -41,24 +41,36 @@ export function daysBetween(a, b) {
   return Math.round((db - da) / 86400000);
 }
 
+// Pure XP computation for a session. The single source of truth for XP math -
+// callers consume the value recordSession returns instead of recomputing with
+// literals, so a constant change can't silently drift the UI or reminder email.
+export function xpForSession({ correct, total, completedType }) {
+  if (completedType === "lesson") {
+    let xp = (correct || 0) * XP_PER_CORRECT;
+    if (correct === total) xp += XP_PER_LESSON_COMPLETE;
+    return xp;
+  }
+  if (completedType === "drill") {
+    return (correct || 0) * XP_PER_CORRECT + XP_PER_DRILL_COMPLETE;
+  }
+  if (completedType === "practice") {
+    // spaced-repetition reviews: earn XP per correct, no hearts (review is safe)
+    return (correct || 0) * XP_PER_PRACTICE_REVIEW;
+  }
+  return 0;
+}
+
 // Apply progress after a lesson/drill session.
 // Returns updated progress + events for the UI (celebration, streak, hearts lost).
 export function applyProgress(progress, { correct, total, completedType }) {
   const next = { ...progress };
   const events = [];
-  let xpGained = 0;
-
-  if (completedType === "lesson") {
-    xpGained = correct * XP_PER_CORRECT;
-    if (correct === total) xpGained += XP_PER_LESSON_COMPLETE;
-  } else if (completedType === "drill") {
-    xpGained = correct * XP_PER_CORRECT + XP_PER_DRILL_COMPLETE;
-  } else if (completedType === "practice") {
-    // spaced-repetition reviews: earn XP per correct, no hearts (review is safe)
-    xpGained = correct * XP_PER_PRACTICE_REVIEW;
-  }
+  const xpGained = xpForSession({ correct, total, completedType });
 
   next.xp = (next.xp || 0) + xpGained;
+  // League XP is a separate weekly counter (resets Sunday) so the leaderboard
+  // compares this-week earnings, not lifetime XP. Accumulated in lockstep with xp.
+  next.leagueXp = (next.leagueXp || 0) + xpGained;
   // Hearts are NOT managed here. They are spent per wrong graded answer
   // (see loseHeart in ContangoContext) and reset to MAX at the user's local
   // midnight (server-anchored). Managing them per-answer lets a session be
@@ -67,6 +79,10 @@ export function applyProgress(progress, { correct, total, completedType }) {
   // streak: only credit on completion of a real lesson/drill
   if (completedType) {
     const today = todayStr();
+    // Capture same-day BEFORE the streak block mutates lastActiveDate, or
+    // yesterday's dailyXp carries into today forever (the ternary would
+    // always see lastActiveDate === today after the assignment below).
+    const wasSameDay = next.lastActiveDate === today;
     const last = next.lastActiveDate;
     if (last !== today) {
       const gap = last ? daysBetween(last, today) : 0;
@@ -91,8 +107,8 @@ export function applyProgress(progress, { correct, total, completedType }) {
       next.lastActiveDate = today;
     }
 
-    // daily goal progress
-    next.dailyXp = next.lastActiveDate === today ? (next.dailyXp || 0) + xpGained : xpGained;
+    // daily goal progress (wasSameDay was captured before lastActiveDate was set)
+    next.dailyXp = wasSameDay ? (next.dailyXp || 0) + xpGained : xpGained;
 
     // rolling daily history for Insights charts (one entry per day, last 30 days)
     const hist = Array.isArray(next.history) ? [...next.history] : [];
@@ -129,9 +145,4 @@ export function applyProgress(progress, { correct, total, completedType }) {
   events.push({ type: "xp", amount: xpGained });
 
   return { progress: next, events, xpGained };
-}
-
-export function tickValueFor(instrumentKey) {
-  // re-exported for convenience
-  return null;
 }

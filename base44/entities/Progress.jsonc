@@ -149,6 +149,21 @@
         "null"
       ]
     },
+    "leagueXp": {
+      "type": "number"
+    },
+    "leagueWeekStart": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "leaguePrevRank": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
     "practiceUsedToday": {
       "type": "number"
     },

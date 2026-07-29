@@ -17,8 +17,8 @@ const KNOWN_FIELDS = [
   "mindset", "diaryUnlocked", "lastDrillReview", "srCards", "badges", "stats",
   "rewards", "equippedFlair", "trialStart", "coachCalls", "drillHistory",
   "streakRepairMonth", "coachMemory", "branchReps", "branchLastTouched",
-  "disciplineBannerDismissed", "leagueCohort", "practiceUsedToday",
-  "practiceResetDate", "heartsDate", "history",
+  "disciplineBannerDismissed", "leagueCohort", "leagueXp", "leagueWeekStart",
+  "leaguePrevRank", "practiceUsedToday", "practiceResetDate", "heartsDate", "history",
 ];
 
 let cachedRowId = null;
@@ -81,7 +81,7 @@ function reconcile(serverData, localData, defaultProgress) {
     console.warn("[progressStore] server/local diverged; reconciling (max xp, union arrays)");
   }
   const merged = { ...server };
-  for (const k of ["xp", "streak", "hearts", "dailyXp", "mindset", "practiceUsedToday", "dailyGoal"]) {
+  for (const k of ["xp", "streak", "hearts", "dailyXp", "mindset", "practiceUsedToday", "dailyGoal", "leagueXp"]) {
     merged[k] = Math.max(server[k] || 0, local[k] || 0);
   }
   for (const k of ["firstLessonDone", "onboardingDone"]) {

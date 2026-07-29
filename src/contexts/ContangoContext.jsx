@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { MAX_HEARTS, applyProgress, todayStr, monthStr, serverToday } from "@/lib/gamification";
+import { MAX_HEARTS, applyProgress, xpForSession, todayStr, monthStr, serverToday } from "@/lib/gamification";
 import { loadProgress, saveProgress, clearProgress, enableSaving, setOfflineListener } from "@/lib/progressStore";
 import { scheduleCard } from "@/lib/spacedRepetition";
 import { isPremium } from "@/lib/subscription";
@@ -43,6 +43,9 @@ const DEFAULT_PROGRESS = {
   branchLastTouched: {},
   disciplineBannerDismissed: false,
   leagueCohort: null,
+  leagueXp: 0,
+  leagueWeekStart: null,
+  leaguePrevRank: null,
   practiceUsedToday: 0,
   practiceResetDate: null,
   heartsDate: null,
@@ -115,15 +118,20 @@ export function ContangoProvider({ children }) {
     setProgress(withDailyReset(res.data, getServerOffset()));
   }, []);
 
-  // Run a lesson/drill result through the gamification engine
+  // Run a lesson/drill result through the gamification engine. Returns
+  // { events, xpGained, heartsLost } so callers use the engine's own XP figure
+  // instead of recomputing it with literals (which drift from the constants).
+  // heartsLost is 0 here: hearts are spent per wrong graded answer via loseHeart,
+  // not in applyProgress, so a session carries no aggregated heart loss.
   const recordSession = useCallback((session) => {
+    const xpGained = xpForSession(session);
     let emittedEvents = [];
     setProgress(prev => {
       const { progress: next, events } = applyProgress(prev, session);
       emittedEvents = events;
       return next;
     });
-    return emittedEvents;
+    return { events: emittedEvents, xpGained, heartsLost: 0 };
   }, []);
 
   const markLessonComplete = useCallback((lessonId) => {

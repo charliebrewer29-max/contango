@@ -369,6 +369,7 @@ export const BRANCHES = [
         ],
         entryZone: { zoneStart: 22, zoneEnd: 26 },
         stopPrice: lowBeforeBreakout,
+        direction: 1, // breakout long
       };
     },
   },
@@ -403,6 +404,7 @@ export const BRANCHES = [
         ],
         entryZone: { zoneStart: lowIdx - 1, zoneEnd: lowIdx + 1 },
         stopPrice: bars[Math.max(0, lowIdx - 2)].low,
+        direction: 1, // buy the bounce off the range low (long fade)
       };
     },
   },

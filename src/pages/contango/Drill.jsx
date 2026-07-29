@@ -12,6 +12,7 @@ import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
 import { INSTRUMENTS } from "@/lib/instruments";
 import { canAccessBranch, isPremium, PREMIUM_INSTRUMENTS, FREE_INSTRUMENTS } from "@/lib/subscription";
+import { XP_PER_CORRECT } from "@/lib/gamification";
 
 // Drill screen: live bar replay with decision points.
 // Bars reveal progressively; mcq decision points pause replay and ask a question.
@@ -39,9 +40,12 @@ export default function Drill() {
   const [entryBarIdx, setEntryBarIdx] = useState(null);
   const [lastExit, setLastExit] = useState(null);
   const [out, setOut] = useState(false);
+  const [lastXp, setLastXp] = useState(0);
   const playRef = useRef(null);
   const decisionsRef = useRef([]);
   const dpShownAt = useRef(null);
+  const mountedRef = useRef(true);
+  const timeoutsRef = useRef([]);
 
   // Bars to reveal when a decision point is active. For tap points, reveal
   // through the end of the tap zone so the whole entry zone is visible.
@@ -69,6 +73,26 @@ export default function Drill() {
   useEffect(() => {
     if (phase === "decision") dpShownAt.current = Date.now();
   }, [phase, dpIdx]);
+
+  // Deferred callbacks (feedback delays + nested startReveal) would fire on an
+  // unmounted component if the user navigates away mid-decision. Track every
+  // timeout and bail if unmounted; the unmount cleanup also clears the replay
+  // interval so the 280ms loop can't keep calling setState after navigation.
+  function later(fn, ms) {
+    const t = setTimeout(() => {
+      timeoutsRef.current = timeoutsRef.current.filter((x) => x !== t);
+      if (mountedRef.current) fn();
+    }, ms);
+    timeoutsRef.current.push(t);
+    return t;
+  }
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+    if (playRef.current) { clearInterval(playRef.current); playRef.current = null; }
+    for (const t of timeoutsRef.current) clearTimeout(t);
+    timeoutsRef.current = [];
+  }, []);
 
   if (!scenario) {
     return <ScreenShell><div className="text-slate-400">Drill not found.</div></ScreenShell>;
@@ -148,7 +172,7 @@ export default function Drill() {
       depleted = loseHeart();
     }
 
-    setTimeout(() => {
+    later(() => {
       setFlash(null);
       if (depleted) { partialFinish(); return; }
       // after the first decision point, draw entry + stop lines
@@ -166,7 +190,7 @@ export default function Drill() {
         setSelected(null);
         setPhase("replay");
         // continue revealing
-        setTimeout(startReveal, 300);
+        later(startReveal, 300);
       }
     }, 1000);
   }
@@ -184,8 +208,14 @@ export default function Drill() {
     const decisionTimeMs = dpShownAt.current ? Date.now() - dpShownAt.current : null;
     const entryBar = bars[idx];
     setEntryPrice(entryBar.close);
+    const dir = scenario.direction ?? 1;
     const lookStart = Math.max(0, idx - 10);
-    const computedStop = Math.min(...bars.slice(lookStart, idx).map(b => b.low));
+    const lookback = bars.slice(lookStart, idx);
+    // Long: stop below the lowest low in the lookback. Short: stop above the
+    // highest high. The chart teaches stop placement on the correct side.
+    const computedStop = dir === 1
+      ? Math.min(...lookback.map(b => b.low))
+      : Math.max(...lookback.map(b => b.high));
     setStopPrice(computedStop);
     setEntryBarIdx(idx);
     const stopDistancePoints = Math.abs(entryBar.close - computedStop);
@@ -198,7 +228,7 @@ export default function Drill() {
       reviewCard(conceptKey, "again");
       depleted = loseHeart();
     }
-    setTimeout(() => {
+    later(() => {
       setFlash(null);
       if (depleted) { partialFinish(); return; }
       if (dpIdx + 1 >= decisionPoints.length) {
@@ -208,7 +238,7 @@ export default function Drill() {
         setDpIdx(dpIdx + 1);
         setSelected(null);
         setPhase("replay");
-        setTimeout(startReveal, 300);
+        later(startReveal, 300);
       }
     }, 1200);
   }
@@ -223,16 +253,26 @@ export default function Drill() {
     const entry = entryPrice;
     const stop = stopPrice;
     const exitClose = bars[idx].close;
-    const dir = 1; // breakout long
+    const dir = scenario.direction ?? 1; // 1 = long, -1 = short
     const realized = (exitClose - entry) * dir;
     const start = (entryBarIdx != null ? entryBarIdx : 0) + 1;
     let stopHit = false;
     for (let i = start; i <= idx; i++) {
-      if (stop != null && bars[i].low <= stop) stopHit = true;
+      if (stop == null) continue;
+      // Long stop sits below entry (hit when a bar's low trades through it);
+      // short stop sits above entry (hit when a bar's high trades through it).
+      if (dir === 1 && bars[i].low <= stop) stopHit = true;
+      if (dir === -1 && bars[i].high >= stop) stopHit = true;
     }
-    let bestAfter = -Infinity;
-    for (let i = idx + 1; i < bars.length; i++) if (bars[i].close > bestAfter) bestAfter = bars[i].close;
-    const continued = bestAfter > -Infinity ? (bestAfter - exitClose) * dir : 0;
+    // Continuation: did the move keep running in the trade's favor after exit?
+    // Long tracks the max close after exit; short tracks the min close.
+    let bestAfter = dir === 1 ? -Infinity : Infinity;
+    for (let i = idx + 1; i < bars.length; i++) {
+      if (dir === 1) { if (bars[i].close > bestAfter) bestAfter = bars[i].close; }
+      else { if (bars[i].close < bestAfter) bestAfter = bars[i].close; }
+    }
+    const hasAfter = dir === 1 ? bestAfter > -Infinity : bestAfter < Infinity;
+    const continued = hasAfter ? (bestAfter - exitClose) * dir : 0;
     let classification = "clean";
     if (stopHit && realized < 0) classification = "held_loser";
     else if (realized > 0 && continued >= Math.max(realized, inst.tickSize * 4)) classification = "cut_winner";
@@ -242,7 +282,7 @@ export default function Drill() {
     decisionsRef.current.push(rec);
     setLastExit({ classification, realized, exitClose });
     setExitPrice(exitClose);
-    setTimeout(() => {
+    later(() => {
       setFlash(null);
       if (dpIdx + 1 >= decisionPoints.length) {
         finishDrill(correctCount);
@@ -250,7 +290,7 @@ export default function Drill() {
         setDpIdx(dpIdx + 1);
         setSelected(null);
         setPhase("replay");
-        setTimeout(startReveal, 300);
+        later(startReveal, 300);
       }
     }, 1200);
   }
@@ -283,8 +323,10 @@ export default function Drill() {
   // happens via the `out` render gate.
   function partialFinish() {
     const finalCorrect = correctCount;
-    const earnedXp = finalCorrect * 8; // no +15 completion bonus
-    update(prev => ({ ...prev, xp: (prev.xp || 0) + earnedXp, dailyXp: (prev.dailyXp || 0) + earnedXp }));
+    // No completion bonus (the drill wasn't finished) - just XP per correct,
+    // drawn from the constant rather than a literal so it can't drift.
+    const earnedXp = finalCorrect * XP_PER_CORRECT;
+    update(prev => ({ ...prev, xp: (prev.xp || 0) + earnedXp, dailyXp: (prev.dailyXp || 0) + earnedXp, leagueXp: (prev.leagueXp || 0) + earnedXp }));
     const review = buildReview(finalCorrect);
     setLastDrillReview(review);
     logDrill(review);
@@ -292,23 +334,22 @@ export default function Drill() {
   }
 
   function finishDrill(finalCorrect) {
-    const events = recordSession({ correct: finalCorrect, total: gradedCount, completedType: "drill" });
+    const { xpGained } = recordSession({ correct: finalCorrect, total: gradedCount, completedType: "drill" });
     markDrillComplete(`${branch.id}-drill`);
     const review = buildReview(finalCorrect);
     setLastDrillReview(review);
     logDrill(review);
     setPhase("done");
+    setLastXp(xpGained);
     const hypoth = { ...progress, completedDrills: [...(progress.completedDrills || []), `${branch.id}-drill`] };
     if (isBranchComplete(branch, hypoth) && !(progress.badges || []).includes(branch.id)) {
       unlockBadge(branch.id);
       setBranchCelebrate({ branchId: branch.id });
     } else {
       setShowCelebrate(true);
-      setTimeout(() => setShowCelebrate(false), 2200);
+      later(() => setShowCelebrate(false), 2200);
     }
-    const xpGain = (typeof finalCorrect === "number" ? finalCorrect : correctCount) * 8 + 15;
-    syncReminderSnapshot(buildSnapshot({ ...progress, completedDrills: [...(progress.completedDrills || []), `${branch.id}-drill`], xp: (progress.xp || 0) + xpGain, dailyXp: (progress.dailyXp || 0) + xpGain }));
-    void events;
+    syncReminderSnapshot(buildSnapshot({ ...progress, completedDrills: [...(progress.completedDrills || []), `${branch.id}-drill`], xp: (progress.xp || 0) + xpGained, dailyXp: (progress.dailyXp || 0) + xpGained }));
   }
 
   function skipToDecision() {
@@ -320,12 +361,12 @@ export default function Drill() {
   return (
     <ScreenShell showStats={false} backTo={`/branch/${branch.id}`} title={`${branch.branchTitle} Drill`}>
       <FeedbackFlash state={flash} />
-      <CelebrationOverlay show={showCelebrate} xpGained={correctCount * 8 + 15} onClose={() => setShowCelebrate(false)} />
+      <CelebrationOverlay show={showCelebrate} xpGained={lastXp} onClose={() => setShowCelebrate(false)} />
       {branchCelebrate && (
         <BranchBadgeCelebration
           branchId={branchCelebrate.branchId}
           branchTitle={branch.branchTitle}
-          xpGained={correctCount * 8 + 15}
+          xpGained={lastXp}
           onClose={() => setBranchCelebrate(null)}
         />
       )}

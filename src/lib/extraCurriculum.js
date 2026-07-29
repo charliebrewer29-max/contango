@@ -294,6 +294,7 @@ export const EXTRA_BRANCHES = [
         ],
         entryZone: { zoneStart: 17, zoneEnd: 21 },
         stopPrice: rangeLow,
+        direction: 1, // opening-range breakout long
       };
     },
   },
@@ -392,6 +393,7 @@ export const EXTRA_BRANCHES = [
         ],
         entryZone: { zoneStart: 18, zoneEnd: 24 },
         stopPrice: accelLow,
+        direction: 1, // momentum long (enter the retest of an up move)
       };
     },
   },
