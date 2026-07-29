@@ -21,9 +21,9 @@ export default function Discipline() {
           <h2 className="font-display text-base font-semibold text-slate-100">Execution discipline</h2>
         </div>
         <p className="text-sm leading-relaxed text-slate-400">
-          Most day traders lose money, and the research is clear that the reason is behavior, not strategy.
-          Discipline is the skill that separates the exceptions. This profile measures what your drills say about
-          how you execute - not what you know.
+          Academic studies of retail day traders consistently find that losses trace back to execution, not
+          strategy knowledge. Oversizing, holding losers, and revenge trading do more damage than picking the
+          wrong setup. This profile measures how you execute, not what you know.
         </p>
       </div>
 

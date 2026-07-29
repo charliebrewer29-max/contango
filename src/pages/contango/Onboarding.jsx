@@ -46,8 +46,8 @@ export default function Onboarding() {
         <div className="flex flex-1 flex-col items-center justify-center text-center" style={{ animation: "fadeIn 0.5s ease-out" }}>
             <ContangoLogo size="xl" showWord animated className="mb-2" />
             <h1 className="font-display text-2xl font-extrabold uppercase tracking-[0.18em] text-amber-400">Futures, learned.</h1>
-            <p className="mt-3 text-xl font-semibold leading-snug text-slate-100">Most day traders lose money. Here's what the 3% do differently.</p>
-            <p className="mt-6 max-w-xs text-sm text-slate-500 [font-family:'Bricolage_Grotesque',_ui-sans-serif,_system-ui,_sans-serif]">Strategy isn't what separates winners from losers; discipline is. Learn the patterns, then drill the one behavior the 97% keep getting wrong. All simulated, all educational, no real money.</p>
+            <p className="mt-3 text-xl font-semibold leading-snug text-slate-100">Most day traders lose money. The research says it's behavior, not strategy.</p>
+            <p className="mt-6 max-w-xs text-sm text-slate-500 [font-family:'Bricolage_Grotesque',_ui-sans-serif,_system-ui,_sans-serif]">Studies of retail traders keep finding the same thing: the failures come from execution, not from picking the wrong setup. Learn the patterns, then drill the discipline. All simulated, all educational, no real money.</p>
             <button onClick={() => setStep(1)} className="mt-10 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
               Get Started
             </button>
