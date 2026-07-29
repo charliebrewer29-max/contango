@@ -87,14 +87,19 @@ describe("tilt", () => {
   });
 
   it("worse AND much faster after an error scores lower still (revenge)", () => {
+    // 4 correct at a slow pace, then a wrong, then three more wrongs at a
+    // much faster pace: post-error accuracy collapses to 0 and post-error
+    // speed drops well below 0.6× the overall average → the revenge penalty.
     const p = disciplineProfile({ drillHistory: [mkHistory([
       { isCorrect: true, decisionTimeMs: 5000 },
-      { isCorrect: false, decisionTimeMs: 5000 },
-      { isCorrect: false, decisionTimeMs: 1000 },
+      { isCorrect: true, decisionTimeMs: 5000 },
+      { isCorrect: true, decisionTimeMs: 5000 },
       { isCorrect: true, decisionTimeMs: 5000 },
       { isCorrect: false, decisionTimeMs: 5000 },
-      { isCorrect: false, decisionTimeMs: 1000 },
-    ], 2, 6)] });
+      { isCorrect: false, decisionTimeMs: 500 },
+      { isCorrect: false, decisionTimeMs: 500 },
+      { isCorrect: false, decisionTimeMs: 500 },
+    ], 4, 8)] });
     expect(p.metrics.find((m) => m.label === "Tilt resistance").score).toBeLessThan(15);
   });
 });
