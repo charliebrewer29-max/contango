@@ -2,6 +2,9 @@
   "name": "AiUsage",
   "type": "object",
   "properties": {
+    "user_id": {
+      "type": "string"
+    },
     "day": {
       "type": "string"
     },
@@ -17,7 +20,7 @@
   },
   "rls": {
     "read": {
-      "created_by_id": "{{user.id}}"
+      "data.user_id": "{{user.id}}"
     },
     "create": {
       "user_condition": {
@@ -35,5 +38,7 @@
       }
     }
   },
-  "required": []
+  "required": [
+    "user_id"
+  ]
 }
