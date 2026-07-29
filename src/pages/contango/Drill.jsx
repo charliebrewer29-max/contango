@@ -536,7 +536,7 @@ export default function Drill() {
           <h2 className="font-display text-2xl font-bold text-slate-100">Drill complete</h2>
           <div className="mx-auto mt-6 grid max-w-xs grid-cols-2 gap-3">
             <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-              <div className="font-mono text-2xl font-bold text-sky-400">+{correctCount * 8 + 15}</div>
+              <div className="font-mono text-2xl font-bold text-sky-400">+{lastXp}</div>
               <div className="text-xs text-slate-500">XP</div>
             </div>
             <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
