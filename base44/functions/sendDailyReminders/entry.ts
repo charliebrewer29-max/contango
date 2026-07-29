@@ -64,45 +64,6 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function composeText({ progress, reminder, appBaseUrl, unsubLink, postal, finalDormant }) {
-  const settingsUrl = appBaseUrl + '/settings';
-  const lines = [];
-  lines.push('Hey,');
-  lines.push('');
-  if (finalDormant) {
-    lines.push("It looks like you haven't practiced in a while, so we've paused these daily reminders to avoid cluttering your inbox.");
-    lines.push('If you still want them, turn reminders back on in the app anytime.');
-  } else {
-    lines.push("A quick nudge to keep your streak going. Here's where you stand in Contango:");
-    lines.push('');
-    if (progress) {
-      lines.push(`• ${(progress.streak || 0)}-day streak`);
-      lines.push(`• ${(progress.dailyXp || 0)}/${(progress.dailyGoal || 20)} XP toward today's goal`);
-      lines.push(`• ${(progress.completedLessons || []).length} lessons completed`);
-      lines.push(`• ${(progress.badges || []).length} branch badges earned`);
-    } else {
-      lines.push('Open Contango and pick up where you left off.');
-    }
-    lines.push('');
-    if (progress && reminder && reminder.next_lesson_title) lines.push(`Your next lesson: "${reminder.next_lesson_title}".`);
-    lines.push('');
-    lines.push('Even ten minutes keeps the momentum - small, consistent reps are how traders are built.');
-  }
-  lines.push('');
-  lines.push('- Tango, your trading mentor');
-  lines.push('');
-  lines.push('---');
-  lines.push("You're getting this because you turned on daily practice reminders in Contango.");
-  lines.push('Unsubscribe: ' + unsubLink);
-  lines.push('Manage reminders: ' + settingsUrl);
-  lines.push('');
-  lines.push('Contango');
-  lines.push(postal);
-  lines.push('');
-  lines.push('Simulated educational practice only. No real trades, no signals, no investment advice.');
-  return lines.join('\n');
-}
-
 function composeHtml({ progress, reminder, appBaseUrl, unsubLink, postal, finalDormant }) {
   const settingsUrl = appBaseUrl + '/settings';
   const stats = progress
@@ -164,8 +125,6 @@ export default async function (req) {
       });
       return Response.json({ error: 'compliance_env_missing', sent: 0 }, { status: 500 });
     }
-    const useHtml = secrets.get('REMINDER_HTML_BODY') === 'true';
-
     const now = new Date();
     const start = Date.now();
     let sent = 0, skipped = 0, dormantDisabled = 0, bounceDisabled = 0, processed = 0;
@@ -212,9 +171,7 @@ export default async function (req) {
         const dormantDays = daysSince(progress && progress.lastActiveDate, now);
         const finalDormant = dormantDays > DORMANT_DAYS;
 
-        const body = useHtml
-          ? composeHtml({ progress, reminder: r, appBaseUrl, unsubLink, postal, finalDormant })
-          : composeText({ progress, reminder: r, appBaseUrl, unsubLink, postal, finalDormant });
+        const body = composeHtml({ progress, reminder: r, appBaseUrl, unsubLink, postal, finalDormant });
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: r.email,
           subject: finalDormant ? 'Still want your Contango reminders?' : 'Contango - your daily practice nudge',
