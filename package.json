@@ -14,7 +14,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "//": "TODO: migrate react-router-dom 6.x -> 7.x as a planned, tested migration once 7.18.0 clears the .npmrc min-release-age 7-day window (published ~2026-07-22/23; eligible ~2026-07-30). Advisories GHSA-wrjc-x8rr-h8h6 (open redirect - needs user-controlled input reaching Link/useNavigate; this app has no redirect/returnTo/next params) and GHSA-337j-9hxr-rhxg (deserializeErrors - needs SSR hydration; this is a Vite SPA) are NOT reachable in this codebase, so they are acceptable to carry until then.",
     "@base44/sdk": "^0.8.40",
     "@base44/vite-plugin": "^1.0.30",
     "@hookform/resolvers": "^4.1.2",
