@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, AlertTriangle } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { COACH_NAME } from "@/lib/contangoTheme";
@@ -8,6 +8,13 @@ import { COACH_NAME } from "@/lib/contangoTheme";
 // Have a lawyer review before public launch. Anything involving money, minors,
 // or financial education should get real review.
 export default function Legal() {
+  const location = useLocation();
+  React.useEffect(() => {
+    if (location.hash) {
+      const el = document.getElementById(location.hash.slice(1));
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location.hash]);
   return (
     <ScreenShell showStats={false} backTo="/profile">
       <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
@@ -17,7 +24,7 @@ export default function Legal() {
         </p>
       </div>
 
-      <Section title="Privacy Policy">
+      <Section title="Privacy Policy" id="privacy">
         <p className="text-sm leading-relaxed text-slate-300">
           Contango is a simulated, educational futures-trading app. It does not execute real trades, hold money, or connect to any broker. This policy describes what we collect and who processes it.
         </p>
@@ -53,7 +60,7 @@ export default function Legal() {
         </p>
       </Section>
 
-      <Section title="Terms of Service">
+      <Section title="Terms of Service" id="terms">
         <H>Educational only</H>
         <p className="text-sm text-slate-300">
           Contango provides simulated, educational content about futures trading. It is not financial, investment, or trading advice, and nothing in the app is a recommendation or signal to buy, sell, or hold any security or contract.
@@ -77,9 +84,9 @@ export default function Legal() {
   );
 }
 
-function Section({ title, children }) {
+function Section({ title, children, id }) {
   return (
-    <div className="mb-7">
+    <div id={id} className="mb-7 scroll-mt-24">
       <h2 className="mb-3 font-display text-lg font-semibold text-slate-100">{title}</h2>
       <div className="space-y-3">{children}</div>
     </div>

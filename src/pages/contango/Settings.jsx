@@ -5,7 +5,7 @@ import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { MAX_HEARTS } from "@/lib/gamification";
 import { COACH_NAME } from "@/lib/contangoTheme";
-import { isPremium, trialDaysLeft } from "@/lib/subscription";
+import { isPremium, trialDaysLeft, restorePurchases } from "@/lib/subscription";
 import ReminderSettings from "@/components/contango/ReminderSettings";
 import { base44 } from "@/api/base44Client";
 import { fetchMe, hasConsent, setConsent } from "@/lib/aiConsent";
@@ -85,6 +85,18 @@ export default function Settings() {
           </div>
           <ChevronRight className="h-5 w-5 text-slate-600" />
         </Link>
+      </Section>
+
+      {/* subscription - restore */}
+      <Section title="Subscription">
+        <button onClick={restorePurchases} className="flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 text-left hover:border-slate-600">
+          <Crown className="h-5 w-5 text-amber-400" />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-slate-100">Restore Purchases</div>
+            <div className="text-xs text-slate-500">Re-link prior App Store purchases to this account</div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-600" />
+        </button>
       </Section>
 
       {/* preferences */}

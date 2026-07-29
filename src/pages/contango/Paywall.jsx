@@ -1,9 +1,9 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Check, Crown, X, Sparkles, BookOpen, LineChart, Waves, CalendarClock, BarChart3, Repeat } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { COACH_NAME } from "@/lib/contangoTheme";
-import { TRIAL_DAYS, isPremium, trialDaysLeft } from "@/lib/subscription";
+import { TRIAL_DAYS, isPremium, trialDaysLeft, restorePurchases } from "@/lib/subscription";
 
 // Paywall: the full premium split (spec Section 9). Hearts stay on the graded
 // path for everyone - Premium buys the unlimited Practice sandbox, not a
@@ -75,7 +75,12 @@ export default function Paywall() {
                 Start {TRIAL_DAYS}-day free trial
               </button>
               <button onClick={subscribe} className="mt-2 text-xs text-slate-500 underline-offset-2 hover:text-slate-300">or subscribe now</button>
-              <p className="mt-3 text-[11px] text-slate-600">{TRIAL_DAYS}-day free trial · cancel anytime · simulated education only</p>
+              <div className="mt-3 flex items-center justify-center gap-4 text-[12px] text-slate-600">
+                <button onClick={restorePurchases} className="hover:text-slate-300">Restore Purchases</button>
+                <Link to="/legal#terms" className="hover:text-slate-300">Terms of Use</Link>
+                <Link to="/legal#privacy" className="hover:text-slate-300">Privacy Policy</Link>
+              </div>
+              <p className="mx-auto mt-3 max-w-[340px] text-center text-[11px] leading-[1.5] text-slate-600">Contango Premium is an auto-renewing subscription. $14.99 per month or $79.99 per year after a 21-day free trial. Payment is charged to your Apple ID at confirmation of purchase. Your subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage or cancel anytime in your Apple ID settings. Simulated education only, not financial advice.</p>
             </>
           )}
         </div>

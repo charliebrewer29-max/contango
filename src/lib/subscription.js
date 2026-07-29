@@ -66,3 +66,10 @@ export function canRepairStreak(p) {
   const month = new Date().toISOString().slice(0, 7);
   return p?.streakRepairMonth !== month;
 }
+
+// Restore prior App Store / IAP purchases. The native in-app-purchase bridge
+// isn't wired in the web build, so this is a no-op here; the App Store-required
+// restore link calls it so the flow is present and ready to connect.
+export async function restorePurchases() {
+  return null;
+}

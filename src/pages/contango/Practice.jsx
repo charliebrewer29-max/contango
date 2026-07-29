@@ -6,7 +6,7 @@ import PracticeReview from "@/components/contango/practice/PracticeReview";
 import { useContango } from "@/contexts/ContangoContext";
 import { buildPracticeCatalog, isDue, nextDueMs } from "@/lib/spacedRepetition";
 import { weakConcepts } from "@/lib/performance";
-import { isPremium } from "@/lib/subscription";
+import { isPremium, restorePurchases } from "@/lib/subscription";
 
 const SESSION_SIZE = 10;
 
@@ -60,6 +60,11 @@ export default function Practice() {
           <p className="mt-2 text-sm text-slate-400">Practice mode is your unlimited sim sandbox - review every concept and chart as often as you like, with no hearts on the line. It's part of Premium.</p>
           <p className="mt-2 text-xs text-slate-500">Hearts still apply on the graded curriculum path for everyone - that's the daily-loss-limit discipline you're learning.</p>
           <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
+          <div className="mt-4 flex items-center justify-center gap-4 text-[12px] text-slate-500">
+            <button onClick={restorePurchases} className="hover:text-slate-300">Restore Purchases</button>
+            <Link to="/legal#terms" className="hover:text-slate-300">Terms of Use</Link>
+            <Link to="/legal#privacy" className="hover:text-slate-300">Privacy Policy</Link>
+          </div>
         </div>
       </ScreenShell>
     );
