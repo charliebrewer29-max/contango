@@ -15,6 +15,7 @@ import { allUnitsFlat, DIARY_ENTRIES } from "@/lib/content";
 import { canAccessLessonId } from "@/lib/subscription";
 import CandleChart from "@/components/contango/CandleChart";
 import { buildLessonChart } from "@/lib/lessonCharts";
+import { playLessonComplete } from "@/lib/sfx";
 
 // Lesson engine - two phases.
 // LEARN: teach / emotion / widget / reveal. No scoring, no hearts, free
@@ -183,6 +184,7 @@ export default function Lesson() {
       setUnlockedDiaryId(diary.id);
     }
     setPhase("summary");
+    if (progress.soundOn) playLessonComplete();
     const hypoth = { ...progress, completedLessons: [...(progress.completedLessons || []), unit.id] };
     if (branch && isBranchComplete(branch, hypoth) && !(progress.badges || []).includes(branch.id)) {
       unlockBadge(branch.id);

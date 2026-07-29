@@ -39,6 +39,28 @@ export function playCorrect() {
   });
 }
 
+// Celebratory ascending arpeggio for completing a lesson - a fuller, brighter
+// chime than the two-note correct sound so a finish feels like a milestone.
+export function playLessonComplete() {
+  const ac = getCtx();
+  if (!ac) return;
+  const now = ac.currentTime;
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = "triangle";
+    o.frequency.value = f;
+    o.connect(g);
+    g.connect(ac.destination);
+    const t = now + i * 0.11;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.2, t + 0.014);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+    o.start(t);
+    o.stop(t + 0.34);
+  });
+}
+
 // Descending low buzz for a wrong answer.
 export function playWrong() {
   const ac = getCtx();
