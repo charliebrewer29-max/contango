@@ -18,7 +18,7 @@ export default function Paywall() {
   const perks = [
     { icon: <Repeat className="h-4 w-4" />, text: "Unlimited Practice mode - drill any setup as many times as you want" },
     { icon: <BookOpen className="h-4 w-4" />, text: "Every strategy branch, not just the first two" },
-    { icon: <BarChart3 className="h-4 w-4" />, text: "All instruments - NQ, CL, GC (and ES)" },
+    { icon: <BarChart3 className="h-4 w-4" />, text: "Crude & Gold instruments - CL, GC, their Micros, and YM/RTY" },
     { icon: <Sparkles className="h-4 w-4" />, text: `${COACH_NAME} that remembers your history across sessions` },
     { icon: <LineChart className="h-4 w-4" />, text: "Full trade journal with win-rate analytics" },
     { icon: <Waves className="h-4 w-4" />, text: "Messy market mode - false breakouts & news spikes" },

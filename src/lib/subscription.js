@@ -7,8 +7,25 @@ import { BRANCHES } from "./content";
 export const TRIAL_DAYS = 21;          // long trial: 17-32d window converts ~70% better
 export const FREE_COACH_DAILY = 3;     // free coach calls per day, session-only
 export const FREE_STRATEGY_COUNT = 2;  // free learners get the first two strategy branches
-export const FREE_INSTRUMENTS = ["ES"];
+export const FREE_INSTRUMENTS = ["ES", "NQ"];
 export const PREMIUM_INSTRUMENTS = ["ES", "NQ", "CL", "GC"];
+
+// Instrument-profile lessons locked to Premium. Free learners get ES + NQ
+// (and the Micro Nasdaq, MNQ); Crude, Gold, and their micros/relatives open
+// with Premium. Kept separate from the drill instrument list so YM/RTY-style
+// lessons can be gated without exposing them in the drill generator.
+export const PREMIUM_INSTRUMENT_LESSON_IDS = new Set([
+  "cl-profile",
+  "gc-profile",
+  "mcl-profile",
+  "ym-rty",
+]);
+
+export function canAccessLessonId(lessonId, p) {
+  if (!lessonId) return true;
+  if (isPremium(p)) return true;
+  return !PREMIUM_INSTRUMENT_LESSON_IDS.has(lessonId);
+}
 
 export function isPremium(p) {
   return p?.subscription === "premium" || p?.subscription === "trial";

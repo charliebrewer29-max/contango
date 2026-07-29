@@ -7,7 +7,7 @@ import DisciplineHero from "@/components/contango/DisciplineHero";
 import AdBanner from "@/components/contango/AdBanner";
 import { useContango } from "@/contexts/ContangoContext";
 import { BRANCHES } from "@/lib/content";
-import { canAccessBranch } from "@/lib/subscription";
+import { canAccessBranch, canAccessLessonId } from "@/lib/subscription";
 
 // Home / Dashboard. One dominant primary action - "Pick up where you left
 // off" - sits in the goal card and is the largest, brightest thing on the
@@ -109,6 +109,7 @@ function findNextLesson(progress) {
     }
     if (b.units) {
       for (const u of b.units) {
+        if (!canAccessLessonId(u.id, progress)) continue;
         if (!progress.completedLessons.includes(u.id)) {
           return { path: `/lesson/${u.id}`, title: u.title };
         }

@@ -10,7 +10,7 @@ import { syncReminderSnapshot, buildSnapshot } from "@/lib/reminders";
 import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
 import { INSTRUMENTS } from "@/lib/instruments";
-import { canAccessBranch, isPremium, PREMIUM_INSTRUMENTS } from "@/lib/subscription";
+import { canAccessBranch, isPremium, PREMIUM_INSTRUMENTS, FREE_INSTRUMENTS } from "@/lib/subscription";
 
 // Drill screen: live bar replay with decision points.
 // Bars reveal progressively; mcq decision points pause replay and ask a question.
@@ -318,19 +318,29 @@ export default function Drill() {
         </div>
       </div>
 
-      {/* instrument selector - premium only */}
-      {isPremium(progress) && (
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <div className="flex flex-wrap gap-1.5">
-            {PREMIUM_INSTRUMENTS.map((ik) => (
+      {/* instrument selector - free gets ES + NQ; CL/GC locked to Premium */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="text-xs text-slate-500">Instrument</span>
+        <div className="flex flex-wrap gap-1.5">
+          {PREMIUM_INSTRUMENTS.map((ik) => {
+            const locked = !isPremium(progress) && !FREE_INSTRUMENTS.includes(ik);
+            if (locked) {
+              return (
+                <Link key={ik} to="/paywall"
+                  className="flex items-center gap-1 rounded-lg border border-amber-500/40 bg-amber-500/5 px-2.5 py-1 text-xs font-mono text-amber-400/80 hover:border-amber-500/70">
+                  <Crown className="h-3 w-3" /> {ik}
+                </Link>
+              );
+            }
+            return (
               <button key={ik} onClick={() => setInstrument(ik)}
                 className={`rounded-lg border px-2.5 py-1 text-xs font-mono ${instrument === ik ? "border-amber-400 bg-amber-400/10 text-amber-300" : "border-slate-700 bg-slate-900 text-slate-400"}`}>
                 {ik}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       <CandleChart
         bars={bars}

@@ -4,7 +4,7 @@ import { ChevronRight, ChevronLeft, Lock, Check, Play, Crown } from "lucide-reac
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { findBranch } from "@/lib/content";
-import { canAccessBranch } from "@/lib/subscription";
+import { canAccessBranch, canAccessLessonId } from "@/lib/subscription";
 import { isBranchComplete, branchDoneCount, branchUnitCount } from "@/lib/branchProgress";
 import BranchBadge, { badgeForBranch } from "@/components/contango/BranchBadge";
 
@@ -92,6 +92,25 @@ export default function BranchDetail() {
           const done = item.kind === "drill"
             ? progress.completedDrills.includes(item.id)
             : progress.completedLessons.includes(item.id);
+          const lessonLocked = item.kind === "lesson" && !canAccessLessonId(item.id, progress);
+          if (lessonLocked) {
+            return (
+              <Link
+                key={item.id}
+                to="/paywall"
+                className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 transition hover:border-amber-500/50"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-800 text-amber-400">
+                  <Crown className="h-4 w-4" />
+                </div>
+                <div className="flex-1">
+                  <span className="font-medium text-slate-100">{item.title}</span>
+                  <span className="block text-xs text-amber-400/80">Premium instrument</span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-amber-400/60" />
+              </Link>
+            );
+          }
           return (
             <Link
               key={item.id}

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Check, X, ChevronRight, ChevronLeft, Brain, ArrowRight, BookOpen, BarChart3, Move, Eye, Heart, Target, Sparkles } from "lucide-react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { Check, X, ChevronRight, ChevronLeft, Brain, ArrowRight, BookOpen, BarChart3, Move, Eye, Heart, Target, Sparkles, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import FeedbackFlash from "@/components/contango/FeedbackFlash";
 import { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
@@ -11,6 +11,7 @@ import { syncReminderSnapshot, buildSnapshot } from "@/lib/reminders";
 import MindsetMeter from "@/components/contango/MindsetMeter";
 import { useContango } from "@/contexts/ContangoContext";
 import { allUnitsFlat, DIARY_ENTRIES } from "@/lib/content";
+import { canAccessLessonId } from "@/lib/subscription";
 import CandleChart from "@/components/contango/CandleChart";
 import { buildLessonChart } from "@/lib/lessonCharts";
 
@@ -72,6 +73,19 @@ export default function Lesson() {
 
   if (!entry) {
     return <ScreenShell><div className="text-slate-400">Lesson not found.</div></ScreenShell>;
+  }
+
+  if (!canAccessLessonId(lessonId, progress)) {
+    return (
+      <ScreenShell showStats={false} backTo={branch ? `/branch/${branch.id}` : "/"} title={unit?.title || "Lesson"}>
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
+          <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
+          <h2 className="font-display text-xl font-bold text-slate-100">A Premium instrument</h2>
+          <p className="mt-2 text-sm text-slate-400">{unit?.title} is part of Contango Premium. Free learners can learn ES and NQ; Crude, Gold, and their Micros open with Premium.</p>
+          <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
+        </div>
+      </ScreenShell>
+    );
   }
 
   const learnStage = learnStages[learnIdx];
