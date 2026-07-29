@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { MAX_HEARTS, applyProgress, todayStr } from "@/lib/gamification";
+import { MAX_HEARTS, applyProgress, todayStr, monthStr } from "@/lib/gamification";
 import { scheduleCard } from "@/lib/spacedRepetition";
 import { isPremium } from "@/lib/subscription";
 import { branchForLessonId } from "@/lib/branchMastery";
@@ -198,7 +198,7 @@ export function ContangoProvider({ children }) {
   const repairStreak = useCallback(() => {
     setProgress(prev => {
       if (!isPremium(prev)) return prev;
-      const month = new Date().toISOString().slice(0, 7);
+      const month = monthStr();
       if (prev.streakRepairMonth === month) return prev;
       return { ...prev, streak: (prev.streak || 0) + 1, streakRepairMonth: month, lastActiveDate: todayStr() };
     });

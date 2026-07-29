@@ -3,6 +3,7 @@
 // do X?" without touching state. Trial users get every premium lever.
 
 import { BRANCHES } from "./content";
+import { todayStr, monthStr } from "./gamification";
 
 export const TRIAL_DAYS = 21;          // long trial: 17-32d window converts ~70% better
 export const FREE_COACH_DAILY = 3;     // free coach calls per day, session-only
@@ -68,7 +69,7 @@ export const canFullJournal = isPremium;
 export function coachCallsToday(p) {
   const c = p?.coachCalls;
   if (!c) return 0;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
   return c.date === today ? c.count : 0;
 }
 
@@ -80,7 +81,7 @@ export function coachCallsRemaining(p) {
 // Streak repair is a monthly Premium perk.
 export function canRepairStreak(p) {
   if (!isPremium(p)) return false;
-  const month = new Date().toISOString().slice(0, 7);
+  const month = monthStr();
   return p?.streakRepairMonth !== month;
 }
 

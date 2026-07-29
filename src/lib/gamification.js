@@ -9,8 +9,19 @@ export const XP_PER_DRILL_COMPLETE = 15;
 export const XP_PER_COACH_REFLECTION = 5;
 export const XP_PER_PRACTICE_REVIEW = 5;
 
+// Local-calendar date string (YYYY-MM-DD). Using the device's own calendar
+// day keeps streaks, daily XP/goal, and the practice allowance all resetting
+// at local midnight - not at 6-7pm for users west of UTC.
 export function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Local-calendar month string (YYYY-MM) for monthly perks (streak repair),
+// so the monthly limit also rolls over on the user's local month boundary.
+export function monthStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
 export function daysBetween(a, b) {
