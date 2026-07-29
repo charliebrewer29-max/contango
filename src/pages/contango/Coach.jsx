@@ -201,6 +201,9 @@ export default function Coach() {
               <Send className="h-5 w-5" />
             </button>
           </div>
+          <p className="mt-1.5 text-[12px] text-slate-500">
+            {COACH_NAME} doesn't need your name or personal details, so please leave them out.
+          </p>
           <p className="mt-2 text-center text-[11px] text-slate-600">
             Educational feedback on simulated practice · not investment advice. Sent to Anthropic with your consent.
           </p>
