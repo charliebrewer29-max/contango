@@ -5,6 +5,7 @@ import { useContango } from "@/contexts/ContangoContext";
 import { GOAL_OPTIONS } from "@/lib/contangoTheme";
 import { LEGAL_LAST_UPDATED, LEGAL_AGE_THRESHOLD } from "@/lib/legalVersion";
 import ContangoLogo from "@/components/contango/ContangoLogo";
+import { validateDisplayName } from "@/lib/displayName";
 
 // Onboarding: welcome → disclaimer → goal selection ("why") → daily goal → first lesson prompt.
 // Disclaimers are visible and required (spec Section 2 & 13).
@@ -14,8 +15,10 @@ export default function Onboarding() {
   const [goal, setGoal] = useState("regular");
   const [acknowledged, setAcknowledged] = useState(false);
   const [ageOk, setAgeOk] = useState(false);
+  const [name, setName] = useState("");
   const { update } = useContango();
   const navigate = useNavigate();
+  const nameCheck = validateDisplayName(name);
 
   const WHY_OPTIONS = [
   { id: "curiosity", label: "Curiosity", desc: "Just learning how futures work", branch: "instruments" },
@@ -34,6 +37,7 @@ export default function Onboarding() {
     const now = new Date().toISOString();
     update({
       onboardingDone: true,
+      displayName: name.trim() || null,
       why,
       dailyGoal: GOAL_OPTIONS.find((g) => g.id === goal).xp,
       goal,
@@ -122,6 +126,37 @@ export default function Onboarding() {
 
         {step === 2 &&
         <div className="flex flex-1 flex-col justify-center">
+            <h2 className="font-display text-2xl font-bold">What should we call you?</h2>
+            <p className="mt-2 text-sm text-slate-400">This is a nickname, not your real name. It only shows up on your leaderboard, and you can change it anytime in settings.</p>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nickname (optional)"
+              maxLength={20}
+              aria-label="Display name"
+              className="mt-6 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:border-amber-400 focus:outline-none"
+            />
+            {nameCheck.error && (
+              <p className="mt-2 text-xs text-rose-400">{nameCheck.error}</p>
+            )}
+            <div className="mt-6 flex gap-3">
+              <button onClick={() => setStep(3)} className="flex-1 rounded-xl border border-slate-700 bg-slate-900 py-3.5 font-semibold text-slate-300 transition hover:bg-slate-800">
+                Skip
+              </button>
+              <button
+                onClick={() => setStep(3)}
+                disabled={!nameCheck.valid}
+                className="flex-1 rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30 disabled:hover:bg-amber-400"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        }
+
+        {step === 3 &&
+        <div className="flex flex-1 flex-col justify-center">
             <h2 className="font-display text-2xl font-bold">Why are you learning?</h2>
             <p className="mt-2 text-sm text-slate-400">We'll tailor your path - and flag the discipline traps that tend to trip people like you.</p>
             <div className="mt-6 space-y-3">
@@ -146,13 +181,13 @@ export default function Onboarding() {
                 {WHY_NUDGE[why]}
               </p>
           }
-            <button onClick={() => setStep(3)} className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
+            <button onClick={() => setStep(4)} className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
               Continue
             </button>
           </div>
         }
 
-        {step === 3 &&
+        {step === 4 &&
         <div className="flex flex-1 flex-col justify-center">
             <h2 className="font-display text-2xl font-bold">Set a daily goal</h2>
             <p className="mt-2 text-sm text-slate-400">Discipline is built in small, daily reps - not sporadic marathons. Pick something achievable; you can change it anytime in settings.</p>

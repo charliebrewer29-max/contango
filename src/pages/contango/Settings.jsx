@@ -10,6 +10,7 @@ import { base44 } from "@/api/base44Client";
 import { fetchMe, hasConsent, setConsent } from "@/lib/aiConsent";
 import { clearProgress } from "@/lib/progressStore";
 import { Section, Toggle } from "@/components/contango/profileBits";
+import { validateDisplayName } from "@/lib/displayName";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +31,8 @@ export default function Settings() {
   const flow = isPremium(entitlement) ? "history" : "session";
   const [aiOn, setAiOn] = React.useState(false);
   const [aiBusy, setAiBusy] = React.useState(false);
+  const [displayName, setDisplayName] = React.useState(progress.displayName || "");
+  const nameCheck = validateDisplayName(displayName);
 
   React.useEffect(() => {
     let alive = true;
@@ -66,11 +69,44 @@ export default function Settings() {
     update({ [field]: !progress[field] });
   }
 
+  function saveDisplayName() {
+    if (!nameCheck.valid) return;
+    update({ displayName: nameCheck.trimmed || null });
+  }
+
   return (
     <ScreenShell showStats backTo="/" title="Settings">
       <Link to="/profile" className="mb-4 inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-slate-200">
         <ChevronLeft className="h-4 w-4" /> Profile
       </Link>
+
+      {/* profile */}
+      <Section title="Profile">
+        <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+          <label className="text-sm font-medium text-slate-100" htmlFor="display-name">Display name</label>
+          <p className="mt-0.5 text-xs text-slate-500">Shown on your leaderboard. You can change it anytime.</p>
+          <div className="mt-3 flex gap-2">
+            <input
+              id="display-name"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Nickname (optional)"
+              maxLength={20}
+              aria-label="Display name"
+              className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-amber-400 focus:outline-none"
+            />
+            <button
+              onClick={saveDisplayName}
+              disabled={!nameCheck.valid || nameCheck.trimmed === (progress.displayName || "")}
+              className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30 disabled:hover:bg-amber-400"
+            >
+              Save
+            </button>
+          </div>
+          {nameCheck.error && <p className="mt-2 text-xs text-rose-400">{nameCheck.error}</p>}
+        </div>
+      </Section>
 
       {/* daily reminders */}
       <ReminderSettings />

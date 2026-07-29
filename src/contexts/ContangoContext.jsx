@@ -54,6 +54,7 @@ const DEFAULT_PROGRESS = {
   practiceUsedToday: 0,
   practiceResetDate: null,
   heartsDate: null,
+  displayName: null,
   age_attestation: null,
   disclaimer_attestation: null,
 };

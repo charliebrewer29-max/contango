@@ -59,7 +59,7 @@ export default function Leaderboard() {
     if (!cohort) return [];
     // Rank against time-drifted XP, not the stored roster values.
     const drifted = cohortXpNow(cohort, new Date());
-    return [...drifted, { name: "You", xp, you: true }].sort((a, b) => b.xp - a.xp);
+    return [...drifted, { name: progress.displayName || "You", xp, you: true }].sort((a, b) => b.xp - a.xp);
   }, [cohort, xp]);
   const yourRank = rankings.findIndex(m => m.you) + 1;
 
