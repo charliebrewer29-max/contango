@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { MAX_HEARTS, applyProgress, xpForSession, todayStr, monthStr, serverToday } from "@/lib/gamification";
+import { MAX_HEARTS, applyProgress, xpForSession, todayStr, monthStr, serverToday, spendHeart, refundHeart, resetHeartsForToday } from "@/lib/gamification";
 import { loadProgress, saveProgress, clearProgress, enableSaving, setOfflineListener } from "@/lib/progressStore";
 import { scheduleCard } from "@/lib/spacedRepetition";
 import { isPremium } from "@/lib/subscription";
@@ -65,9 +65,7 @@ function withDailyReset(data, offset) {
   if (offset === null || offset === undefined) return data;
   const today = serverToday(offset);
   let next = data;
-  if (next.heartsDate !== today) {
-    next = { ...next, hearts: MAX_HEARTS, heartsDate: today };
-  }
+  next = resetHeartsForToday(next, today);
   if (!isPremium(next) && next.practiceResetDate !== today) {
     next = { ...next, practiceUsedToday: 0, practiceResetDate: today };
   }
@@ -165,8 +163,8 @@ export function ContangoProvider({ children }) {
   const loseHeart = useCallback(() => {
     let depleted = false;
     setProgress(prev => {
-      const hearts = Math.max(0, (prev.hearts ?? MAX_HEARTS) - 1);
-      depleted = hearts === 0;
+      const { hearts, depleted: d } = spendHeart(prev.hearts);
+      depleted = d;
       return { ...prev, hearts };
     });
     return depleted;
@@ -177,9 +175,9 @@ export function ContangoProvider({ children }) {
   const earnHeart = useCallback(() => {
     let gained = false;
     setProgress(prev => {
-      if ((prev.hearts ?? 0) >= MAX_HEARTS) return prev;
-      gained = true;
-      return { ...prev, hearts: Math.min(MAX_HEARTS, (prev.hearts ?? 0) + 1) };
+      const { hearts, gained: g } = refundHeart(prev.hearts);
+      gained = g;
+      return g ? { ...prev, hearts } : prev;
     });
     return gained;
   }, []);

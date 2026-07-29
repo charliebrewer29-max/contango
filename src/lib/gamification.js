@@ -146,3 +146,21 @@ export function applyProgress(progress, { correct, total, completedType }) {
 
   return { progress: next, events, xpGained };
 }
+
+// Hearts: pure helpers so the spend / earn / reset rules are unit-testable and
+// ContangoContext can't drift from them. Hearts are spent per wrong graded
+// answer (see ContangoContext.loseHeart) and reset to MAX at the user's local
+// midnight (server-anchored via resetHeartsForToday). Hearts are NEVER sold or
+// Premium-gated — these helpers are tier-agnostic by construction.
+export function spendHeart(hearts) {
+  const next = Math.max(0, (hearts ?? MAX_HEARTS) - 1);
+  return { hearts: next, depleted: next === 0 };
+}
+export function refundHeart(hearts) {
+  if ((hearts ?? 0) >= MAX_HEARTS) return { hearts, gained: false };
+  return { hearts: Math.min(MAX_HEARTS, (hearts ?? 0) + 1), gained: true };
+}
+export function resetHeartsForToday(progress, today) {
+  if (progress?.heartsDate === today) return progress;
+  return { ...progress, hearts: MAX_HEARTS, heartsDate: today };
+}

@@ -135,3 +135,34 @@ export function disciplineProfile(progress) {
   const weakest = metrics.reduce((a, m) => (m.score < a.score ? m : a), metrics[0]);
   return { empty: false, metrics, overall, weakest, drillCount: history.length, decisionCount: decisions.length };
 }
+
+// Classify a single exit-tap decision. Pure so it can be unit-tested, including
+// the trade-direction cases (a profitable short must NOT be "held_loser" — a
+// real bug that once lived inline in Drill.jsx's answerExitTap). Mirrors that
+// logic exactly. direction: 1 = long, -1 = short. Bars after the exit decide
+// "cut_winner"; a stop hit with a losing realized P&L decides "held_loser".
+export function classifyExit({ entry, stop, exitClose, bars, entryBarIdx, exitIdx, direction = 1, tickSize = 0.25 }) {
+  const dir = direction ?? 1;
+  const realized = (exitClose - entry) * dir;
+  const start = (entryBarIdx != null ? entryBarIdx : 0) + 1;
+  let stopHit = false;
+  for (let i = start; i <= exitIdx; i++) {
+    if (stop == null) continue;
+    const b = bars[i];
+    if (!b) continue;
+    if (dir === 1 && b.low <= stop) stopHit = true;
+    if (dir === -1 && b.high >= stop) stopHit = true;
+  }
+  let bestAfter = dir === 1 ? -Infinity : Infinity;
+  for (let i = exitIdx + 1; i < bars.length; i++) {
+    const c = bars[i].close;
+    if (dir === 1) { if (c > bestAfter) bestAfter = c; }
+    else { if (c < bestAfter) bestAfter = c; }
+  }
+  const hasAfter = dir === 1 ? bestAfter > -Infinity : bestAfter < Infinity;
+  const continued = hasAfter ? (bestAfter - exitClose) * dir : 0;
+  let classification = "clean";
+  if (stopHit && realized < 0) classification = "held_loser";
+  else if (realized > 0 && continued >= Math.max(realized, tickSize * 4)) classification = "cut_winner";
+  return { realized, stopHit, continued, classification };
+}

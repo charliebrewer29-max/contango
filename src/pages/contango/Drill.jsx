@@ -13,6 +13,7 @@ import { findBranch } from "@/lib/content";
 import { INSTRUMENTS } from "@/lib/instruments";
 import { canAccessBranch, isPremium, PREMIUM_INSTRUMENTS, FREE_INSTRUMENTS } from "@/lib/subscription";
 import { XP_PER_CORRECT } from "@/lib/gamification";
+import { classifyExit } from "@/lib/discipline";
 
 // Drill screen: live bar replay with decision points.
 // Bars reveal progressively; mcq decision points pause replay and ask a question.
@@ -253,29 +254,18 @@ export default function Drill() {
     const entry = entryPrice;
     const stop = stopPrice;
     const exitClose = bars[idx].close;
-    const dir = scenario.direction ?? 1; // 1 = long, -1 = short
-    const realized = (exitClose - entry) * dir;
-    const start = (entryBarIdx != null ? entryBarIdx : 0) + 1;
-    let stopHit = false;
-    for (let i = start; i <= idx; i++) {
-      if (stop == null) continue;
-      // Long stop sits below entry (hit when a bar's low trades through it);
-      // short stop sits above entry (hit when a bar's high trades through it).
-      if (dir === 1 && bars[i].low <= stop) stopHit = true;
-      if (dir === -1 && bars[i].high >= stop) stopHit = true;
-    }
-    // Continuation: did the move keep running in the trade's favor after exit?
-    // Long tracks the max close after exit; short tracks the min close.
-    let bestAfter = dir === 1 ? -Infinity : Infinity;
-    for (let i = idx + 1; i < bars.length; i++) {
-      if (dir === 1) { if (bars[i].close > bestAfter) bestAfter = bars[i].close; }
-      else { if (bars[i].close < bestAfter) bestAfter = bars[i].close; }
-    }
-    const hasAfter = dir === 1 ? bestAfter > -Infinity : bestAfter < Infinity;
-    const continued = hasAfter ? (bestAfter - exitClose) * dir : 0;
-    let classification = "clean";
-    if (stopHit && realized < 0) classification = "held_loser";
-    else if (realized > 0 && continued >= Math.max(realized, inst.tickSize * 4)) classification = "cut_winner";
+    // Classification lives in a pure, unit-tested helper so the long/short
+    // direction bug (a profitable short mis-counted as held_loser) can't recur.
+    const { realized, stopHit, continued, classification } = classifyExit({
+      entry,
+      stop,
+      exitClose,
+      bars,
+      entryBarIdx,
+      exitIdx: idx,
+      direction: scenario.direction ?? 1, // 1 = long, -1 = short
+      tickSize: inst.tickSize,
+    });
     const decisionTimeMs = dpShownAt.current ? Date.now() - dpShownAt.current : null;
     const rec = { barIndex: idx, selected: idx, type: "exit-tap", decisionTimeMs, realized, classification, stopHit, continued, entryPrice: entry, stopPrice: stop, exitClose };
     setDecisionLog(log => [...log, rec]);
