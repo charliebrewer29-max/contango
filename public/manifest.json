@@ -1,0 +1,9 @@
+{
+  "name": "Contango · Learn Futures Trading",
+  "short_name": "Contango",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "start_url": "/"
+}

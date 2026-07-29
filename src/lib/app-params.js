@@ -2,6 +2,13 @@ const isNode = typeof window === 'undefined';
 const windowObj = isNode ? { localStorage: new Map() } : window;
 const storage = windowObj.localStorage;
 
+// Committed fallbacks for bundled native builds (Capacitor), where there is no
+// .env and no ?app_id=... query param on launch. Both are PUBLIC identifiers
+// (not secrets) — the app id is already embedded in the shipped web bundle and
+// the base URL is the public Base44 app origin.
+const FALLBACK_APP_ID = '6a66e4657cceabddae5f47c1';
+const FALLBACK_APP_BASE_URL = 'https://app.base44.com';
+
 const toSnakeCase = (str) => {
 	return str.replace(/([A-Z])/g, '_$1').toLowerCase();
 }
@@ -40,11 +47,11 @@ const getAppParams = () => {
 		storage.removeItem('token');
 	}
 	return {
-		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID }),
+		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID || FALLBACK_APP_ID }),
 		token: getAppParamValue("access_token", { removeFromUrl: true }),
 		fromUrl: getAppParamValue("from_url", { defaultValue: window.location.href }),
 		functionsVersion: getAppParamValue("functions_version", { defaultValue: import.meta.env.VITE_BASE44_FUNCTIONS_VERSION }),
-		appBaseUrl: getAppParamValue("app_base_url", { defaultValue: import.meta.env.VITE_BASE44_APP_BASE_URL }),
+		appBaseUrl: getAppParamValue("app_base_url", { defaultValue: import.meta.env.VITE_BASE44_APP_BASE_URL || FALLBACK_APP_BASE_URL }),
 	}
 }
 
