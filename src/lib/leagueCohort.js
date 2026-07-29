@@ -64,7 +64,7 @@ export function generateCohort(userXp, now = new Date()) {
     // jittered per opponent so they drift at different speeds. ~5% of their
     // seeded XP per day keeps a Rookie cohort moving in Rookie-sized steps and
     // a Platinum cohort in Platinum-sized steps.
-    const dailyRate = Math.max(0, Math.round(userXp * m * 0.05 * jitter()));
+    const dailyRate = Math.max(1, Math.round(userXp * m * 0.05 * jitter()));
     return { name: names[i], xp: base, dailyRate, createdAt };
   });
 }
