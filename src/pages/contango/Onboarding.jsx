@@ -76,6 +76,11 @@ export default function Onboarding() {
               </span>
               <span className="text-sm text-slate-300">I understand this is a simulated educational tool and not financial advice.</span>
             </label>
+            {/* AGE GATE: 17+ matches the App Store rating tier and sits above the
+                COPPA under-13 floor. GDPR sets the digital-consent age at 13–16
+                depending on member state — if shipping in the EU, review this
+                threshold against the relevant member-state age. This affirmative
+                confirmation runs before the user begins the curriculum. */}
             <label className="mt-3 flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5 cursor-pointer">
               <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
                 <input type="checkbox" checked={ageOk} onChange={(e) => setAgeOk(e.target.checked)} className="peer absolute inset-0 m-0 cursor-pointer appearance-none" />
