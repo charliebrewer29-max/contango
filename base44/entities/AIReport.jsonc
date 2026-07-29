@@ -1,0 +1,51 @@
+{
+  "name": "AIReport",
+  "type": "object",
+  "properties": {
+    "tango_message": {
+      "type": "string",
+      "description": "The full Tango message text being reported"
+    },
+    "context_message": {
+      "type": "string",
+      "description": "The user message that prompted the reported response"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "inaccurate",
+        "trading-advice",
+        "offensive",
+        "other"
+      ]
+    },
+    "note": {
+      "type": "string",
+      "description": "Optional free-text detail supplied by the reporter"
+    }
+  },
+  "required": [
+    "tango_message",
+    "reason"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

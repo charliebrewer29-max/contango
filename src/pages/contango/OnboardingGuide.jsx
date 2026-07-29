@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { base44 } from "@/api/base44Client";
+import ReportFlagButton from "@/components/contango/ReportFlagButton";
 
 // First message the user sends the agent so it can tailor guidance to them.
 function buildOpener(progress) {
@@ -82,12 +83,24 @@ export default function OnboardingGuide() {
       <div ref={scrollRef} className="flex h-[58vh] flex-col gap-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-4">
         {messages.map((m, i) => {
           const isUser = m.role === "user";
+          let contextMessage = "";
+          if (!isUser) {
+            for (let j = i - 1; j >= 0; j--) {
+              if (messages[j].role === "user") { contextMessage = messages[j].content; break; }
+            }
+          }
           return (
             <div key={i} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${isUser ? "bg-amber-400 text-slate-950" : "bg-slate-800 text-slate-200"}`}>
+              <div className={`max-w-[85%] rounded-2xl px-4 text-sm ${isUser ? "bg-amber-400 py-2.5 text-slate-950" : "relative bg-slate-800 pt-2.5 pb-7 text-slate-200"}`}>
                 {isUser
                   ? <span className="whitespace-pre-wrap">{m.content}</span>
                   : <ReactMarkdown className="space-y-2 leading-relaxed">{m.content}</ReactMarkdown>}
+                {!isUser && (
+                  <ReportFlagButton
+                    tangoMessage={typeof m.content === "string" ? m.content : ""}
+                    contextMessage={typeof contextMessage === "string" ? contextMessage : ""}
+                  />
+                )}
               </div>
             </div>
           );

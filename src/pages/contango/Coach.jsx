@@ -9,6 +9,7 @@ import { coachCallsRemaining, isPremium } from "@/lib/subscription";
 import { findBranch } from "@/lib/content";
 import { base44 } from "@/api/base44Client";
 import { fetchMe, hasConsent, setConsent } from "@/lib/aiConsent";
+import ReportFlagButton from "@/components/contango/ReportFlagButton";
 
 // AI Coach. Routed through the aiCoachFeedback backend function (spec 13.1):
 // consent is checked server-side, identifiers are stripped, output is guardrailed.
@@ -150,16 +151,28 @@ export default function Coach() {
       {consent === "ok" && (
         <>
           <div ref={scrollRef} className="flex h-[50vh] flex-col gap-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-4">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${m.role === "user" ? "bg-sky-500 text-white" : "bg-slate-800 text-slate-200"}`}>
-                  {m.text}
-                  {m.role === "coach" && i > 0 && (
-                    <div className="mt-1.5 border-t border-slate-700/60 pt-1 text-[10px] text-slate-500">educational feedback on simulated practice · not investment advice</div>
-                  )}
+            {messages.map((m, i) => {
+              const isUser = m.role === "user";
+              let contextMessage = "";
+              if (!isUser) {
+                for (let j = i - 1; j >= 0; j--) {
+                  if (messages[j].role === "user") { contextMessage = messages[j].text; break; }
+                }
+              }
+              return (
+                <div key={i} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[80%] rounded-2xl px-4 text-sm ${isUser ? "bg-sky-500 py-2.5 text-white" : "relative bg-slate-800 pt-2.5 pb-7 text-slate-200"}`}>
+                    {m.text}
+                    {m.role === "coach" && i > 0 && (
+                      <div className="mt-1.5 border-t border-slate-700/60 pt-1 text-[10px] text-slate-500">educational feedback on simulated practice · not investment advice</div>
+                    )}
+                    {!isUser && (
+                      <ReportFlagButton tangoMessage={m.text} contextMessage={contextMessage} />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {loading && (
               <div className="flex justify-start">
                 <div className="flex items-center gap-2 rounded-2xl bg-slate-800 px-4 py-3 text-sm text-slate-400">
