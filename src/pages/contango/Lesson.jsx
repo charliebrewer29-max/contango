@@ -27,7 +27,7 @@ const LEARN_TYPES = new Set(["teach", "text", "emotion", "widget", "reveal", "ta
 export default function Lesson() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary, unlockBadge, recordAnswer, reviewCard, loseHeart } = useContango();
+  const { recordSession, markLessonComplete, progress, entitlement, update, adjustMindset, unlockDiary, unlockBadge, recordAnswer, reviewCard, loseHeart } = useContango();
 
   const entry = allUnitsFlat().find(e => e.unit.id === lessonId);
   const unit = entry?.unit;
@@ -77,7 +77,7 @@ export default function Lesson() {
     return <ScreenShell><div className="text-slate-400">Lesson not found.</div></ScreenShell>;
   }
 
-  if (!canAccessLessonId(lessonId, progress)) {
+  if (!canAccessLessonId(lessonId, entitlement)) {
   return (
     <ScreenShell showStats={false} backTo={branch ? `/branch/${branch.id}` : "/"} title={unit?.title || "Lesson"}>
       <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">

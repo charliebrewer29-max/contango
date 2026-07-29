@@ -11,7 +11,7 @@ import BranchBadge, { badgeForBranch } from "@/components/contango/BranchBadge";
 // Branch detail: lists the intro lesson + concept units + drill.
 export default function BranchDetail() {
   const { branchId } = useParams();
-  const { progress } = useContango();
+  const { progress, entitlement } = useContango();
   const branch = findBranch(branchId);
 
   if (!branch) {
@@ -21,7 +21,7 @@ export default function BranchDetail() {
   const foundationDone = progress.completedLessons.length > 0;
   const foundationUnlocked = branch.unlockRequires.length === 0 ||
     (branch.unlockRequires.includes("foundation-complete") && foundationDone);
-  const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, progress);
+  const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, entitlement);
 
   if (premiumLocked) {
     return (
@@ -92,7 +92,7 @@ export default function BranchDetail() {
           const done = item.kind === "drill"
             ? progress.completedDrills.includes(item.id)
             : progress.completedLessons.includes(item.id);
-          const lessonLocked = item.kind === "lesson" && !canAccessLessonId(item.id, progress);
+          const lessonLocked = item.kind === "lesson" && !canAccessLessonId(item.id, entitlement);
           if (lessonLocked) {
             return (
               <Link

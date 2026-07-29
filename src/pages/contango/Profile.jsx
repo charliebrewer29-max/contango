@@ -16,7 +16,7 @@ import { isPremium } from "@/lib/subscription";
 // quick stats, mindset, and branch badges; everything else lives behind the
 // link rows to Rewards, Insights, Practice, and Settings.
 export default function Profile() {
-  const { progress } = useContango();
+  const { progress, entitlement } = useContango();
   const flair = getEquippedFlair(progress);
   const avatar = avatarById(progress.avatar);
   const [pickerOpen, setPickerOpen] = React.useState(false);
@@ -54,7 +54,7 @@ export default function Profile() {
             ) : (
               <div className="mt-1 text-xs text-slate-600">No flair yet - keep your streak going to unlock one</div>
             )}
-            <div className="mt-1 text-xs text-amber-400">{progress.subscription === "premium" ? "Premium" : progress.subscription === "trial" ? "Free trial" : "Free tier"}</div>
+            <div className="mt-1 text-xs text-amber-400">{entitlement?.tier === "premium" ? "Premium" : entitlement?.tier === "trial" ? "Free trial" : "Free tier"}</div>
           </div>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function Profile() {
       {/* link rows out to the split screens */}
       <LinkRow to="/rewards" icon={<Gift className="h-5 w-5 text-amber-400" />} title="Rewards" subtitle="Streak rewards and your trader's diary" />
       <LinkRow to="/insights" icon={<BarChart3 className="h-5 w-5 text-emerald-400" />} title="Insights" subtitle="Performance data, mastery, and discipline profile" />
-      <LinkRow to="/practice" icon={<Repeat className="h-5 w-5 text-sky-400" />} title="Practice" subtitle={isPremium(progress) ? "Unlimited sim sandbox" : "Sim sandbox - 3 free drills a day"} />
+      <LinkRow to="/practice" icon={<Repeat className="h-5 w-5 text-sky-400" />} title="Practice" subtitle={isPremium(entitlement) ? "Unlimited sim sandbox" : "Sim sandbox - 3 free drills a day"} />
       <LinkRow to="/settings" icon={<SettingsIcon className="h-5 w-5 text-slate-300" />} title="Settings" subtitle="Reminders, privacy, preferences, subscription, account" />
 
       <p className="mt-8 text-center text-[11px] leading-relaxed text-slate-600">

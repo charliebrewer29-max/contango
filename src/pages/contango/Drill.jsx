@@ -20,7 +20,7 @@ import { classifyExit } from "@/lib/discipline";
 export default function Drill() {
   const { branchId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markDrillComplete, setLastDrillReview, progress, update, unlockBadge, recordAnswer, reviewCard, logDrill, loseHeart } = useContango();
+  const { recordSession, markDrillComplete, setLastDrillReview, progress, entitlement, update, unlockBadge, recordAnswer, reviewCard, logDrill, loseHeart } = useContango();
   const branch = findBranch(branchId);
 
   const [instrument, setInstrument] = useState(() => (branch?.id === "momentum" ? "NQ" : "ES"));
@@ -99,7 +99,7 @@ export default function Drill() {
     return <ScreenShell><div className="text-slate-400">Drill not found.</div></ScreenShell>;
   }
 
-  if (!canAccessBranch(branch, progress)) {
+  if (!canAccessBranch(branch, entitlement)) {
     return (
       <ScreenShell showStats={false} backTo="/" title={`${branch.branchTitle} Drill`}>
         <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
@@ -395,7 +395,7 @@ export default function Drill() {
         <span className="text-xs text-slate-500">Instrument</span>
         <div className="flex flex-wrap gap-1.5">
           {PREMIUM_INSTRUMENTS.map((ik) => {
-            const locked = !isPremium(progress) && !FREE_INSTRUMENTS.includes(ik);
+            const locked = !isPremium(entitlement) && !FREE_INSTRUMENTS.includes(ik);
             if (locked) {
               return (
                 <Link key={ik} to="/paywall"

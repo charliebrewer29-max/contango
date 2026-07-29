@@ -11,11 +11,11 @@ import BranchNode from "@/components/contango/BranchNode";
 
 const ICONS = { GraduationCap, ShieldCheck, Layers, MonitorPlay, TrendingUp, Activity, Circle, Zap, Target, DollarSign, BookOpen };
 
-function isUnlocked(branch, progress) {
+function isUnlocked(branch, progress, entitlement) {
   const foundationDone = (progress.completedLessons || []).length > 0;
   const foundationUnlocked = branch.unlockRequires.length === 0 ||
     (branch.unlockRequires.includes("foundation-complete") && foundationDone);
-  const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, progress);
+  const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, entitlement);
   return foundationUnlocked && !premiumLocked;
 }
 
@@ -24,7 +24,7 @@ function isUnlocked(branch, progress) {
 // not-yet-finished branch - is accented as the next action; every other
 // unlocked card shares the same neutral surface.
 export default function SkillTree() {
-  const { progress } = useContango();
+  const { progress, entitlement } = useContango();
   // At 0 hearts the graded curriculum is locked - the disciplined move is to
   // stop and go back to the sandbox. Learn is still reachable via the
   // dashboard's Continue CTA; the nodes themselves read as dimmed + locked.
@@ -32,7 +32,7 @@ export default function SkillTree() {
 
   let nextBranchId = null;
   for (const b of BRANCHES) {
-    if (!isUnlocked(b, progress)) continue;
+    if (!isUnlocked(b, progress, entitlement)) continue;
     const s = branchMasteryStatus(progress, b);
     if (!s.finished) { nextBranchId = b.id; break; }
   }
@@ -47,6 +47,7 @@ export default function SkillTree() {
             branch={branch}
             icon={Icon}
             progress={progress}
+            entitlement={entitlement}
             isNext={branch.id === nextBranchId}
             dimmed={heartsEmpty}
           />

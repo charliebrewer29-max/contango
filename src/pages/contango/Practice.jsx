@@ -41,7 +41,7 @@ function fmtDue(ms) {
 }
 
 export default function Practice() {
-  const { progress, reviewCard, recordSession, update, earnHeart } = useContango();
+  const { progress, entitlement, reviewCard, recordSession, update, earnHeart } = useContango();
   const srCards = progress.srCards || {};
   const catalog = useMemo(
     () => buildPracticeCatalog(progress),
@@ -49,7 +49,7 @@ export default function Practice() {
   );
   const dueCards = useMemo(() => catalog.filter((c) => isDue(srCards[c.id])), [catalog, srCards]);
 
-  const { premium, left, exhausted } = practiceStatus(progress, getServerOffset());
+  const { premium, left, exhausted } = practiceStatus(progress, getServerOffset(), entitlement);
 
   // The daily reset of the free practice counter is handled centrally in
   // ContangoContext (server-anchored, fail-closed), not here.

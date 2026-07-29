@@ -17,10 +17,10 @@ import ReportFlagButton from "@/components/contango/ReportFlagButton";
 export default function Coach() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { progress, recordCoachCall, pushCoachMemory } = useContango();
+  const { progress, entitlement, recordCoachCall, pushCoachMemory } = useContango();
   const branchId = params.get("branch");
   const branch = branchId ? findBranch(branchId) : null;
-  const flow = isPremium(progress) ? "history" : "session";
+  const flow = isPremium(entitlement) ? "history" : "session";
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -68,7 +68,7 @@ export default function Coach() {
 
   async function send() {
     if (!input.trim() || loading) return;
-    if (coachCallsRemaining(progress) <= 0) {
+    if (coachCallsRemaining(progress, entitlement) <= 0) {
       setMessages(m => [...m, { role: "coach", text: "That's your free coach calls used up for today - start your trial for unlimited, memory-backed coaching." }]);
       setShowTrialNudge(true);
       return;
@@ -111,8 +111,8 @@ export default function Coach() {
       const reply = data.feedback;
       setMessages(m => [...m, { role: "coach", text: reply }]);
       recordCoachCall();
-      if (isPremium(progress)) pushCoachMemory({ q: userText, a: reply });
-      if (!isPremium(progress) && (progress.completedDrills || []).length > 0) setShowTrialNudge(true);
+      if (isPremium(entitlement)) pushCoachMemory({ q: userText, a: reply });
+      if (!isPremium(entitlement) && (progress.completedDrills || []).length > 0) setShowTrialNudge(true);
     } catch (e) {
       setMessages(m => [...m, { role: "coach", text: "Hmm, I couldn't reach the coach right now. Give it another try in a moment." }]);
     } finally {
@@ -182,7 +182,7 @@ export default function Coach() {
             )}
           </div>
 
-          {showTrialNudge && !isPremium(progress) && (
+          {showTrialNudge && !isPremium(entitlement) && (
             <Link to="/paywall" className="mt-3 flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-300 hover:bg-amber-500/10">
               <Crown className="h-4 w-4 text-amber-400" /> Start your 21-day free trial - unlimited coaching that remembers your history.
             </Link>

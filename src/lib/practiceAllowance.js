@@ -11,9 +11,9 @@ export const FREE_PRACTICE_DAILY = 3;
 // grant itself is handled centrally in ContangoContext (and only when the
 // server offset is known, fail closed); this reader just reports used/left
 // against the day the reset wrote into practiceResetDate.
-export function practiceStatus(progress, offset) {
+export function practiceStatus(progress, offset, entitlement) {
   const today = serverToday(offset);
-  const premium = isPremium(progress);
+  const premium = isPremium(entitlement);
   const used = (!premium && progress.practiceResetDate === today)
     ? (progress.practiceUsedToday || 0)
     : 0;

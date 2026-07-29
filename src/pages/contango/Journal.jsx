@@ -32,9 +32,9 @@ function tally(history, keyFn) {
 }
 
 export default function Journal() {
-  const { progress } = useContango();
+  const { progress, entitlement } = useContango();
   const history = progress.drillHistory || [];
-  const premium = isPremium(progress);
+  const premium = isPremium(entitlement);
   const visible = premium ? history : history.slice(-1);
 
   const totalDecisions = visible.reduce((n, d) => n + (d.total || 0), 0);

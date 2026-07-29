@@ -6,8 +6,8 @@ import { isPremium } from "@/lib/subscription";
 // Lightweight ad placeholder for the free tier. Premium hides it.
 // (No real ad network wired - this is the slot the spec reserves.)
 export default function AdBanner() {
-  const { progress } = useContango();
-  if (isPremium(progress)) return null;
+  const { entitlement } = useContango();
+  if (isPremium(entitlement)) return null;
   return (
     <Link
       to="/paywall"

@@ -26,8 +26,8 @@ import {
 // Reached from the Profile screen. The delete-account action is gated behind
 // an explicit confirmation dialog (not a single tap).
 export default function Settings() {
-  const { progress, update, resetProgress } = useContango();
-  const flow = isPremium(progress) ? "history" : "session";
+  const { progress, entitlement, update, resetProgress } = useContango();
+  const flow = isPremium(entitlement) ? "history" : "session";
   const [aiOn, setAiOn] = React.useState(false);
   const [aiBusy, setAiBusy] = React.useState(false);
 
@@ -112,7 +112,7 @@ export default function Settings() {
           <Crown className="h-5 w-5 text-amber-400" />
           <div className="flex-1">
             <div className="text-sm font-medium text-slate-100">
-              {progress.subscription === "premium" ? "Premium active" : progress.subscription === "trial" ? `Free trial · ${trialDaysLeft(progress)} days left` : "Free tier"}
+              {entitlement?.tier === "premium" ? "Premium active" : entitlement?.tier === "trial" ? `Free trial · ${trialDaysLeft(entitlement)} days left` : "Free tier"}
             </div>
             <div className="text-xs text-slate-500">Practice sandbox, all branches, {COACH_NAME} memory, full journal</div>
           </div>
@@ -122,7 +122,7 @@ export default function Settings() {
           <BookOpen className="h-5 w-5 text-emerald-400" />
           <div className="flex-1">
             <div className="text-sm font-medium text-slate-100">Trade Journal</div>
-            <div className="text-xs text-slate-500">{isPremium(progress) ? "Full history & analytics" : "Last session · full history with Premium"}</div>
+            <div className="text-xs text-slate-500">{isPremium(entitlement) ? "Full history & analytics" : "Last session · full history with Premium"}</div>
           </div>
           <ChevronRight className="h-5 w-5 text-slate-600" />
         </Link>

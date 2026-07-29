@@ -14,13 +14,13 @@ import { canAccessBranch, canAccessLessonId } from "@/lib/subscription";
 // screen. Everything else recedes. New users also see a dismissible discipline
 // banner (the same explanation lives permanently on the Discipline screen).
 export default function Dashboard() {
-  const { progress } = useContango();
+  const { progress, entitlement } = useContango();
 
   if (!progress.onboardingDone) {
     return <Navigate to="/onboarding" replace />;
   }
 
-  const nextLesson = findNextLesson(progress);
+  const nextLesson = findNextLesson(progress, entitlement);
   const dailyPct = Math.min(100, Math.round(((progress.dailyXp || 0) / Math.max(1, progress.dailyGoal)) * 100));
 
   return (
@@ -91,7 +91,7 @@ function GoalRing({ pct }) {
   );
 }
 
-function findNextLesson(progress) {
+function findNextLesson(progress, entitlement) {
   // first incomplete foundation lesson
   const foundation = BRANCHES.find(b => b.id === "foundation");
   if (foundation && foundation.units) {
@@ -103,13 +103,13 @@ function findNextLesson(progress) {
   }
   // then any incomplete branch intro (skip premium-locked strategy branches)
   for (const b of BRANCHES) {
-    if (b.type === "strategy" && !canAccessBranch(b, progress)) continue;
+    if (b.type === "strategy" && !canAccessBranch(b, entitlement)) continue;
     if (b.introLesson && !progress.completedLessons.includes(b.introLesson.id)) {
       return { path: `/branch/${b.id}`, title: b.branchTitle };
     }
     if (b.units) {
       for (const u of b.units) {
-        if (!canAccessLessonId(u.id, progress)) continue;
+        if (!canAccessLessonId(u.id, entitlement)) continue;
         if (!progress.completedLessons.includes(u.id)) {
           return { path: `/lesson/${u.id}`, title: u.title };
         }

@@ -1,6 +1,8 @@
 // Premium / free tier model (spec Section 9).
-// Pure functions over the progress object so any screen can ask "can this user
-// do X?" without touching state. Trial users get every premium lever.
+// Pure functions over the SERVER ENTITLEMENT object { tier, trial_ends, daysLeft }
+// so every screen asks the server — never the client-stored progress.subscription.
+// A null/undefined entitlement returns false everywhere, so gates FAIL CLOSED
+// while the first server resolve is in flight (see ContangoContext).
 
 import { BRANCHES } from "./content";
 import { todayStr, monthStr } from "./gamification";
@@ -22,24 +24,27 @@ export const PREMIUM_INSTRUMENT_LESSON_IDS = new Set([
   "ym-rty",
 ]);
 
-export function canAccessLessonId(lessonId, p) {
+export function canAccessLessonId(lessonId, entitlement) {
   if (!lessonId) return true;
-  if (isPremium(p)) return true;
+  if (isPremium(entitlement)) return true;
   return !PREMIUM_INSTRUMENT_LESSON_IDS.has(lessonId);
 }
 
-export function isPremium(p) {
-  return p?.subscription === "premium" || p?.subscription === "trial";
+// The server is the only source of truth. tier "premium" or "trial" grants
+// access; anything else (including null/undefined while loading) does not.
+export function isPremium(entitlement) {
+  return entitlement?.tier === "premium" || entitlement?.tier === "trial";
 }
 
-export function isTrial(p) {
-  return p?.subscription === "trial";
+export function isTrial(entitlement) {
+  return entitlement?.tier === "trial";
 }
 
-export function trialDaysLeft(p) {
-  if (!isTrial(p) || !p?.trialStart) return 0;
-  const ms = Date.now() - new Date(p.trialStart).getTime();
-  return Math.max(0, TRIAL_DAYS - Math.floor(ms / 86400000));
+// Trial days left come from the server (daysLeft), never computed from a
+// device clock. 0 for non-trial entitlements.
+export function trialDaysLeft(entitlement) {
+  if (!isTrial(entitlement)) return 0;
+  return entitlement?.daysLeft ?? 0;
 }
 
 export function strategyBranches() {
@@ -50,15 +55,15 @@ export function freeStrategyBranches() {
   return strategyBranches().slice(0, FREE_STRATEGY_COUNT);
 }
 
-export function canAccessBranch(branch, p) {
+export function canAccessBranch(branch, entitlement) {
   if (!branch) return true;
   if (branch.type !== "strategy") return true;
-  if (isPremium(p)) return true;
+  if (isPremium(entitlement)) return true;
   return freeStrategyBranches().some((b) => b.id === branch.id);
 }
 
-export function canAccessInstrument(inst, p) {
-  if (isPremium(p)) return PREMIUM_INSTRUMENTS.includes(inst);
+export function canAccessInstrument(inst, entitlement) {
+  if (isPremium(entitlement)) return PREMIUM_INSTRUMENTS.includes(inst);
   return FREE_INSTRUMENTS.includes(inst);
 }
 
@@ -66,23 +71,26 @@ export const canAccessPractice = isPremium;
 export const canMessyMode = isPremium;
 export const canFullJournal = isPremium;
 
-export function coachCallsToday(p) {
-  const c = p?.coachCalls;
+// The daily coach-call counter lives on progress (a client usage meter, not
+// an access decision). The tier comes from the entitlement.
+export function coachCallsToday(progress) {
+  const c = progress?.coachCalls;
   if (!c) return 0;
   const today = todayStr();
   return c.date === today ? c.count : 0;
 }
 
-export function coachCallsRemaining(p) {
-  if (isPremium(p)) return Infinity;
-  return Math.max(0, FREE_COACH_DAILY - coachCallsToday(p));
+export function coachCallsRemaining(progress, entitlement) {
+  if (isPremium(entitlement)) return Infinity;
+  return Math.max(0, FREE_COACH_DAILY - coachCallsToday(progress));
 }
 
-// Streak repair is a monthly Premium perk.
-export function canRepairStreak(p) {
-  if (!isPremium(p)) return false;
+// Streak repair is a monthly Premium perk. The streakRepairMonth counter lives
+// on progress; the tier comes from the entitlement.
+export function canRepairStreak(progress, entitlement) {
+  if (!isPremium(entitlement)) return false;
   const month = monthStr();
-  return p?.streakRepairMonth !== month;
+  return progress?.streakRepairMonth !== month;
 }
 
 // Restore prior App Store / IAP purchases. The native in-app-purchase bridge

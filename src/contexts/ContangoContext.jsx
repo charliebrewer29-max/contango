@@ -3,6 +3,7 @@ import { MAX_HEARTS, applyProgress, xpForSession, todayStr, monthStr, serverToda
 import { loadProgress, saveProgress, clearProgress, enableSaving, setOfflineListener } from "@/lib/progressStore";
 import { scheduleCard } from "@/lib/spacedRepetition";
 import { isPremium } from "@/lib/subscription";
+import { fetchEntitlement, beginTrial } from "@/lib/entitlement";
 import { ensureServerTime, getServerOffset } from "@/lib/serverClock";
 import { branchForLessonId } from "@/lib/branchMastery";
 import { isBranchComplete } from "@/lib/branchProgress";
@@ -26,6 +27,9 @@ const DEFAULT_PROGRESS = {
   reducedMotion: false,
   soundOn: true,
   hapticsOn: true,
+  // KEPT FOR SHAPE COMPATIBILITY ONLY — never use this as an access decision.
+  // The server entitlement (ContangoContext.entitlement) is the sole source of
+  // truth for tier. See src/lib/subscription.js.
   subscription: "free",
   mindset: 75,
   diaryUnlocked: [],
@@ -61,12 +65,12 @@ const ContangoContext = createContext(null);
 // allowance rolls over. Both are gated on a known server offset - if we could
 // not reach /serverTime we fail closed and do NOT grant a reset (a spoofable
 // device clock must never hand out hearts).
-function withDailyReset(data, offset) {
+function withDailyReset(data, offset, entitlement) {
   if (offset === null || offset === undefined) return data;
   const today = serverToday(offset);
   let next = data;
   next = resetHeartsForToday(next, today);
-  if (!isPremium(next) && next.practiceResetDate !== today) {
+  if (!isPremium(entitlement) && next.practiceResetDate !== today) {
     next = { ...next, practiceUsedToday: 0, practiceResetDate: today };
   }
   return next;
@@ -82,6 +86,10 @@ export function ContangoProvider({ children }) {
   });
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
+  // Entitlement is null until the first server resolve; gates fail closed
+  // (isPremium(null) === false) so nothing premium shows before we know.
+  const [entitlement, setEntitlement] = useState(null);
+  const [entitlementLoading, setEntitlementLoading] = useState(true);
 
   useEffect(() => { saveProgress(progress); }, [progress]);
 
@@ -93,11 +101,16 @@ export function ContangoProvider({ children }) {
     setOfflineListener(setOffline);
     let alive = true;
     (async () => {
-      const [res] = await Promise.all([loadProgress(DEFAULT_PROGRESS), ensureServerTime()]);
+      const [res, ent] = await Promise.all([
+        loadProgress(DEFAULT_PROGRESS),
+        ensureServerTime().then(() => fetchEntitlement().catch(() => null)),
+      ]);
       if (!alive) return;
       setOffline(res.offline);
       enableSaving(true);
-      setProgress(withDailyReset(res.data, getServerOffset()));
+      setEntitlement(ent);
+      setEntitlementLoading(false);
+      setProgress(withDailyReset(res.data, getServerOffset(), ent));
       setLoading(false);
     })();
     return () => { alive = false; };
@@ -113,10 +126,21 @@ export function ContangoProvider({ children }) {
   // Pull-to-refresh: re-sync progress from storage so stats reflect any
   // external changes and the UI re-renders fresh.
   const refresh = useCallback(async () => {
-    const res = await loadProgress(DEFAULT_PROGRESS);
-    await ensureServerTime();
+    const [res, ent] = await Promise.all([
+      loadProgress(DEFAULT_PROGRESS),
+      ensureServerTime().then(() => fetchEntitlement().catch(() => null)),
+    ]);
     setOffline(res.offline);
-    setProgress(withDailyReset(res.data, getServerOffset()));
+    setEntitlement(ent);
+    setProgress(withDailyReset(res.data, getServerOffset(), ent));
+  }, []);
+
+  // Re-resolve the server entitlement on demand (e.g. after a trial starts,
+  // on window focus, or after a purchase completes in the native shell).
+  const refreshEntitlement = useCallback(async () => {
+    const ent = await fetchEntitlement().catch(() => null);
+    setEntitlement(ent);
+    return ent;
   }, []);
 
   // Run a lesson/drill result through the gamification engine. Returns
@@ -223,13 +247,18 @@ export function ContangoProvider({ children }) {
     });
   }, []);
 
-  const startTrial = useCallback(() => {
-    setProgress(prev => ({ ...prev, subscription: "trial", trialStart: new Date().toISOString() }));
+  // Starts the server-backed trial (startTrial backend function, once per
+  // account), then re-resolves the entitlement so gates open immediately.
+  const startTrial = useCallback(async () => {
+    await beginTrial();
+    const ent = await fetchEntitlement().catch(() => null);
+    setEntitlement(ent);
+    return ent;
   }, []);
 
-  const goPremium = useCallback(() => {
-    setProgress(prev => ({ ...prev, subscription: "premium" }));
-  }, []);
+  // goPremium was removed: Premium access is granted only by the server
+  // (App Store IAP -> revenuecatWebhook -> Entitlement row). The client must
+  // never write tier — that was a free-forever localStorage bypass.
 
   const recordCoachCall = useCallback(() => {
     setProgress(prev => {
@@ -265,20 +294,23 @@ export function ContangoProvider({ children }) {
   }, []);
 
   const repairStreak = useCallback(() => {
+    if (!isPremium(entitlement)) return;
     setProgress(prev => {
-      if (!isPremium(prev)) return prev;
       const month = monthStr();
       if (prev.streakRepairMonth === month) return prev;
       return { ...prev, streak: (prev.streak || 0) + 1, streakRepairMonth: month, lastActiveDate: todayStr() };
     });
-  }, []);
+  }, [entitlement]);
 
   const value = {
     progress,
     loading,
     offline,
+    entitlement,
+    entitlementLoading,
     update,
     refresh,
+    refreshEntitlement,
     recordSession,
     markLessonComplete,
     markDrillComplete,
@@ -292,7 +324,6 @@ export function ContangoProvider({ children }) {
     recordAnswer,
     unlockBadge,
     startTrial,
-    goPremium,
     recordCoachCall,
     logDrill,
     pushCoachMemory,

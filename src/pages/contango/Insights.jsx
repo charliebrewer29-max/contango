@@ -23,7 +23,7 @@ const COLOR_HEX = {
 const AXIS_TICK = { fill: "#64748b", fontSize: 11 };
 
 export default function Insights() {
-  const { progress } = useContango();
+  const { progress, entitlement } = useContango();
   const series = React.useMemo(() => lastNDays(14, progress.history), [progress.history]);
   const branches = React.useMemo(
     () => branchMastery(progress),
@@ -58,7 +58,7 @@ export default function Insights() {
             <BookOpen className="h-8 w-8 text-emerald-400" />
             <div className="flex-1">
               <h2 className="font-display text-sm font-semibold text-slate-200">Trade Journal</h2>
-              <p className="text-xs text-slate-500">{isPremium(progress) ? "Your full decision history with win-rate analytics" : "Your last session - full history with Premium"}</p>
+              <p className="text-xs text-slate-500">{isPremium(entitlement) ? "Your full decision history with win-rate analytics" : "Your last session - full history with Premium"}</p>
             </div>
             <ChevronRight className="h-5 w-5 text-slate-600" />
           </div>
@@ -111,7 +111,7 @@ export default function Insights() {
           <BookOpen className="h-8 w-8 text-emerald-400" />
           <div className="flex-1">
             <h2 className="font-display text-sm font-semibold text-slate-200">Trade Journal</h2>
-            <p className="text-xs text-slate-500">{isPremium(progress) ? "Your full decision history with win-rate analytics" : "Your last session - full history with Premium"}</p>
+            <p className="text-xs text-slate-500">{isPremium(entitlement) ? "Your full decision history with win-rate analytics" : "Your last session - full history with Premium"}</p>
           </div>
           <ChevronRight className="h-5 w-5 text-slate-600" />
         </div>

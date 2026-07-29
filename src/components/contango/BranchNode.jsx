@@ -49,11 +49,11 @@ function CrackOverlay({ intensity }) {
   );
 }
 
-export default function BranchNode({ branch, icon: Icon, progress, isNext = false, dimmed = false }) {
+export default function BranchNode({ branch, icon: Icon, progress, entitlement, isNext = false, dimmed = false }) {
   const foundationDone = (progress.completedLessons || []).length > 0;
   const foundationUnlocked = branch.unlockRequires.length === 0 ||
     (branch.unlockRequires.includes("foundation-complete") && foundationDone);
-  const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, progress);
+  const premiumLocked = branch.type === "strategy" && !canAccessBranch(branch, entitlement);
   const unlocked = foundationUnlocked && !premiumLocked;
   const s = branchMasteryStatus(progress, branch);
 
