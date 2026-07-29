@@ -47,6 +47,33 @@ export default function Insights() {
   const maxDailyXp = Math.max(0, ...series.map((d) => d.dailyXp));
   const maxXp = Math.max(0, ...series.map((d) => d.xp));
 
+  const drillsCompleted = (progress.completedDrills || []).length;
+
+  if (drillsCompleted === 0) {
+    return (
+      <ScreenShell showStats backTo="/" title="Insights">
+        {/* trade journal - still useful even with no drill data */}
+        <Link to="/journal" className="mb-6 block">
+          <div className="cg-surface flex items-center gap-4 rounded-2xl p-5 transition hover:border-slate-600">
+            <BookOpen className="h-8 w-8 text-emerald-400" />
+            <div className="flex-1">
+              <h2 className="font-display text-sm font-semibold text-slate-200">Trade Journal</h2>
+              <p className="text-xs text-slate-500">{isPremium(progress) ? "Your full decision history with win-rate analytics" : "Your last session - full history with Premium"}</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-slate-600" />
+          </div>
+        </Link>
+
+        <section className="cg-surface rounded-2xl p-5 text-center">
+          <BarChart3 className="mx-auto h-10 w-10 text-slate-500" />
+          <h2 className="mt-3 text-[17px] font-semibold text-slate-100">Your insights unlock after your first drill</h2>
+          <p className="mx-auto mt-2 max-w-[320px] text-sm text-slate-400">Once you start making decisions, this page fills in with your XP curve, mastery by branch, and the patterns behind your wins and misses.</p>
+          <Link to="/" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950 transition hover:bg-amber-300">Find a drill</Link>
+        </section>
+      </ScreenShell>
+    );
+  }
+
   return (
     <ScreenShell showStats backTo="/" title="Insights">
       {/* summary tiles */}

@@ -31,7 +31,7 @@ export default function Discipline() {
         <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center">
           <Activity className="mx-auto mb-3 h-10 w-10 text-slate-600" />
           <p className="text-sm text-slate-400">Complete a drill to start measuring your discipline.</p>
-          <Link to="/" className="mt-4 inline-flex rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950">Back to dashboard</Link>
+          <Link to="/" className="mt-4 inline-flex rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-semibold text-slate-950">Find a drill</Link>
         </div>
       ) : (
         <>

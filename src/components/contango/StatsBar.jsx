@@ -25,13 +25,17 @@ export default function StatsBar({ compact = false }) {
     );
   }
 
-  return (
-    <div className="grid grid-cols-3 gap-1.5">
-      <StatTile icon={<Flame className="h-3.5 w-3.5" />} value={progress.streak || 0} label="day streak" color="text-amber-400" bg="bg-amber-500/10" />
-      <StatTile icon={<Heart className="h-3.5 w-3.5 fill-rose-400/20" />} value={`${progress.hearts}/${MAX_HEARTS}`} label="hearts" color="text-rose-400" bg="bg-rose-500/10" />
-      <StatTile icon={<Star className="h-3.5 w-3.5" />} value={progress.xp} label="total XP" color="text-sky-400" bg="bg-sky-500/10" />
-    </div>
-  );
+  const streak = progress.streak || 0;
+  const stars = progress.xp || 0;
+  const tiles = [];
+  if (streak) tiles.push(<StatTile key="streak" icon={<Flame className="h-3.5 w-3.5" />} value={streak} label="day streak" color="text-amber-400" bg="bg-amber-500/10" />);
+  tiles.push(<StatTile key="hearts" icon={<Heart className="h-3.5 w-3.5 fill-rose-400/20" />} value={`${progress.hearts}/${MAX_HEARTS}`} label="hearts" color="text-rose-400" bg="bg-rose-500/10" />);
+  if (stars) tiles.push(<StatTile key="xp" icon={<Star className="h-3.5 w-3.5" />} value={stars} label="total XP" color="text-sky-400" bg="bg-sky-500/10" />);
+
+  if (tiles.length === 3) {
+    return <div className="grid grid-cols-3 gap-1.5">{tiles}</div>;
+  }
+  return <div className="flex justify-center gap-1.5">{tiles}</div>;
 }
 
 function StatTile({ icon, value, label, color, bg }) {
