@@ -1,10 +1,24 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { resolveEntitlement } from '../../shared/entitlement.ts';
 
 // aiCoachFeedback - proxy between the app and the LLM (spec 13.1, 13.4).
 // The app never calls the model directly. Consent is checked server-side,
 // identifiers are stripped before the call, and the output is guardrailed.
+// Tier + rate limits are enforced here too: the history flow is Premium-only,
+// and free users are capped daily/hourly. Usage rows are keyed by user_id
+// (asServiceRole stamps created_by_id to the service role, so we cannot use it
+// to link a row to its owner - user_id is the owner handle).
 
 const CONSENT_VERSIONS = { session: 'v1-session', history: 'v2-history' };
+const FREE_DAILY_LIMIT = 3;
+const FREE_HOURLY_LIMIT = 8;
+
+function utcDay() {
+  return new Date().toISOString().slice(0, 10);
+}
+function utcHourBucket() {
+  return new Date().toISOString().slice(0, 13); // YYYY-MM-DDTHH
+}
 
 const SYSTEM_PROMPT = "You're Tango, a trading-education mentor inside Contango - a SIMULATED, educational app. You are coaching a learner through a simulated drill, NOT reviewing real trades.\n\nHard rules:\n- This is educational simulation only. Never produce real-market buy/sell language, personalized trade signals, real-money position sizing, or financial advice.\n- Never reference real current market conditions, live prices, or specific tickers as if they are tradeable right now.\n- Keep feedback to generic strategy education on simulated data. Do not tell the learner to place any real trade.\n\nTone: warm, plain-spoken mentor, specific to what the learner actually said. Keep it to 3-5 sentences.";
 
@@ -38,6 +52,39 @@ export default async function (req) {
     const consent = (user && user.aiCoachConsent) || {};
     if (!consent.granted || consent.version !== requiredVersion) {
       return Response.json({ status: 'consent_required', requiredVersion, flow });
+    }
+
+    // Server-authoritative tier. History access is Premium-only; the session
+    // flow is open to all but free users are rate-limited.
+    const { tier } = await resolveEntitlement(base44, user.id);
+    const premium = tier === 'premium' || tier === 'trial';
+    if (flow === 'history' && !premium) {
+      return Response.json({ status: 'premium_required', flow });
+    }
+
+    if (!premium) {
+      const day = utcDay();
+      const hour = utcHourBucket();
+      const rows = await base44.asServiceRole.entities.AiUsage.filter({ user_id: user.id });
+      let usage = rows && rows.length ? rows[0] : null;
+      // Day rollover resets the daily counter; hour rollover resets the hourly one.
+      const dayCount = usage && usage.day === day ? (usage.count || 0) : 0;
+      const hourCount = usage && usage.hour_bucket === hour ? (usage.hour_count || 0) : 0;
+      if (dayCount >= FREE_DAILY_LIMIT) {
+        return Response.json({ status: 'rate_limited', limit: FREE_DAILY_LIMIT, window: 'daily', flow });
+      }
+      if (hourCount >= FREE_HOURLY_LIMIT) {
+        return Response.json({ status: 'rate_limited', limit: FREE_HOURLY_LIMIT, window: 'hourly', flow });
+      }
+      if (!usage) {
+        usage = await base44.asServiceRole.entities.AiUsage.create({
+          user_id: user.id, day, count: 1, hour_bucket: hour, hour_count: 1,
+        });
+      } else {
+        await base44.asServiceRole.entities.AiUsage.update(usage.id, {
+          day, count: dayCount + 1, hour_bucket: hour, hour_count: hourCount + 1,
+        });
+      }
     }
 
     // Strip identifiers: use ONLY these de-identified fields.
