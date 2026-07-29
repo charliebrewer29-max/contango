@@ -16,7 +16,7 @@ export default function Paywall() {
   function subscribe() { goPremium(); navigate("/"); }
 
   const perks = [
-    { icon: <Repeat className="h-4 w-4" />, text: "Unlimited Practice mode - your sim sandbox, no hearts" },
+    { icon: <Repeat className="h-4 w-4" />, text: "Unlimited Practice mode - drill any setup as many times as you want" },
     { icon: <BookOpen className="h-4 w-4" />, text: "Every strategy branch, not just the first two" },
     { icon: <BarChart3 className="h-4 w-4" />, text: "All instruments - NQ, CL, GC (and ES)" },
     { icon: <Sparkles className="h-4 w-4" />, text: `${COACH_NAME} that remembers your history across sessions` },

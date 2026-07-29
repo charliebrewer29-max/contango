@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Repeat, Clock, Sparkles, Check, X, CalendarClock, Target, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
@@ -7,6 +7,8 @@ import { useContango } from "@/contexts/ContangoContext";
 import { buildPracticeCatalog, isDue, nextDueMs } from "@/lib/spacedRepetition";
 import { weakConcepts } from "@/lib/performance";
 import { isPremium, restorePurchases } from "@/lib/subscription";
+import { practiceStatus, FREE_PRACTICE_DAILY } from "@/lib/practiceAllowance";
+import { todayStr } from "@/lib/gamification";
 
 const SESSION_SIZE = 10;
 
@@ -37,7 +39,7 @@ function fmtDue(ms) {
 }
 
 export default function Practice() {
-  const { progress, reviewCard, recordSession } = useContango();
+  const { progress, reviewCard, recordSession, update } = useContango();
   const srCards = progress.srCards || {};
   const catalog = useMemo(
     () => buildPracticeCatalog(progress),
@@ -45,32 +47,25 @@ export default function Practice() {
   );
   const dueCards = useMemo(() => catalog.filter((c) => isDue(srCards[c.id])), [catalog, srCards]);
 
+  const { premium, left, exhausted } = practiceStatus(progress);
+
+  // Reset the free daily counter when the local date rolls over (and on the
+  // first-ever visit). Premium never sees any of this.
+  useEffect(() => {
+    if (!premium && progress.practiceResetDate !== todayStr()) {
+      update({ practiceUsedToday: 0, practiceResetDate: todayStr() });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [phase, setPhase] = useState("home");
   const [queue, setQueue] = useState([]);
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState(null);
   const [stats, setStats] = useState({ correct: 0, total: 0 });
 
-  if (!isPremium(progress)) {
-    return (
-      <ScreenShell backTo="/" title="Spaced Practice" showStats>
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
-          <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
-          <h2 className="font-display text-xl font-bold text-slate-100">Practice is Premium</h2>
-          <p className="mt-2 text-sm text-slate-400">Practice mode is your unlimited sim sandbox - review every concept and chart as often as you like, with no hearts on the line. It's part of Premium.</p>
-          <p className="mt-2 text-xs text-slate-500">Hearts still apply on the graded curriculum path for everyone - that's the daily-loss-limit discipline you're learning.</p>
-          <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
-          <div className="mt-4 flex items-center justify-center gap-4 text-[12px] text-slate-500">
-            <button onClick={restorePurchases} className="hover:text-slate-300">Restore Purchases</button>
-            <Link to="/legal#terms" className="hover:text-slate-300">Terms of Use</Link>
-            <Link to="/legal#privacy" className="hover:text-slate-300">Privacy Policy</Link>
-          </div>
-        </div>
-      </ScreenShell>
-    );
-  }
-
   function startSession(mode = "due") {
+    if (!premium && left <= 0) return;
     let pool;
     if (mode === "weak") {
       const weakIds = weakConcepts(progress).slice(0, 6).map((w) => w.id);
@@ -115,6 +110,16 @@ export default function Practice() {
     setSelected(null);
     if (idx + 1 >= queue.length) {
       recordSession({ correct: nextStats.correct, total: nextStats.total, completedType: "practice" });
+      // Practice drills never touch hearts - only the free daily allowance.
+      if (!premium) {
+        const today = todayStr();
+        update((prev) => ({
+          ...prev,
+          practiceResetDate: today,
+          practiceUsedToday:
+            (prev.practiceResetDate === today ? (prev.practiceUsedToday || 0) : 0) + 1,
+        }));
+      }
       setPhase("done");
     } else {
       setIdx(idx + 1);
@@ -125,72 +130,80 @@ export default function Practice() {
   if (phase === "home") {
     return (
       <ScreenShell backTo="/" title="Spaced Practice" showStats>
-        <div className="mb-5 flex items-center gap-3 rounded-2xl border border-sky-500/30 bg-sky-500/5 p-4">
-          <Repeat className="h-7 w-7 text-sky-400" />
-          <div>
-            <div className="font-display font-semibold text-slate-100">Spaced Practice</div>
-            <div className="text-xs text-slate-500">Resurfaces what you've learned on an expanding schedule - before you forget it.</div>
-          </div>
-        </div>
+        {!premium && <PracticeStatusBar left={left} />}
 
-        {catalog.length === 0 ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center">
-            <Sparkles className="mx-auto mb-3 h-8 w-8 text-slate-600" />
-            <p className="text-sm text-slate-300">Complete a lesson first - practice pulls from concepts and charts you've already learned.</p>
-            <Link to="/" className="mt-5 inline-flex rounded-xl bg-amber-400 px-5 py-3 font-semibold text-slate-950">Go to lessons</Link>
-          </div>
+        {exhausted ? (
+          <PracticeUpsell />
         ) : (
           <>
-            <div className="mb-4 grid grid-cols-2 gap-3">
-              <Stat icon={<Clock className="h-4 w-4" />} label="Due now" value={dueCards.length} accent="text-sky-400" />
-              <Stat icon={<Check className="h-4 w-4" />} label="Learned" value={catalog.length} accent="text-emerald-400" />
+            <div className="mb-5 flex items-center gap-3 rounded-2xl border border-sky-500/30 bg-sky-500/5 p-4">
+              <Repeat className="h-7 w-7 text-sky-400" />
+              <div>
+                <div className="font-display font-semibold text-slate-100">Spaced Practice</div>
+                <div className="text-xs text-slate-500">Resurfaces what you've learned on an expanding schedule - before you forget it.</div>
+              </div>
             </div>
 
-            <button
-              onClick={() => startSession("due")}
-              disabled={!dueCards.length}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-4 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30 disabled:hover:bg-amber-400"
-            >
-              {dueCards.length ? `Review ${Math.min(dueCards.length, SESSION_SIZE)} due cards` : "Nothing due right now"}
-            </button>
-            <button
-              onClick={() => startSession("all")}
-              className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 py-3.5 font-semibold text-slate-200 transition hover:border-slate-500"
-            >
-              Practice ahead ({catalog.length} learned)
-            </button>
-
-            {(() => {
-              const weak = weakConcepts(progress).slice(0, 3);
-              if (!weak.length) return null;
-              return (
-                <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-rose-400">
-                    <Target className="h-4 w-4" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Focus areas · what to work on</span>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {weak.map((w) => (
-                      <li key={w.id} className="flex items-center justify-between text-xs">
-                        <span className="text-slate-300">{w.title}</span>
-                        <span className="font-mono text-rose-400">{Math.round(w.accuracy * 100)}% · {w.correct}/{w.seen}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    onClick={() => startSession("weak")}
-                    className="mt-3 w-full rounded-xl bg-amber-400 py-3 font-semibold text-slate-950 transition hover:bg-amber-300"
-                  >
-                    Drill your weak spots
-                  </button>
-                </div>
-              );
-            })()}
-
-            {dueCards.length === 0 && (
-              <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-300">
-                <Check className="h-4 w-4" /> All caught up - next review {fmtDue(nextDueMs(srCards))}.
+            {catalog.length === 0 ? (
+              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center">
+                <Sparkles className="mx-auto mb-3 h-8 w-8 text-slate-600" />
+                <p className="text-sm text-slate-300">Complete a lesson first - practice pulls from concepts and charts you've already learned.</p>
+                <Link to="/" className="mt-5 inline-flex rounded-xl bg-amber-400 px-5 py-3 font-semibold text-slate-950">Go to lessons</Link>
               </div>
+            ) : (
+              <>
+                <div className="mb-4 grid grid-cols-2 gap-3">
+                  <Stat icon={<Clock className="h-4 w-4" />} label="Due now" value={dueCards.length} accent="text-sky-400" />
+                  <Stat icon={<Check className="h-4 w-4" />} label="Learned" value={catalog.length} accent="text-emerald-400" />
+                </div>
+
+                <button
+                  onClick={() => startSession("due")}
+                  disabled={!dueCards.length}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-4 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30 disabled:hover:bg-amber-400"
+                >
+                  {dueCards.length ? `Review ${Math.min(dueCards.length, SESSION_SIZE)} due cards` : "Nothing due right now"}
+                </button>
+                <button
+                  onClick={() => startSession("all")}
+                  className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 py-3.5 font-semibold text-slate-200 transition hover:border-slate-500"
+                >
+                  Practice ahead ({catalog.length} learned)
+                </button>
+
+                {(() => {
+                  const weak = weakConcepts(progress).slice(0, 3);
+                  if (!weak.length) return null;
+                  return (
+                    <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4">
+                      <div className="mb-2 flex items-center gap-2 text-rose-400">
+                        <Target className="h-4 w-4" />
+                        <span className="text-xs font-semibold uppercase tracking-wider">Focus areas · what to work on</span>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {weak.map((w) => (
+                          <li key={w.id} className="flex items-center justify-between text-xs">
+                            <span className="text-slate-300">{w.title}</span>
+                            <span className="font-mono text-rose-400">{Math.round(w.accuracy * 100)}% · {w.correct}/{w.seen}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        onClick={() => startSession("weak")}
+                        className="mt-3 w-full rounded-xl bg-amber-400 py-3 font-semibold text-slate-950 transition hover:bg-amber-300"
+                      >
+                        Drill your weak spots
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {dueCards.length === 0 && (
+                  <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-300">
+                    <Check className="h-4 w-4" /> All caught up - next review {fmtDue(nextDueMs(srCards))}.
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
@@ -233,13 +246,15 @@ export default function Practice() {
           {dueCards.length ? `${dueCards.length} cards still due` : `All caught up - next review ${fmtDue(nextDueMs(srCards))}`}
         </div>
         <div className="mx-auto mt-6 max-w-xs space-y-2">
-          <button
-            onClick={() => startSession("due")}
-            disabled={!dueCards.length}
-            className="w-full rounded-xl bg-amber-400 py-3.5 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30"
-          >
-            Review more due cards
-          </button>
+          {!exhausted && (
+            <button
+              onClick={() => startSession("due")}
+              disabled={!dueCards.length}
+              className="w-full rounded-xl bg-amber-400 py-3.5 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-30"
+            >
+              Review more due cards
+            </button>
+          )}
           <button onClick={() => setPhase("home")} className="w-full rounded-xl bg-slate-800 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-700">
             Back to practice home
           </button>
@@ -247,6 +262,34 @@ export default function Practice() {
       </div>
       <style>{`@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }`}</style>
     </ScreenShell>
+  );
+}
+
+function PracticeStatusBar({ left }) {
+  const remaining = Math.max(0, left);
+  const color = remaining > 0 ? "text-amber-400" : "text-slate-500";
+  return (
+    <div className="mb-4 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 px-4 py-2.5">
+      <span className="text-[13px] text-slate-400">Free practice</span>
+      <span className={`text-[13px] font-medium ${color}`}>{remaining} of {FREE_PRACTICE_DAILY} left today</span>
+    </div>
+  );
+}
+
+function PracticeUpsell() {
+  return (
+    <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
+      <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
+      <h2 className="font-display text-xl font-bold text-slate-100">That's your 3 for today</h2>
+      <p className="mt-2 text-sm text-slate-400">Practice resets tomorrow. Premium makes it unlimited, so you can drill the same setup until it's automatic.</p>
+      <p className="mt-2 text-xs text-slate-500">Hearts still apply on the graded curriculum path for everyone - that's the daily-loss-limit discipline you're learning.</p>
+      <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
+      <div className="mt-4 flex items-center justify-center gap-4 text-[12px] text-slate-500">
+        <button onClick={restorePurchases} className="hover:text-slate-300">Restore Purchases</button>
+        <Link to="/legal#terms" className="hover:text-slate-300">Terms of Use</Link>
+        <Link to="/legal#privacy" className="hover:text-slate-300">Privacy Policy</Link>
+      </div>
+    </div>
   );
 }
 
