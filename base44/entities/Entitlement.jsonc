@@ -1,0 +1,63 @@
+{
+  "name": "Entitlement",
+  "type": "object",
+  "properties": {
+    "tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "trial",
+        "premium"
+      ]
+    },
+    "trial_started": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trial_ends": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "trial",
+        "revenuecat",
+        "appstore",
+        "dev"
+      ]
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "required": [
+    "tier",
+    "source",
+    "updated_at"
+  ]
+}

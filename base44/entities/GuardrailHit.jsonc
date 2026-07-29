@@ -1,0 +1,41 @@
+{
+  "name": "GuardrailHit",
+  "type": "object",
+  "properties": {
+    "matched_pattern_index": {
+      "type": "number"
+    },
+    "reply_excerpt": {
+      "type": "string"
+    },
+    "flow": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "required": []
+}
