@@ -24,12 +24,17 @@ export default function TickerTape({ reducedMotion = false }) {
   const items = [...quotes, ...quotes];
   return (
     <div
-      className="relative overflow-hidden border-b border-slate-800/60 bg-[#0a0e16]/90 backdrop-blur"
-      style={{
-        WebkitMaskImage: "linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent)",
-        maskImage: "linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent)",
-      }}
+      className="relative border-b border-slate-800/60 bg-[#0a0e16]/90 backdrop-blur"
+      aria-label="Simulated price data for educational practice. Not live market quotes."
     >
+      <span className="pointer-events-none absolute left-1.5 top-1/2 z-10 -translate-y-1/2 rounded bg-slate-800/80 px-1 py-0.5 text-[10px] font-semibold tracking-wide text-slate-500">SIM</span>
+      <div
+        className="overflow-hidden"
+        style={{
+          WebkitMaskImage: "linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent)",
+          maskImage: "linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent)",
+        }}
+      >
       {!reducedMotion ? (
         <div
           ref={rafRef}
@@ -66,6 +71,7 @@ export default function TickerTape({ reducedMotion = false }) {
         </div>
       )}
       <style>{`@keyframes tickerScroll { from { transform: translateX(0) } to { transform: translateX(-50%) } } .no-scrollbar::-webkit-scrollbar { display:none } .no-scrollbar { scrollbar-width:none }`}</style>
+      </div>
     </div>
   );
 }

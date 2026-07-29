@@ -1,17 +1,22 @@
 // Instrument profiles (spec 5.7) + candle data generators (spec 8.3)
 // Strategy is the skill, instrument is the terrain.
 
+// PRICE LEVELS: last verified 2026-07-28.
+// Anchors for SIMULATED data, not live quotes. Stale levels undermine
+// credibility with traders who watch these markets daily. Re-verify
+// against CME front-month settles quarterly, and check that the
+// contract month codes in TickerTape.jsx are still the front month.
 export const INSTRUMENTS = {
-  ES: { name: "E-mini S&P 500", basePrice: 5987.5, tickSize: 0.25, tickValue: 12.5, volMult: 1.0, noiseMult: 1.0, barVol: 0.0006,
+  ES: { name: "E-mini S&P 500", basePrice: 7450.00, tickSize: 0.25, tickValue: 12.5, volMult: 1.0, noiseMult: 1.0, barVol: 0.000056,
         moves: "Fed policy, FOMC, CPI, employment data, earnings, broad risk sentiment",
         character: "Deepest liquidity, tightest spreads. Trends relatively orderly. The right first instrument for every strategy branch." },
-  NQ: { name: "E-mini Nasdaq-100", basePrice: 21340.75, tickSize: 0.25, tickValue: 5.0, volMult: 1.8, noiseMult: 1.3, barVol: 0.0010,
+  NQ: { name: "E-mini Nasdaq-100", basePrice: 27850.00, tickSize: 0.25, tickValue: 5.0, volMult: 1.8, noiseMult: 1.3, barVol: 0.000048,
         moves: "Same macro drivers as ES but tech-weighted - extra sensitivity to rates and big-tech earnings",
         character: "ES with the volatility turned up. Same setups appear, but they move faster and need wider stops." },
-  CL: { name: "Crude Oil (WTI)", basePrice: 71.42, tickSize: 0.01, tickValue: 10.0, volMult: 1.5, noiseMult: 1.9, barVol: 0.0020,
+  CL: { name: "Crude Oil (WTI)", basePrice: 79.40, tickSize: 0.01, tickValue: 10.0, volMult: 1.5, noiseMult: 1.9, barVol: 0.000375,
         moves: "EIA Wednesday 10:30am ET, API Tuesday 4:30pm, OPEC+, geopolitical supply disruption, dollar strength",
         character: "Headline-driven, prone to violent reversals and false breakouts. Best for teaching a clean setup can fail." },
-  GC: { name: "Gold", basePrice: 2385.2, tickSize: 0.1, tickValue: 10.0, volMult: 1.2, noiseMult: 0.8, barVol: 0.0008,
+  GC: { name: "Gold", basePrice: 4075.00, tickSize: 0.1, tickValue: 10.0, volMult: 1.2, noiseMult: 0.8, barVol: 0.000128,
         moves: "Real interest rates (inverse), dollar strength (inverse), safe-haven demand, central bank buying",
         character: "Can trend persistently in a macro regime, then grind sideways. Good for regime recognition." },
 };
@@ -22,6 +27,10 @@ export const MICROS = {
   MCL: { parent: "CL", tickValue: 1.0, name: "Micro Crude Oil" },
   MGC: { parent: "GC", tickValue: 1.0, name: "Micro Gold" },
 };
+
+// Last date the basePrice anchors above were checked against CME front-month
+// settles. Check programmatically: import { lastVerified } from "./instruments".
+export const lastVerified = "2026-07-28";
 
 // Simple seeded RNG so generated charts are reproducible per scenario seed
 function mulberry32(seed) {

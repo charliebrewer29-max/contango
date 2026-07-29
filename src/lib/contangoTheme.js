@@ -18,10 +18,12 @@ export const COLORS = {
 export const COACH_NAME = "Tango";
 
 export const TICKER_SYMBOLS = [
-  { sym: "ESU6", base: 5987.50 },
-  { sym: "NQU6", base: 21340.75 },
-  { sym: "CLU6", base: 71.42 },
-  { sym: "GCU6", base: 2385.20 },
+  { sym: "ESU6", base: 7450.00 },
+  { sym: "NQU6", base: 27850.00 },
+  { sym: "CLU6", base: 79.40 },
+  // Gold front month: GC rolls Aug (Q) -> Dec (Z) -> Feb (G) -> Apr (J) -> Jun (M).
+  // Re-check this code alongside the basePrice refresh in instruments.js.
+  { sym: "GCQ6", base: 4075.00 },
   { sym: "RTYU6", base: 2310.00 },
   { sym: "ZB", base: 119.84 },
   { sym: "ZN", base: 110.27 },

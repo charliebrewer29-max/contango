@@ -63,7 +63,7 @@ export default function Legal() {
       <Section title="Terms of Service" id="terms">
         <H>Educational only</H>
         <p className="text-sm text-slate-300">
-          Contango provides simulated, educational content about futures trading. It is not financial, investment, or trading advice, and nothing in the app is a recommendation or signal to buy, sell, or hold any security or contract.
+          Contango provides simulated, educational content about futures trading. It is not financial, investment, or trading advice, and nothing in the app is a recommendation or signal to buy, sell, or hold any security or contract. All price data shown in the app - including the ticker tape, charts, and drills - is simulated for educational practice and is not live market data.
         </p>
         <H>AI-generated content</H>
         <p className="text-sm text-slate-300">
