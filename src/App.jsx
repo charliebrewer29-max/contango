@@ -7,6 +7,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider } from '@/lib/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
 import { ContangoProvider } from '@/contexts/ContangoContext';
+import AppLoadingGate from '@/components/contango/AppLoadingGate';
 import { lazy, Suspense } from "react";
 import Onboarding from "@/pages/contango/Onboarding";
 import Dashboard from "@/pages/contango/Dashboard";
@@ -76,7 +77,9 @@ function App() {
         <Router>
           <ScrollToTop />
           <ContangoProvider>
-            <AnimatedRoutes />
+            <AppLoadingGate>
+              <AnimatedRoutes />
+            </AppLoadingGate>
           </ContangoProvider>
         </Router>
         <Toaster />
