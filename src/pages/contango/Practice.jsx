@@ -179,7 +179,7 @@ export default function Practice() {
                   </ul>
                   <button
                     onClick={() => startSession("weak")}
-                    className="mt-3 w-full rounded-xl bg-rose-500 py-3 font-semibold text-white transition hover:bg-rose-400"
+                    className="mt-3 w-full rounded-xl bg-amber-400 py-3 font-semibold text-slate-950 transition hover:bg-amber-300"
                   >
                     Drill your weak spots
                   </button>

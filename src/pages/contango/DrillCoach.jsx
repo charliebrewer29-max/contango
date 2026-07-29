@@ -176,7 +176,7 @@ export default function DrillCoach() {
             <button
               onClick={send}
               disabled={!input.trim() || awaitingReply}
-              className="flex items-center justify-center rounded-xl bg-emerald-500 px-4 text-white transition hover:bg-emerald-400 disabled:opacity-40"
+              className="flex items-center justify-center rounded-xl bg-amber-400 px-4 text-slate-950 transition hover:bg-amber-300 disabled:opacity-40"
             >
               <Send className="h-5 w-5" />
             </button>

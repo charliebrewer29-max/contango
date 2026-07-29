@@ -184,7 +184,7 @@ export default function Coach() {
               className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-sky-500 focus:outline-none"
             />
             <button onClick={send} disabled={loading || !input.trim()}
-              className="flex items-center justify-center rounded-xl bg-sky-500 px-4 text-white transition hover:bg-sky-400 disabled:opacity-40">
+              className="flex items-center justify-center rounded-xl bg-amber-400 px-4 text-slate-950 transition hover:bg-amber-300 disabled:opacity-40">
               <Send className="h-5 w-5" />
             </button>
           </div>

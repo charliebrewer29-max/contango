@@ -470,7 +470,7 @@ export default function Drill() {
             </div>
           )}
           <div className="mt-6 space-y-2">
-            <Link to="/drill-coach" className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3.5 font-semibold text-white transition hover:bg-emerald-400">
+            <Link to="/drill-coach" className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
               <Bot className="h-5 w-5" /> Review my mistakes
             </Link>
             <Link to={`/coach?branch=${branch.id}`} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-800 py-3.5 font-semibold text-slate-200 transition hover:bg-slate-700">

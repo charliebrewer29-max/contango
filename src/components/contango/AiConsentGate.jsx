@@ -22,7 +22,7 @@ export default function AiConsentGate({ flow, onAllow, onDecline, busy }) {
       </p>
       <div className="mt-5 flex gap-3">
         <button onClick={onAllow} disabled={busy}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-500 py-3 font-semibold text-white transition hover:bg-sky-400 disabled:opacity-50">
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-400 py-3 font-display font-semibold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50">
           {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : "Allow AI feedback"}
         </button>
         <button onClick={onDecline} disabled={busy}
