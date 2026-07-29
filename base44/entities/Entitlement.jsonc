@@ -2,6 +2,9 @@
   "name": "Entitlement",
   "type": "object",
   "properties": {
+    "user_id": {
+      "type": "string"
+    },
     "tier": {
       "type": "string",
       "enum": [
@@ -37,7 +40,7 @@
   },
   "rls": {
     "read": {
-      "created_by_id": "{{user.id}}"
+      "data.user_id": "{{user.id}}"
     },
     "create": {
       "user_condition": {
@@ -56,6 +59,7 @@
     }
   },
   "required": [
+    "user_id",
     "tier",
     "source",
     "updated_at"
