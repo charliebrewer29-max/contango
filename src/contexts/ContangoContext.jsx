@@ -40,6 +40,7 @@ const DEFAULT_PROGRESS = {
   branchReps: {},
   branchLastTouched: {},
   disciplineBannerDismissed: false,
+  leagueCohort: null,
 };
 
 const ContangoContext = createContext(null);
