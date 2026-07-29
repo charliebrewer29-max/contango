@@ -25,6 +25,10 @@ function isUnlocked(branch, progress) {
 // unlocked card shares the same neutral surface.
 export default function SkillTree() {
   const { progress } = useContango();
+  // At 0 hearts the graded curriculum is locked - the disciplined move is to
+  // stop and go back to the sandbox. Learn is still reachable via the
+  // dashboard's Continue CTA; the nodes themselves read as dimmed + locked.
+  const heartsEmpty = (progress.hearts ?? 5) <= 0;
 
   let nextBranchId = null;
   for (const b of BRANCHES) {
@@ -44,6 +48,7 @@ export default function SkillTree() {
             icon={Icon}
             progress={progress}
             isNext={branch.id === nextBranchId}
+            dimmed={heartsEmpty}
           />
         );
       })}

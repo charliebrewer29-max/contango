@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Check, X, ChevronRight, ChevronLeft, Brain, ArrowRight, BookOpen, BarChart3, Move, Eye, Heart, Target, Sparkles, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
+import OutOfHearts from "@/components/contango/OutOfHearts";
 import FeedbackFlash from "@/components/contango/FeedbackFlash";
 import { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
 import BranchBadgeCelebration from "@/components/contango/BranchBadgeCelebration";
@@ -26,7 +27,7 @@ const LEARN_TYPES = new Set(["teach", "text", "emotion", "widget", "reveal", "ta
 export default function Lesson() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary, unlockBadge, recordAnswer, reviewCard } = useContango();
+  const { recordSession, markLessonComplete, progress, update, adjustMindset, unlockDiary, unlockBadge, recordAnswer, reviewCard, loseHeart } = useContango();
 
   const entry = allUnitsFlat().find(e => e.unit.id === lessonId);
   const unit = entry?.unit;
@@ -68,6 +69,7 @@ export default function Lesson() {
   const [showCelebrate, setShowCelebrate] = useState(false);
   const [branchCelebrate, setBranchCelebrate] = useState(null);
   const [unlockedDiaryId, setUnlockedDiaryId] = useState(null);
+  const [out, setOut] = useState(false);
 
   const isPsych = branch?.id === "risk-psych";
 
@@ -76,16 +78,28 @@ export default function Lesson() {
   }
 
   if (!canAccessLessonId(lessonId, progress)) {
-    return (
-      <ScreenShell showStats={false} backTo={branch ? `/branch/${branch.id}` : "/"} title={unit?.title || "Lesson"}>
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
-          <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
-          <h2 className="font-display text-xl font-bold text-slate-100">A Premium instrument</h2>
-          <p className="mt-2 text-sm text-slate-400">{unit?.title} is part of Contango Premium. Free learners can learn ES and NQ; Crude, Gold, and their Micros open with Premium.</p>
-          <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
-        </div>
-      </ScreenShell>
-    );
+  return (
+    <ScreenShell showStats={false} backTo={branch ? `/branch/${branch.id}` : "/"} title={unit?.title || "Lesson"}>
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6 text-center">
+        <Crown className="mx-auto mb-3 h-10 w-10 text-amber-400" />
+        <h2 className="font-display text-xl font-bold text-slate-100">A Premium instrument</h2>
+        <p className="mt-2 text-sm text-slate-400">{unit?.title} is part of Contango Premium. Free learners can learn ES and NQ; Crude, Gold, and their Micros open with Premium.</p>
+        <Link to="/paywall" className="mt-5 inline-flex rounded-xl bg-amber-400 px-6 py-3 font-display font-bold text-slate-950">Start free trial</Link>
+      </div>
+    </ScreenShell>
+  );
+  }
+
+  // Hearts gate: the graded (ANSWER) path is blocked at 0 hearts. The LEARN
+  // phase stays accessible - it never costs a heart. If a wrong answer empties
+  // the last heart mid-lesson, `out` flips and we show the same screen with the
+  // "last heart" headline.
+  if (out || (phase === "gate" && (progress.hearts ?? 5) <= 0)) {
+  return (
+    <ScreenShell showStats={false} backTo="/" title={branch.branchTitle}>
+      <OutOfHearts variant={out ? "last" : "depleted"} />
+    </ScreenShell>
+  );
   }
 
   const learnStage = learnStages[learnIdx];
@@ -123,7 +137,20 @@ export default function Lesson() {
     if (correct) setCorrectCount(c => c + 1);
     if (isPsych) adjustMindset(correct ? 4 : -6);
     recordAnswer(unit.id, correct);
-    if (!correct) lapseRelevantCard(answerStage);
+    if (!correct) {
+      lapseRelevantCard(answerStage);
+      // A wrong graded answer costs a heart. If that empties the last one, let
+      // the feedback land, then award the XP earned so far (don't zero their
+      // work) and stop - the lesson is NOT marked complete.
+      const depleted = loseHeart();
+      if (depleted) {
+        setTimeout(() => {
+          const earnedXp = correctCount * 8 + emotionXp;
+          update(prev => ({ ...prev, xp: (prev.xp || 0) + earnedXp, dailyXp: (prev.dailyXp || 0) + earnedXp }));
+          setOut(true);
+        }, 1200);
+      }
+    }
   }
 
   // A miss marks the matching Practice card due now.

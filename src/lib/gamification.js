@@ -17,6 +17,17 @@ export function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+// Server-anchored local date (YYYY-MM-DD). Applies the stored server/client
+// offset before computing the calendar day, but still formats the result in
+// the device's own timezone - so the user's local day is preserved, just no
+// longer tied to a spoofable device clock. Used for the hearts reset and the
+// practice allowance reset. offset null/0 falls back to the client date, but
+// the reset *grant* is gated on a known offset (fail closed) by the caller.
+export function serverToday(offset) {
+  const d = new Date(Date.now() + (offset || 0));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 // Local-calendar month string (YYYY-MM) for monthly perks (streak repair),
 // so the monthly limit also rolls over on the user's local month boundary.
 export function monthStr() {
@@ -36,24 +47,22 @@ export function applyProgress(progress, { correct, total, completedType }) {
   const next = { ...progress };
   const events = [];
   let xpGained = 0;
-  let heartsLost = 0;
 
   if (completedType === "lesson") {
-    const wrong = total - correct;
-    heartsLost = wrong;
     xpGained = correct * XP_PER_CORRECT;
     if (correct === total) xpGained += XP_PER_LESSON_COMPLETE;
   } else if (completedType === "drill") {
-    const wrong = total - correct;
-    heartsLost = wrong;
     xpGained = correct * XP_PER_CORRECT + XP_PER_DRILL_COMPLETE;
   } else if (completedType === "practice") {
-    // spaced-repetition reviews: earn XP per correct, no hearts lost (review is safe)
+    // spaced-repetition reviews: earn XP per correct, no hearts (review is safe)
     xpGained = correct * XP_PER_PRACTICE_REVIEW;
   }
 
   next.xp = (next.xp || 0) + xpGained;
-  next.hearts = Math.max(0, (next.hearts || MAX_HEARTS) - heartsLost);
+  // Hearts are NOT managed here. They are spent per wrong graded answer
+  // (see loseHeart in ContangoContext) and reset to MAX at the user's local
+  // midnight (server-anchored). Managing them per-answer lets a session be
+  // cut off mid-lesson when hearts run out, instead of only at completion.
 
   // streak: only credit on completion of a real lesson/drill
   if (completedType) {
@@ -118,10 +127,8 @@ export function applyProgress(progress, { correct, total, completedType }) {
   }
 
   events.push({ type: "xp", amount: xpGained });
-  if (heartsLost > 0) events.push({ type: "hearts-lost", amount: heartsLost });
-  if (next.hearts === 0) events.push({ type: "hearts-depleted" });
 
-  return { progress: next, events, xpGained, heartsLost };
+  return { progress: next, events, xpGained };
 }
 
 export function tickValueFor(instrumentKey) {

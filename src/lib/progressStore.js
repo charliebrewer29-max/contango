@@ -18,7 +18,7 @@ const KNOWN_FIELDS = [
   "rewards", "equippedFlair", "trialStart", "coachCalls", "drillHistory",
   "streakRepairMonth", "coachMemory", "branchReps", "branchLastTouched",
   "disciplineBannerDismissed", "leagueCohort", "practiceUsedToday",
-  "practiceResetDate", "history",
+  "practiceResetDate", "heartsDate", "history",
 ];
 
 let cachedRowId = null;

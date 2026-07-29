@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ChevronRight, Check, X, Play, MessageCircle, Bot, Crown, ShieldCheck } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
+import OutOfHearts from "@/components/contango/OutOfHearts";
 import CandleChart from "@/components/contango/CandleChart";
 import FeedbackFlash, { CelebrationOverlay } from "@/components/contango/FeedbackFlash";
 import BranchBadgeCelebration from "@/components/contango/BranchBadgeCelebration";
@@ -17,7 +18,7 @@ import { canAccessBranch, isPremium, PREMIUM_INSTRUMENTS, FREE_INSTRUMENTS } fro
 export default function Drill() {
   const { branchId } = useParams();
   const navigate = useNavigate();
-  const { recordSession, markDrillComplete, setLastDrillReview, progress, unlockBadge, recordAnswer, reviewCard, logDrill } = useContango();
+  const { recordSession, markDrillComplete, setLastDrillReview, progress, update, unlockBadge, recordAnswer, reviewCard, logDrill, loseHeart } = useContango();
   const branch = findBranch(branchId);
 
   const [instrument, setInstrument] = useState(() => (branch?.id === "momentum" ? "NQ" : "ES"));
@@ -37,6 +38,7 @@ export default function Drill() {
   const [decisionLog, setDecisionLog] = useState([]);
   const [entryBarIdx, setEntryBarIdx] = useState(null);
   const [lastExit, setLastExit] = useState(null);
+  const [out, setOut] = useState(false);
   const playRef = useRef(null);
   const decisionsRef = useRef([]);
   const dpShownAt = useRef(null);
@@ -85,6 +87,18 @@ export default function Drill() {
     );
   }
 
+  // Hearts gate: drills are graded, so they're blocked at 0 hearts. Practice
+  // (the sandbox) is never gated. If a wrong graded decision empties the last
+  // heart mid-drill, `out` flips and we show OutOfHearts with the "last heart"
+  // headline, awarding XP earned so far without marking the drill complete.
+  if (out || (progress.hearts ?? 5) <= 0) {
+    return (
+      <ScreenShell showStats={false} backTo={`/branch/${branch.id}`} title={`${branch.branchTitle} Drill`}>
+        <OutOfHearts variant={out ? "last" : "depleted"} />
+      </ScreenShell>
+    );
+  }
+
   const { bars, decisionPoints, stopPrice: scenarioStop } = scenario;
   const inst = INSTRUMENTS[instrument] || INSTRUMENTS.ES;
   const gradedCount = decisionPoints.filter(dp => dp.type !== "exit-tap").length;
@@ -128,10 +142,15 @@ export default function Drill() {
     // every decision shapes mastery; a miss makes this drill surface sooner in Practice
     const conceptKey = `drill:${branch.id}`;
     recordAnswer(conceptKey, correct);
-    if (!correct) reviewCard(conceptKey, "again");
+    let depleted = false;
+    if (!correct) {
+      reviewCard(conceptKey, "again");
+      depleted = loseHeart();
+    }
 
     setTimeout(() => {
       setFlash(null);
+      if (depleted) { partialFinish(); return; }
       // after the first decision point, draw entry + stop lines
       if (dpIdx === 0) {
         const entryBar = bars[currentDP.barIndex];
@@ -174,9 +193,14 @@ export default function Drill() {
     decisionsRef.current.push({ barIndex: idx, selected: idx, correct: inZone, type: "tap", decisionTimeMs, stopDistancePoints });
     const conceptKey = `drill:${branch.id}`;
     recordAnswer(conceptKey, inZone);
-    if (!inZone) reviewCard(conceptKey, "again");
+    let depleted = false;
+    if (!inZone) {
+      reviewCard(conceptKey, "again");
+      depleted = loseHeart();
+    }
     setTimeout(() => {
       setFlash(null);
+      if (depleted) { partialFinish(); return; }
       if (dpIdx + 1 >= decisionPoints.length) {
         setExitPrice(bars[bars.length - 1].close);
         finishDrill(inZone ? correctCount + 1 : correctCount);
@@ -231,10 +255,8 @@ export default function Drill() {
     }, 1200);
   }
 
-  function finishDrill(finalCorrect) {
-    const events = recordSession({ correct: finalCorrect, total: gradedCount, completedType: "drill" });
-    markDrillComplete(`${branch.id}-drill`);
-    const review = {
+  function buildReview(finalCorrect) {
+    return {
       branchId: branch.id,
       branchTitle: branch.branchTitle,
       instrument,
@@ -254,6 +276,25 @@ export default function Drill() {
       correctCount: finalCorrect,
       total: gradedCount,
     };
+  }
+
+  // Hearts ran out mid-drill: award the XP earned so far and persist the drill
+  // log, but do NOT mark the drill complete - the transition to OutOfHearts
+  // happens via the `out` render gate.
+  function partialFinish() {
+    const finalCorrect = correctCount;
+    const earnedXp = finalCorrect * 8; // no +15 completion bonus
+    update(prev => ({ ...prev, xp: (prev.xp || 0) + earnedXp, dailyXp: (prev.dailyXp || 0) + earnedXp }));
+    const review = buildReview(finalCorrect);
+    setLastDrillReview(review);
+    logDrill(review);
+    setOut(true);
+  }
+
+  function finishDrill(finalCorrect) {
+    const events = recordSession({ correct: finalCorrect, total: gradedCount, completedType: "drill" });
+    markDrillComplete(`${branch.id}-drill`);
+    const review = buildReview(finalCorrect);
     setLastDrillReview(review);
     logDrill(review);
     setPhase("done");

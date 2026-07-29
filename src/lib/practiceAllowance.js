@@ -2,16 +2,17 @@
 // practice drills; Premium is unlimited. Hearts are never involved here -
 // practice is the sandbox, hearts live on the graded curriculum path.
 
-import { todayStr } from "./gamification";
+import { serverToday } from "./gamification";
 import { isPremium } from "./subscription";
 
 export const FREE_PRACTICE_DAILY = 3;
 
-// Resolved allowance for the current local day. When the date has rolled
-// over (or the field is uninitialized), used reads as 0 until the caller
-// persists the reset.
-export function practiceStatus(progress) {
-  const today = todayStr();
+// Resolved allowance for the current server-anchored local day. The reset
+// grant itself is handled centrally in ContangoContext (and only when the
+// server offset is known, fail closed); this reader just reports used/left
+// against the day the reset wrote into practiceResetDate.
+export function practiceStatus(progress, offset) {
+  const today = serverToday(offset);
   const premium = isPremium(progress);
   const used = (!premium && progress.practiceResetDate === today)
     ? (progress.practiceUsedToday || 0)

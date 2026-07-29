@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Bot, Eye, Volume2, Vibrate, Crown, BookOpen, Trash2, LogOut } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
-import { MAX_HEARTS } from "@/lib/gamification";
 import { COACH_NAME } from "@/lib/contangoTheme";
 import { isPremium, trialDaysLeft, restorePurchases } from "@/lib/subscription";
 import ReminderSettings from "@/components/contango/ReminderSettings";
@@ -27,7 +26,7 @@ import {
 // Reached from the Profile screen. The delete-account action is gated behind
 // an explicit confirmation dialog (not a single tap).
 export default function Settings() {
-  const { progress, update, refillHearts, resetProgress } = useContango();
+  const { progress, update, resetProgress } = useContango();
   const flow = isPremium(progress) ? "history" : "session";
   const [aiOn, setAiOn] = React.useState(false);
   const [aiBusy, setAiBusy] = React.useState(false);
@@ -127,11 +126,6 @@ export default function Settings() {
           </div>
           <ChevronRight className="h-5 w-5 text-slate-600" />
         </Link>
-        {progress.hearts < MAX_HEARTS && (
-          <button onClick={refillHearts} className="w-full rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 text-sm text-rose-400 hover:bg-rose-500/10">
-            Refill hearts ({progress.hearts}/{MAX_HEARTS})
-          </button>
-        )}
       </Section>
 
       {/* account */}

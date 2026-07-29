@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Repeat, Clock, Sparkles, Check, X, CalendarClock, Target, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
@@ -8,7 +8,9 @@ import { buildPracticeCatalog, isDue, nextDueMs } from "@/lib/spacedRepetition";
 import { weakConcepts } from "@/lib/performance";
 import { isPremium, restorePurchases } from "@/lib/subscription";
 import { practiceStatus, FREE_PRACTICE_DAILY } from "@/lib/practiceAllowance";
-import { todayStr } from "@/lib/gamification";
+import { serverToday } from "@/lib/gamification";
+import { getServerOffset } from "@/lib/serverClock";
+import { toast } from "@/components/ui/use-toast";
 
 const SESSION_SIZE = 10;
 
@@ -39,7 +41,7 @@ function fmtDue(ms) {
 }
 
 export default function Practice() {
-  const { progress, reviewCard, recordSession, update } = useContango();
+  const { progress, reviewCard, recordSession, update, earnHeart } = useContango();
   const srCards = progress.srCards || {};
   const catalog = useMemo(
     () => buildPracticeCatalog(progress),
@@ -47,16 +49,10 @@ export default function Practice() {
   );
   const dueCards = useMemo(() => catalog.filter((c) => isDue(srCards[c.id])), [catalog, srCards]);
 
-  const { premium, left, exhausted } = practiceStatus(progress);
+  const { premium, left, exhausted } = practiceStatus(progress, getServerOffset());
 
-  // Reset the free daily counter when the local date rolls over (and on the
-  // first-ever visit). Premium never sees any of this.
-  useEffect(() => {
-    if (!premium && progress.practiceResetDate !== todayStr()) {
-      update({ practiceUsedToday: 0, practiceResetDate: todayStr() });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // The daily reset of the free practice counter is handled centrally in
+  // ContangoContext (server-anchored, fail-closed), not here.
 
   const [phase, setPhase] = useState("home");
   const [queue, setQueue] = useState([]);
@@ -110,9 +106,9 @@ export default function Practice() {
     setSelected(null);
     if (idx + 1 >= queue.length) {
       recordSession({ correct: nextStats.correct, total: nextStats.total, completedType: "practice" });
-      // Practice drills never touch hearts - only the free daily allowance.
+      // Practice drills never cost hearts - only the free daily allowance.
       if (!premium) {
-        const today = todayStr();
+        const today = serverToday(getServerOffset());
         update((prev) => ({
           ...prev,
           practiceResetDate: today,
@@ -120,6 +116,10 @@ export default function Practice() {
             (prev.practiceResetDate === today ? (prev.practiceUsedToday || 0) : 0) + 1,
         }));
       }
+      // Finishing a practice drill earns a heart back (if not already full).
+      // Applies identically to free, trial, and premium - hearts are never sold.
+      const gained = earnHeart();
+      if (gained) toast({ title: "+1 heart. Back in the game." });
       setPhase("done");
     } else {
       setIdx(idx + 1);

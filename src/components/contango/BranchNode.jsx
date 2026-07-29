@@ -49,7 +49,7 @@ function CrackOverlay({ intensity }) {
   );
 }
 
-export default function BranchNode({ branch, icon: Icon, progress, isNext = false }) {
+export default function BranchNode({ branch, icon: Icon, progress, isNext = false, dimmed = false }) {
   const foundationDone = (progress.completedLessons || []).length > 0;
   const foundationUnlocked = branch.unlockRequires.length === 0 ||
     (branch.unlockRequires.includes("foundation-complete") && foundationDone);
@@ -85,10 +85,11 @@ export default function BranchNode({ branch, icon: Icon, progress, isNext = fals
   return (
     <div className="w-full">
       <Link
-        to={unlocked ? `/branch/${branch.id}` : premiumLocked ? "/paywall" : "#"}
+        to={dimmed ? "#" : (unlocked ? `/branch/${branch.id}` : premiumLocked ? "/paywall" : "#")}
+        aria-disabled={dimmed}
         className={`relative flex items-center gap-3 overflow-hidden rounded-2xl border p-3.5 transition ${
-          unlocked ? "hover:scale-[1.01]" : "opacity-60"
-        } ${cardBg} ${cardRing} ${isNext ? `animate-pulse shadow-lg ${cardGlow || ""}` : ""}`}
+          dimmed ? "opacity-50 pointer-events-none" : unlocked ? "hover:scale-[1.01]" : "opacity-60"
+        } ${cardBg} ${cardRing} ${!dimmed && isNext ? `animate-pulse shadow-lg ${cardGlow || ""}` : ""}`}
       >
         {s.cracked && <CrackOverlay intensity={s.crackIntensity} />}
 

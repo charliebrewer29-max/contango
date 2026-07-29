@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { MAX_HEARTS, applyProgress, todayStr, monthStr } from "@/lib/gamification";
+import { MAX_HEARTS, applyProgress, todayStr, monthStr, serverToday } from "@/lib/gamification";
 import { loadProgress, saveProgress, clearProgress, enableSaving, setOfflineListener } from "@/lib/progressStore";
 import { scheduleCard } from "@/lib/spacedRepetition";
 import { isPremium } from "@/lib/subscription";
+import { ensureServerTime, getServerOffset } from "@/lib/serverClock";
 import { branchForLessonId } from "@/lib/branchMastery";
 import { isBranchComplete } from "@/lib/branchProgress";
 
@@ -44,9 +45,28 @@ const DEFAULT_PROGRESS = {
   leagueCohort: null,
   practiceUsedToday: 0,
   practiceResetDate: null,
+  heartsDate: null,
 };
 
 const ContangoContext = createContext(null);
+
+// Apply the server-anchored daily reset to a freshly loaded progress object.
+// Hearts return to MAX at the user's local midnight, and the free practice
+// allowance rolls over. Both are gated on a known server offset - if we could
+// not reach /serverTime we fail closed and do NOT grant a reset (a spoofable
+// device clock must never hand out hearts).
+function withDailyReset(data, offset) {
+  if (offset === null || offset === undefined) return data;
+  const today = serverToday(offset);
+  let next = data;
+  if (next.heartsDate !== today) {
+    next = { ...next, hearts: MAX_HEARTS, heartsDate: today };
+  }
+  if (!isPremium(next) && next.practiceResetDate !== today) {
+    next = { ...next, practiceUsedToday: 0, practiceResetDate: today };
+  }
+  return next;
+}
 
 export function ContangoProvider({ children }) {
   const [progress, setProgress] = useState(() => {
@@ -69,11 +89,11 @@ export function ContangoProvider({ children }) {
     setOfflineListener(setOffline);
     let alive = true;
     (async () => {
-      const res = await loadProgress(DEFAULT_PROGRESS);
+      const [res] = await Promise.all([loadProgress(DEFAULT_PROGRESS), ensureServerTime()]);
       if (!alive) return;
       setOffline(res.offline);
       enableSaving(true);
-      setProgress(res.data);
+      setProgress(withDailyReset(res.data, getServerOffset()));
       setLoading(false);
     })();
     return () => { alive = false; };
@@ -90,8 +110,9 @@ export function ContangoProvider({ children }) {
   // external changes and the UI re-renders fresh.
   const refresh = useCallback(async () => {
     const res = await loadProgress(DEFAULT_PROGRESS);
+    await ensureServerTime();
     setOffline(res.offline);
-    setProgress(res.data);
+    setProgress(withDailyReset(res.data, getServerOffset()));
   }, []);
 
   // Run a lesson/drill result through the gamification engine
@@ -128,8 +149,28 @@ export function ContangoProvider({ children }) {
       { ...prev, completedDrills: [...prev.completedDrills, drillId] });
   }, []);
 
-  const refillHearts = useCallback(() => {
-    setProgress(prev => ({ ...prev, hearts: MAX_HEARTS }));
+  // Spend one heart on a wrong graded answer. Returns true if this drop
+  // emptied the last heart, so the lesson/drill can cut off mid-session.
+  const loseHeart = useCallback(() => {
+    let depleted = false;
+    setProgress(prev => {
+      const hearts = Math.max(0, (prev.hearts ?? MAX_HEARTS) - 1);
+      depleted = hearts === 0;
+      return { ...prev, hearts };
+    });
+    return depleted;
+  }, []);
+
+  // Earn one heart back by finishing a practice drill. Capped at MAX.
+  // Applies identically to free, trial, and premium - hearts are never sold.
+  const earnHeart = useCallback(() => {
+    let gained = false;
+    setProgress(prev => {
+      if ((prev.hearts ?? 0) >= MAX_HEARTS) return prev;
+      gained = true;
+      return { ...prev, hearts: Math.min(MAX_HEARTS, (prev.hearts ?? 0) + 1) };
+    });
+    return gained;
   }, []);
 
   const resetProgress = useCallback(() => {
@@ -232,7 +273,8 @@ export function ContangoProvider({ children }) {
     recordSession,
     markLessonComplete,
     markDrillComplete,
-    refillHearts,
+    loseHeart,
+    earnHeart,
     resetProgress,
     adjustMindset,
     unlockDiary,
