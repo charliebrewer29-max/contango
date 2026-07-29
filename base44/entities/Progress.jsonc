@@ -175,6 +175,20 @@
     },
     "history": {
       "type": "array"
+    },
+    "age_attestation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Structured age attestation: { confirmed: boolean, threshold: number, at: ISO string|null, terms_version: string }. Replaces the legacy bare `ageConfirmed` boolean so we know which age threshold and terms version each user agreed to, and when. `at` is null for pre-migration users."
+    },
+    "disclaimer_attestation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Structured attestation for the educational-only disclaimer: { confirmed: boolean, at: ISO string|null, terms_version: string }. Replaces the legacy bare `acknowledged` boolean."
     }
   },
   "rls": {

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { AlertTriangle, Mail, MapPin, Clock } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { COACH_NAME } from "@/lib/contangoTheme";
+import { LEGAL_EFFECTIVE_DATE, LEGAL_LAST_UPDATED } from "@/lib/legalVersion";
 
 // === Legal content constants — single source so the two dates cannot drift ===
 // MUST BE FILLED BEFORE LAUNCH. Do not invent values; leave the placeholder
@@ -18,8 +19,6 @@ import { COACH_NAME } from "@/lib/contangoTheme";
 //   7. EU member-state age-threshold review if shipping in the EU (see Age)
 //   8. Revisit "Do Not Sell or Share" before AdMob / ads go live (see Rights)
 //   9. Dispute-resolution mechanics (counsel) — no arbitration/class waiver yet
-const LEGAL_EFFECTIVE_DATE = "2026-07-29";
-const LEGAL_LAST_UPDATED = "2026-07-29";
 const LEGAL_PRIVACY_EMAIL = "privacy@[YOUR-DOMAIN]";
 const LEGAL_POSTAL_ADDRESS =
   "[MUST BE SET before launch — must match the PHYSICAL_POSTAL_ADDRESS backend secret]";

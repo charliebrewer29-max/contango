@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronRight, Zap, ShieldCheck, Check } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { GOAL_OPTIONS } from "@/lib/contangoTheme";
+import { LEGAL_LAST_UPDATED, LEGAL_AGE_THRESHOLD } from "@/lib/legalVersion";
 import ContangoLogo from "@/components/contango/ContangoLogo";
 
 // Onboarding: welcome → disclaimer → goal selection ("why") → daily goal → first lesson prompt.
@@ -30,7 +31,27 @@ export default function Onboarding() {
 
   function finish() {
     const recommendedBranch = WHY_OPTIONS.find((o) => o.id === why)?.branch || null;
-    update({ onboardingDone: true, why, dailyGoal: GOAL_OPTIONS.find((g) => g.id === goal).xp, goal, recommendedBranch, ageConfirmed: ageOk });
+    const now = new Date().toISOString();
+    update({
+      onboardingDone: true,
+      why,
+      dailyGoal: GOAL_OPTIONS.find((g) => g.id === goal).xp,
+      goal,
+      recommendedBranch,
+      // Structured attestations (not bare flags) so we know WHICH terms version
+      // and threshold each user agreed to, and when. See src/lib/legalVersion.js.
+      age_attestation: {
+        confirmed: ageOk,
+        threshold: LEGAL_AGE_THRESHOLD,
+        at: ageOk ? now : null,
+        terms_version: LEGAL_LAST_UPDATED,
+      },
+      disclaimer_attestation: {
+        confirmed: acknowledged,
+        at: acknowledged ? now : null,
+        terms_version: LEGAL_LAST_UPDATED,
+      },
+    });
     navigate("/lesson/contracts");
   }
 

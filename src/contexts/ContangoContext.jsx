@@ -6,6 +6,7 @@ import { isPremium } from "@/lib/subscription";
 import { ensureServerTime, getServerOffset } from "@/lib/serverClock";
 import { branchForLessonId } from "@/lib/branchMastery";
 import { isBranchComplete } from "@/lib/branchProgress";
+import { migrateAttestations } from "@/lib/legalVersion";
 
 const STORAGE_KEY = "contango_progress_v1";
 
@@ -49,6 +50,8 @@ const DEFAULT_PROGRESS = {
   practiceUsedToday: 0,
   practiceResetDate: null,
   heartsDate: null,
+  age_attestation: null,
+  disclaimer_attestation: null,
 };
 
 const ContangoContext = createContext(null);
@@ -75,7 +78,7 @@ export function ContangoProvider({ children }) {
   const [progress, setProgress] = useState(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return { ...DEFAULT_PROGRESS, ...JSON.parse(raw) };
+      if (raw) return migrateAttestations({ ...DEFAULT_PROGRESS, ...JSON.parse(raw) });
     } catch (e) { /* ignore */ }
     return { ...DEFAULT_PROGRESS };
   });

@@ -3,6 +3,7 @@
 // is the offline cache. No other file should touch the Progress entity.
 
 import { base44 } from "@/api/base44Client";
+import { migrateAttestations } from "@/lib/legalVersion";
 
 const STORAGE_KEY = "contango_progress_v1";
 const MIGRATED_KEY = "contango_migrated_v1";
@@ -19,6 +20,7 @@ const KNOWN_FIELDS = [
   "streakRepairMonth", "coachMemory", "branchReps", "branchLastTouched",
   "disciplineBannerDismissed", "leagueCohort", "leagueXp", "leagueWeekStart",
   "leaguePrevRank", "practiceUsedToday", "practiceResetDate", "heartsDate", "history",
+  "age_attestation", "disclaimer_attestation",
 ];
 
 let cachedRowId = null;
@@ -134,16 +136,16 @@ async function ensureRow(defaultProgress) {
 export async function loadProgress(defaultProgress) {
   const authed = await isAuthed();
   if (!authed) {
-    return { data: mergeWithDefault(readCache(), defaultProgress), offline: false };
+    return { data: migrateAttestations(mergeWithDefault(readCache(), defaultProgress)), offline: false };
   }
   try {
     const row = await ensureRow(defaultProgress);
     const data = reconcile(row, readCache(), defaultProgress);
     setOffline(false);
-    return { data, offline: false };
+    return { data: migrateAttestations(data), offline: false };
   } catch (_e) {
     setOffline(true);
-    return { data: mergeWithDefault(readCache(), defaultProgress), offline: true };
+    return { data: migrateAttestations(mergeWithDefault(readCache(), defaultProgress)), offline: true };
   }
 }
 
