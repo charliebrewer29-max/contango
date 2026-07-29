@@ -4,13 +4,13 @@ import { Medal, Crown, Trophy } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import LeagueTrophy from "@/components/contango/LeagueTrophy";
 import { useContango } from "@/contexts/ContangoContext";
-import { generateCohort } from "@/lib/leagueCohort";
+import { generateCohort, cohortXpNow, weekStartIso, needsWeeklyReset } from "@/lib/leagueCohort";
 
 // Weekly leagues screen. A brand-new user (0 XP) sees a single "your league
 // starts with your first lesson" card instead of a fake roster that parks
 // them last. Once they earn any XP, a 7-opponent cohort is seeded relative to
-// their entry XP and frozen; the user's rank then recalculates live as their
-// XP grows, so passing someone actually moves them up the list.
+// their entry XP; opponents then drift upward by dailyRate each day, and the
+// cohort re-seeds (with leagueXp reset to 0) when a Sunday boundary is crossed.
 
 const TIERS = [
   { name: "Rookie", threshold: 0,
@@ -34,13 +34,21 @@ export default function Leaderboard() {
   const { progress, update } = useContango();
   const xp = progress.xp || 0;
 
-  // Seed the cohort once on league entry (first time xp > 0). Persisted on
-  // progress so it survives navigation and resets with progress. useState
-  // lazy-init holds the generated cohort stable across re-renders.
-  const [cohort] = useState(() => progress.leagueCohort || (xp > 0 ? generateCohort(xp) : null));
+  // Seed the cohort on league entry (first time xp > 0) and re-seed when a
+  // Sunday boundary has been crossed. Persisted on progress (leagueCohort +
+  // leagueWeekStart) so it survives navigation; leagueXp resets to 0 each week.
+  const [cohort] = useState(() => {
+    if (xp <= 0) return null;
+    if (progress.leagueCohort && !needsWeeklyReset(progress.leagueWeekStart, new Date())) {
+      return progress.leagueCohort;
+    }
+    return generateCohort(xp, new Date());
+  });
   useEffect(() => {
-    if (xp > 0 && !progress.leagueCohort && cohort) {
-      update({ leagueCohort: cohort });
+    if (xp <= 0) return;
+    const now = new Date();
+    if (!progress.leagueCohort || needsWeeklyReset(progress.leagueWeekStart, now)) {
+      update({ leagueCohort: cohort, leagueWeekStart: weekStartIso(now), leagueXp: 0 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -49,7 +57,9 @@ export default function Leaderboard() {
 
   const rankings = React.useMemo(() => {
     if (!cohort) return [];
-    return [...cohort, { name: "You", xp, you: true }].sort((a, b) => b.xp - a.xp);
+    // Rank against time-drifted XP, not the stored roster values.
+    const drifted = cohortXpNow(cohort, new Date());
+    return [...drifted, { name: "You", xp, you: true }].sort((a, b) => b.xp - a.xp);
   }, [cohort, xp]);
   const yourRank = rankings.findIndex(m => m.you) + 1;
 

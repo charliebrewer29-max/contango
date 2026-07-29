@@ -53,10 +53,58 @@ function round10(n) {
   return Math.max(0, Math.round(n / 10) * 10);
 }
 
-export function generateCohort(userXp) {
+export const MIN_LEAGUE_XP = 20;
+
+export function generateCohort(userXp, now = new Date()) {
   const names = shuffle(NAME_POOL).slice(0, MULTIPLIERS.length);
-  return MULTIPLIERS.map((m, i) => ({
-    name: names[i],
-    xp: round10(userXp * m * jitter()),
-  }));
+  const createdAt = now.toISOString();
+  return MULTIPLIERS.map((m, i) => {
+    const base = round10(userXp * m * jitter());
+    // dailyRate: XP earned per day, proportional to standing (multiplier) and
+    // jittered per opponent so they drift at different speeds. ~5% of their
+    // seeded XP per day keeps a Rookie cohort moving in Rookie-sized steps and
+    // a Platinum cohort in Platinum-sized steps.
+    const dailyRate = Math.max(0, Math.round(userXp * m * 0.05 * jitter()));
+    return { name: names[i], xp: base, dailyRate, createdAt };
+  });
+}
+
+// An opponent's current XP: base + dailyRate * daysElapsed since createdAt,
+// floored at MIN_LEAGUE_XP. Legacy cohorts persisted without dailyRate or
+// createdAt simply do not drift (rate 0 / no createdAt), and are still floored.
+export function currentXp(opponent, now = new Date()) {
+  const base = opponent.xp || 0;
+  const rate = opponent.dailyRate || 0;
+  let drifted = base;
+  if (rate > 0 && opponent.createdAt) {
+    const created = new Date(opponent.createdAt);
+    if (!isNaN(created.getTime())) {
+      const days = Math.max(0, (now.getTime() - created.getTime()) / 86_400_000);
+      drifted = base + rate * days;
+    }
+  }
+  return Math.max(MIN_LEAGUE_XP, Math.floor(drifted));
+}
+
+// The whole cohort's XP as of now: each opponent's drifted, floored XP.
+export function cohortXpNow(cohort, now = new Date()) {
+  return (cohort || []).map((o) => ({ ...o, xp: currentXp(o, now) }));
+}
+
+// Most recent Sunday at 00:00 local time as YYYY-MM-DD — the league week start.
+export function weekStartIso(now = new Date()) {
+  const d = new Date(now);
+  d.setDate(d.getDate() - d.getDay()); // Sunday = 0, shift back to Sunday
+  d.setHours(0, 0, 0, 0);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// True when the stored week start is missing or from an earlier week (i.e. a
+// Sunday boundary has been crossed since the cohort was seeded).
+export function needsWeeklyReset(storedWeekStart, now = new Date()) {
+  if (!storedWeekStart) return true;
+  return storedWeekStart !== weekStartIso(now);
 }
