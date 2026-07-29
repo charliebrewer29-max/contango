@@ -75,14 +75,19 @@ describe("tilt", () => {
   });
 
   it("worse-after-error scores low", () => {
+    // T,T,F,F,F,T → overall 3/6 = 0.50, post-error 1/3 = 0.33, so the tilt
+    // score is 50 + (0.33 - 0.50)*100 = 33. Every decisionTimeMs is 3000 so
+    // post-error speed equals overall speed and the revenge penalty stays
+    // out of it (isolates the accuracy signal). The prior T,F,F,T,F,F fixture
+    // had post-error 1/3 == overall 2/6, scoring exactly 50 and failing <50.
     const p = disciplineProfile({ drillHistory: [mkHistory([
       { isCorrect: true, decisionTimeMs: 3000 },
-      { isCorrect: false, decisionTimeMs: 3000 },
-      { isCorrect: false, decisionTimeMs: 3000 },
       { isCorrect: true, decisionTimeMs: 3000 },
       { isCorrect: false, decisionTimeMs: 3000 },
       { isCorrect: false, decisionTimeMs: 3000 },
-    ], 2, 6)] });
+      { isCorrect: false, decisionTimeMs: 3000 },
+      { isCorrect: true, decisionTimeMs: 3000 },
+    ], 3, 6)] });
     expect(p.metrics.find((m) => m.label === "Tilt resistance").score).toBeLessThan(50);
   });
 
@@ -184,7 +189,12 @@ describe("classifyExit direction (the real bug)", () => {
   });
 
   it("a short where the stop is hit and the trade is a loser IS held_loser", () => {
-    const bars = [{ high: 106, low: 99, close: 101 }, { high: 103, low: 100, close: 104 }];
+    // classifyExit scans bars from entryBarIdx+1, so bar 0 is skipped. Bar 1
+    // must breach the short stop (high >= 105) for stopHit to fire: high 106
+    // does. realized = (104 - 100) * -1 = -4, so stopHit && realized < 0 →
+    // held_loser. Both bars also satisfy low <= close <= high (the prior
+    // fixture had bar 1 close 104 > high 103, an impossible OHLC bar).
+    const bars = [{ high: 102, low: 99, close: 101 }, { high: 106, low: 100, close: 104 }];
     const r = classifyExit({ entry: 100, stop: 105, exitClose: 104, bars, entryBarIdx: 0, exitIdx: 1, direction: -1, tickSize: 0.25 });
     expect(r.stopHit).toBe(true);
     expect(r.realized).toBe(-4);
