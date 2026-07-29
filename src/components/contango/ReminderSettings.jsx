@@ -16,6 +16,7 @@ export default function ReminderSettings() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("off"); // on | off | error
   const [ready, setReady] = useState(false);
+  const [priorUnsub, setPriorUnsub] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -31,6 +32,7 @@ export default function ReminderSettings() {
         setTime(r.reminder_time || "09:00");
         if (r.email) setEmail(r.email);
         setStatus(r.enabled ? "on" : "off");
+        setPriorUnsub(r.unsubscribed_at || null);
       }
       setReady(true);
     })();
@@ -54,6 +56,7 @@ export default function ReminderSettings() {
   async function toggleEnabled() {
     if (saving) return;
     const next = !enabled;
+    if (next && priorUnsub) console.info("[reminders] in-app opt-in overrides prior opt-out");
     setEnabled(next);
     setStatus(next ? "on" : "off");
     setSaving(true);

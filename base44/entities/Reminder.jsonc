@@ -41,6 +41,22 @@
     },
     "badges_count": {
       "type": "number"
+    },
+    "unsub_token": {
+      "type": "string",
+      "description": "Cryptographically random opt-out token (32+ chars). Generated on row creation; never derived from user id or email. Backfilled by sendDailyReminders for legacy rows."
+    },
+    "unsubscribed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ISO timestamp of the email one-click opt-out. The permanent opt-out record: send skips any row where this is set, even if enabled was flipped back on. Cleared by an explicit in-app re-enable."
+    },
+    "bounce_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Hard-bounce / rejected-recipient counter. Reminder auto-disables at 3."
     }
   },
   "rls": {

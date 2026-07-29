@@ -22,6 +22,18 @@ function hourOf(time) {
   return isNaN(h) ? 9 : h;
 }
 
+// Cryptographically random opt-out token (32+ chars). Generated only when a
+// Reminder row is created; never derived from the user id or email.
+function randomToken() {
+  try {
+    const b = new Uint8Array(24);
+    crypto.getRandomValues(b);
+    return btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  } catch {
+    return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+}
+
 export function buildSnapshot(progress) {
   const next = findNextLesson(progress);
   return {
@@ -59,6 +71,9 @@ export async function saveReminder({ enabled, reminder_time, email }, snapshot) 
     next_lesson_title: snapshot?.next_lesson_title ?? "",
     badges_count: snapshot?.badges_count ?? 0,
   };
+  // An explicit in-app opt-in overrides a prior email opt-out (CAN-SPAM
+  // allows re-subscription; the durable opt-out record is cleared on enable).
+  if (enabled) payload.unsubscribed_at = null;
 
   let id = localStorage.getItem(ID_KEY);
   if (!id) {
@@ -70,7 +85,7 @@ export async function saveReminder({ enabled, reminder_time, email }, snapshot) 
   if (id) {
     record = await base44.entities.Reminder.update(id, payload);
   } else {
-    record = await base44.entities.Reminder.create(payload);
+    record = await base44.entities.Reminder.create({ ...payload, unsub_token: randomToken() });
     id = record?.id || null;
   }
   if (id) localStorage.setItem(ID_KEY, id);
