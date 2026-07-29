@@ -9,6 +9,7 @@ import { isPremium, trialDaysLeft, restorePurchases } from "@/lib/subscription";
 import ReminderSettings from "@/components/contango/ReminderSettings";
 import { base44 } from "@/api/base44Client";
 import { fetchMe, hasConsent, setConsent } from "@/lib/aiConsent";
+import { clearProgress } from "@/lib/progressStore";
 import { Section, Toggle } from "@/components/contango/profileBits";
 import {
   AlertDialog,
@@ -58,7 +59,7 @@ export default function Settings() {
       const reminders = await base44.entities.Reminder.filter({});
       for (const r of reminders) { try { await base44.entities.Reminder.delete(r.id); } catch (_e) {} }
     } catch (_e) {}
-    resetProgress();
+    try { await clearProgress(); } catch (_e) {}
     try { await base44.auth.logout(); } catch (_e) {}
   }
 

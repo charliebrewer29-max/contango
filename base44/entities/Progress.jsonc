@@ -1,0 +1,174 @@
+{
+  "name": "Progress",
+  "type": "object",
+  "properties": {
+    "xp": {
+      "type": "number"
+    },
+    "hearts": {
+      "type": "number"
+    },
+    "streak": {
+      "type": "number"
+    },
+    "lastActiveDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dailyXp": {
+      "type": "number"
+    },
+    "dailyGoal": {
+      "type": "number"
+    },
+    "firstLessonDone": {
+      "type": "boolean"
+    },
+    "onboardingDone": {
+      "type": "boolean"
+    },
+    "goal": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "why": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "completedLessons": {
+      "type": "array"
+    },
+    "completedDrills": {
+      "type": "array"
+    },
+    "reducedMotion": {
+      "type": "boolean"
+    },
+    "soundOn": {
+      "type": "boolean"
+    },
+    "hapticsOn": {
+      "type": "boolean"
+    },
+    "subscription": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mindset": {
+      "type": "number"
+    },
+    "diaryUnlocked": {
+      "type": "array"
+    },
+    "lastDrillReview": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "srCards": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "badges": {
+      "type": "array"
+    },
+    "stats": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "rewards": {
+      "type": "array"
+    },
+    "equippedFlair": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trialStart": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "coachCalls": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "drillHistory": {
+      "type": "array"
+    },
+    "streakRepairMonth": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "coachMemory": {
+      "type": "array"
+    },
+    "branchReps": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "branchLastTouched": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "disciplineBannerDismissed": {
+      "type": "boolean"
+    },
+    "leagueCohort": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "practiceUsedToday": {
+      "type": "number"
+    },
+    "practiceResetDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "history": {
+      "type": "array"
+    }
+  },
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  },
+  "required": []
+}

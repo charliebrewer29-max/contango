@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { MAX_HEARTS, applyProgress, todayStr, monthStr } from "@/lib/gamification";
+import { loadProgress, saveProgress, clearProgress, enableSaving, setOfflineListener } from "@/lib/progressStore";
 import { scheduleCard } from "@/lib/spacedRepetition";
 import { isPremium } from "@/lib/subscription";
 import { branchForLessonId } from "@/lib/branchMastery";
@@ -55,10 +56,28 @@ export function ContangoProvider({ children }) {
     } catch (e) { /* ignore */ }
     return { ...DEFAULT_PROGRESS };
   });
+  const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(false);
 
+  useEffect(() => { saveProgress(progress); }, [progress]);
+
+  // Server load + reconcile. localStorage seeds the first paint synchronously
+  // (above); this effect resolves the authoritative server row, reconciles,
+  // and only then enables server writes so pre-load ticks don't race the row
+  // lookup and create a duplicate.
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) { /* ignore */ }
-  }, [progress]);
+    setOfflineListener(setOffline);
+    let alive = true;
+    (async () => {
+      const res = await loadProgress(DEFAULT_PROGRESS);
+      if (!alive) return;
+      setOffline(res.offline);
+      enableSaving(true);
+      setProgress(res.data);
+      setLoading(false);
+    })();
+    return () => { alive = false; };
+  }, []);
 
   const update = useCallback((updater) => {
     setProgress(prev => {
@@ -69,11 +88,10 @@ export function ContangoProvider({ children }) {
 
   // Pull-to-refresh: re-sync progress from storage so stats reflect any
   // external changes and the UI re-renders fresh.
-  const refresh = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setProgress({ ...DEFAULT_PROGRESS, ...JSON.parse(raw) });
-    } catch (e) { /* ignore */ }
+  const refresh = useCallback(async () => {
+    const res = await loadProgress(DEFAULT_PROGRESS);
+    setOffline(res.offline);
+    setProgress(res.data);
   }, []);
 
   // Run a lesson/drill result through the gamification engine
@@ -116,6 +134,7 @@ export function ContangoProvider({ children }) {
 
   const resetProgress = useCallback(() => {
     setProgress({ ...DEFAULT_PROGRESS });
+    clearProgress();
   }, []);
 
   const adjustMindset = useCallback((delta) => {
@@ -206,6 +225,8 @@ export function ContangoProvider({ children }) {
 
   const value = {
     progress,
+    loading,
+    offline,
     update,
     refresh,
     recordSession,
