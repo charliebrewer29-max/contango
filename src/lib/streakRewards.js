@@ -11,6 +11,7 @@ export const STREAK_REWARDS = [
   { id: "inferno", streak: 30, name: "Inferno", ringClass: "ring-2 ring-red-500", title: "Monthly Grinder", glyph: "🌋", glow: "#ef4444" },
   { id: "eternal", streak: 60, name: "Eternal Flame", ringClass: "ring-2 ring-violet-500", title: "Iron Discipline", glyph: "💎", glow: "#8b5cf6" },
   { id: "centurion", streak: 100, name: "Centurion", ringClass: "ring-2 ring-emerald-400", title: "Centurion", glyph: "👑", glow: "#34d399" },
+  { id: "vanguard", streak: 180, name: "Vanguard", ringClass: "ring-2 ring-teal-400", title: "Vanguard", glyph: "🛡️", glow: "#2dd4bf" },
   { id: "immortal", streak: 365, name: "Immortal", ringClass: "ring-2 ring-sky-400", title: "Immortal", glyph: "⭐", glow: "#38bdf8" },
 ];
 

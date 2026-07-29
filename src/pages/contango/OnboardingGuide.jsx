@@ -30,6 +30,7 @@ export default function OnboardingGuide() {
   const [error, setError] = useState(null);
   const scrollRef = useRef(null);
   const startedRef = useRef(false);
+  const [chipsDismissed, setChipsDismissed] = useState(false);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -64,6 +65,12 @@ export default function OnboardingGuide() {
     setInput("");
   }
 
+  function pickChip(text) {
+    if (!conversation || awaitingReply) return;
+    base44.agents.addMessage(conversation, { role: "user", content: text });
+    setChipsDismissed(true);
+  }
+
   if (error) {
     return (
       <ScreenShell showStats={false} title="Onboarding Guide" tab="learn" backTo="/">
@@ -80,7 +87,7 @@ export default function OnboardingGuide() {
         <span className="text-xs text-slate-500">· let's find your starting point</span>
       </div>
 
-      <div ref={scrollRef} className="flex h-[58vh] flex-col gap-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div ref={scrollRef} className="flex max-h-[50vh] min-h-0 flex-col gap-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-4">
         {messages.map((m, i) => {
           const isUser = m.role === "user";
           let contextMessage = "";
@@ -113,6 +120,20 @@ export default function OnboardingGuide() {
           </div>
         )}
       </div>
+
+      {!chipsDismissed && (
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {["I've never traded before", "What is a futures contract?", "Where should I start?"].map((c) => (
+            <button
+              key={c}
+              onClick={() => pickChip(c)}
+              className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-[13px] text-slate-300 transition hover:border-slate-500"
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mt-3 flex gap-2">
         <input

@@ -1,10 +1,12 @@
 import React from "react";
-import { User, Pencil, BarChart3, Repeat, Gift, Settings as SettingsIcon } from "lucide-react";
+import { User, Pencil, BarChart3, Repeat, Gift, Settings as SettingsIcon, Lock } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import MindsetMeter from "@/components/contango/MindsetMeter";
 import BranchBadge, { BRANCH_BADGES } from "@/components/contango/BranchBadge";
 import { getEquippedFlair } from "@/lib/streakRewards";
+import { BRANCHES } from "@/lib/content";
+import { branchUnitCount } from "@/lib/branchProgress";
 import { avatarById } from "@/components/contango/avatars";
 import AvatarPicker from "@/components/contango/AvatarPicker";
 import { LinkRow, Stat } from "@/components/contango/profileBits";
@@ -75,10 +77,20 @@ export default function Profile() {
         <div className="grid grid-cols-3 gap-3">
           {BRANCH_BADGES.map((b) => {
             const earned = (progress.badges || []).includes(b.id);
+            const branch = BRANCHES.find((x) => x.id === b.id);
+            const total = branch ? branchUnitCount(branch) : 0;
+            const lessons = branch && branch.buildDrill ? total - 1 : total;
+            const condition = branch
+              ? (branch.buildDrill ? `Complete ${lessons} lessons + drill` : `Complete ${lessons} lessons`)
+              : "";
             return (
-              <div key={b.id} className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900 p-3 text-center">
-                <BranchBadge badge={b} size={52} locked={!earned} />
-                <span className={`text-[11px] font-medium ${earned ? "text-slate-200" : "text-slate-600"}`}>{earned ? b.title : "Locked"}</span>
+              <div key={b.id} className="relative flex flex-col items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900 p-3 text-center">
+                {!earned && <Lock className="absolute right-1.5 top-1.5 h-2.5 w-2.5 text-slate-500" />}
+                <div className={earned ? "" : "opacity-40"}>
+                  <BranchBadge badge={b} size={52} locked={false} />
+                </div>
+                <span className={`text-[13px] font-semibold ${earned ? "text-white" : "text-slate-400"}`}>{b.title}</span>
+                <span className="text-[11px] text-slate-500/60">{condition}</span>
               </div>
             );
           })}

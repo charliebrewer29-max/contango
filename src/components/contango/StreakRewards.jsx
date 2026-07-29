@@ -33,7 +33,7 @@ export default function StreakRewards() {
                   ? "border-amber-400 bg-amber-500/10"
                   : isUnlocked
                   ? "border-slate-700 bg-slate-900 hover:border-slate-500"
-                  : "border-slate-800 bg-slate-900/50 opacity-60"
+                  : "border-slate-800 bg-slate-900/50"
               }`}
             >
               <div
@@ -41,11 +41,7 @@ export default function StreakRewards() {
                   isUnlocked ? r.ringClass : "ring-2 ring-slate-700"
                 }`}
               >
-                {isUnlocked ? (
-                  <span className="text-lg leading-none">{r.glyph}</span>
-                ) : (
-                  <Lock className="h-4 w-4 text-slate-600" />
-                )}
+                <span className={`text-lg leading-none ${isUnlocked ? "" : "opacity-30"}`}>{r.glyph}</span>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-semibold text-slate-100">{r.name}</div>
@@ -54,6 +50,7 @@ export default function StreakRewards() {
                 </div>
               </div>
               {isEquipped && <Check className="absolute right-2 top-2 h-4 w-4 text-amber-400" />}
+              {!isUnlocked && <Lock className="absolute right-2 top-2 h-3.5 w-3.5 text-slate-600" />}
             </button>
           );
         })}
