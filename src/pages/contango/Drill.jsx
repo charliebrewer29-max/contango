@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ChevronRight, Check, X, Play, MessageCircle, Bot, Crown, ShieldCheck } from "lucide-react";
+import { Check, X, Play, MessageCircle, Bot, Crown, ShieldCheck } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import OutOfHearts from "@/components/contango/OutOfHearts";
 import CandleChart from "@/components/contango/CandleChart";

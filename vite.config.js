@@ -15,5 +15,19 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
-  ]
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (/[\\/]node_modules[\\/]react-router-dom[\\/]/.test(id)) return "vendor-react";
+          if (/[\\/]node_modules[\\/](react|react-dom)[\\/]/.test(id)) return "vendor-react";
+          if (/[\\/]node_modules[\\/]recharts[\\/]/.test(id)) return "vendor-charts";
+          if (/[\\/]node_modules[\\/]@radix-ui[\\/]/.test(id)) return "vendor-ui";
+          if (/[\\/]node_modules[\\/](framer-motion|canvas-confetti)[\\/]/.test(id)) return "vendor-motion";
+        },
+      },
+    },
+  },
 });

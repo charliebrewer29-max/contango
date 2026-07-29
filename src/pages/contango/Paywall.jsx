@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Check, Crown, X, Sparkles, BookOpen, LineChart, Waves, CalendarClock, BarChart3, Repeat } from "lucide-react";
+import { Crown, X, Sparkles, BookOpen, LineChart, Waves, CalendarClock, BarChart3, Repeat } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { COACH_NAME } from "@/lib/contangoTheme";
 import { TRIAL_DAYS, isPremium, trialDaysLeft, restorePurchases } from "@/lib/subscription";

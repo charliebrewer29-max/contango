@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Check, X, ChevronRight, ChevronLeft, Brain, ArrowRight, BookOpen, BarChart3, Move, Eye, Heart, Target, Sparkles, Crown } from "lucide-react";
+import { Check, X, ChevronRight, ChevronLeft, Brain, BookOpen, BarChart3, Move, Eye, Heart, Target, Sparkles, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import OutOfHearts from "@/components/contango/OutOfHearts";
 import FeedbackFlash from "@/components/contango/FeedbackFlash";

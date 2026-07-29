@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Repeat, Clock, Sparkles, Check, X, CalendarClock, Target, Crown } from "lucide-react";
+import { Repeat, Clock, Sparkles, Check, CalendarClock, Target, Crown } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import PracticeReview from "@/components/contango/practice/PracticeReview";
 import { useContango } from "@/contexts/ContangoContext";
 import { buildPracticeCatalog, isDue, nextDueMs } from "@/lib/spacedRepetition";
 import { weakConcepts } from "@/lib/performance";
-import { isPremium, restorePurchases } from "@/lib/subscription";
+import { restorePurchases } from "@/lib/subscription";
 import { practiceStatus, FREE_PRACTICE_DAILY } from "@/lib/practiceAllowance";
 import { serverToday } from "@/lib/gamification";
 import { getServerOffset } from "@/lib/serverClock";

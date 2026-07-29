@@ -7,24 +7,25 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider } from '@/lib/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
 import { ContangoProvider } from '@/contexts/ContangoContext';
-import Onboarding from '@/pages/contango/Onboarding';
-import Dashboard from '@/pages/contango/Dashboard';
-import Lesson from '@/pages/contango/Lesson';
-import BranchDetail from '@/pages/contango/BranchDetail';
-import Drill from '@/pages/contango/Drill';
-import Coach from '@/pages/contango/Coach';
-import Leaderboard from '@/pages/contango/Leaderboard';
-import Profile from '@/pages/contango/Profile';
-import Paywall from '@/pages/contango/Paywall';
-import DrillCoach from '@/pages/contango/DrillCoach';
-import OnboardingGuide from '@/pages/contango/OnboardingGuide';
-import Practice from '@/pages/contango/Practice';
-import Insights from '@/pages/contango/Insights';
-import Journal from '@/pages/contango/Journal';
-import Legal from '@/pages/contango/Legal';
-import Discipline from '@/pages/contango/Discipline';
-import Rewards from '@/pages/contango/Rewards';
-import SettingsPage from '@/pages/contango/Settings';
+import { lazy, Suspense } from "react";
+import Onboarding from "@/pages/contango/Onboarding";
+import Dashboard from "@/pages/contango/Dashboard";
+import Lesson from "@/pages/contango/Lesson";
+import Drill from "@/pages/contango/Drill";
+import Coach from "@/pages/contango/Coach";
+import DrillCoach from "@/pages/contango/DrillCoach";
+import Profile from "@/pages/contango/Profile";
+const BranchDetail = lazy(() => import("@/pages/contango/BranchDetail"));
+const Leaderboard = lazy(() => import("@/pages/contango/Leaderboard"));
+const Paywall = lazy(() => import("@/pages/contango/Paywall"));
+const OnboardingGuide = lazy(() => import("@/pages/contango/OnboardingGuide"));
+const Practice = lazy(() => import("@/pages/contango/Practice"));
+const Insights = lazy(() => import("@/pages/contango/Insights"));
+const Journal = lazy(() => import("@/pages/contango/Journal"));
+const Legal = lazy(() => import("@/pages/contango/Legal"));
+const Discipline = lazy(() => import("@/pages/contango/Discipline"));
+const Rewards = lazy(() => import("@/pages/contango/Rewards"));
+const SettingsPage = lazy(() => import("@/pages/contango/Settings"));
 
 // Route area with subtle slide transitions keyed by path. AnimatePresence
 // mode="wait" lets the outgoing page exit before the next one slides in.
@@ -39,6 +40,7 @@ function AnimatedRoutes() {
         exit={{ opacity: 0, x: -24 }}
         transition={{ duration: 0.22, ease: "easeOut" }}
       >
+        <Suspense fallback={<div className="cg-app-bg min-h-screen" />}>
         <Routes location={location}>
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/" element={<Dashboard />} />
@@ -60,6 +62,7 @@ function AnimatedRoutes() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
+        </Suspense>
       </motion.div>
     </AnimatePresence>
   );

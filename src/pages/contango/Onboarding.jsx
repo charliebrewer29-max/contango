@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Zap, ShieldCheck, Check } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
-import { GOAL_OPTIONS, COACH_NAME } from "@/lib/contangoTheme";
+import { GOAL_OPTIONS } from "@/lib/contangoTheme";
 import ContangoLogo from "@/components/contango/ContangoLogo";
 
 // Onboarding: welcome → disclaimer → goal selection ("why") → daily goal → first lesson prompt.

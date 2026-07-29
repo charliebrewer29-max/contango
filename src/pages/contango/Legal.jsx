@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronLeft, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { COACH_NAME } from "@/lib/contangoTheme";
 
