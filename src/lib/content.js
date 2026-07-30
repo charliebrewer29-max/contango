@@ -182,7 +182,7 @@ export const BRANCHES = [
         questions: [
           { q: "What does timeframe selection change?", options: ["Nothing", "What you're looking at entirely", "Only the colors", "Your account balance"], correct: 1 },
           { q: "A 1-minute chart is best for seeing:", options: ["The multi-month trend", "Intraday day-trading setups", "Annual returns", "Dividends"], correct: 1 },
-          { q: "Contango's drills mirror which real-platform feature?", options: ["Order entry", "Bar Replay", "Alerts", "Watchlists"], correct: 1 },
+          { q: "You're hunting a day-trading entry but reading a daily chart. The mismatch is:", options: ["No problem, all timeframes agree", "You're asking a weeks-long question to answer a minutes-long decision", "Daily charts show more ticks", "Daily charts update faster"], correct: 1 },
           { q: "On a platform, where do you start when you open a new chart?", options: ["Symbol search and timeframe", "Placing an order", "Reading the news", "Setting a daily loss limit"], correct: 0 },
         ],
       },
@@ -323,7 +323,7 @@ export const BRANCHES = [
         title: "Trailing the Stop",
         info: "Trailing is what makes trend-following pay - it's how you turn a small winner into a big one without giving it all back. The mechanics: once the trend resumes with a fresh higher low (long), move the stop up under that low. Repeat as each new higher low prints. Options: a moving-average trail (stop just under the 20 EMA), a swing-low trail, or an ATR multiple trail (e.g., 2x ATR). The rule: never move the stop against the trade - only in the direction of the trend. Move to break-even only after a real follow-through, not at the first tick of green. Let the winner work.",
         questions: [
-          { q: "Trailing under successive higher lows (long) lets you:", options: ["Add aggressively", "Let the winner run while protecting gains", "Remove the stop", "Chase the top"], correct: 1 },
+          { q: "The one rule a trailing stop must never break:", options: ["It must move every bar", "It never moves against the trade", "It must sit at break-even", "It must use ATR"], correct: 1 },
           { q: "An ATR trailing stop uses:", options: ["A fixed dollar amount", "A multiple of average true range", "The day high", "Tick value"], correct: 1 },
           { q: "You should only move a trailing stop:", options: ["Against the trade", "In the direction of the trend", "At the open", "Never"], correct: 1 },
           { q: "Moving to break-even too early (first green tick) often:", options: ["Locks in a big win", "Shakes you out before the real move", "Guarantees profit", "Is required"], correct: 1 },
@@ -393,6 +393,73 @@ export const BRANCHES = [
         { q: "Where does the stop go?", options: ["At VWAP", "Beyond the band", "At the entry", "No stop needed"], correct: 1 },
       ],
     },
+    units: [
+      {
+        id: "mr-range-vs-trend",
+        type: "concept",
+        title: "Is This Actually a Range?",
+        info: "Every mean-reversion loss starts the same way: fading a market that was never ranging. So the regime question comes before the setup. A real range has a ceiling and a floor that price has tested and been rejected from at least twice each, bars that overlap heavily instead of stepping in one direction, and a flat moving average rather than a sloped one. ADX below about 20 supports it. The honest test: if you can draw a horizontal line across the highs and another across the lows and price keeps respecting both, you have a range. If either line keeps getting broken and price keeps going, you have a trend wearing a range costume, and fading it is how accounts die. When you can't tell, you're in the ambiguous middle - and the correct trade there is no trade.",
+        questions: [
+          { q: "Before taking any mean-reversion setup, the first question is:", options: ["Where's my entry?", "Is this market actually ranging?", "How many contracts?", "What's the tick value?"], correct: 1 },
+          { q: "A genuine range shows:", options: ["Bars stepping steadily in one direction", "Heavily overlapping bars between a tested ceiling and floor", "A steeply sloped moving average", "Expanding volatility"], correct: 1 },
+          { q: "ADX below roughly 20 supports:", options: ["A strong trend", "A ranging, non-directional market", "An imminent breakout", "Nothing at all"], correct: 1 },
+          { q: "How many rejections make a range boundary worth trading?", options: ["A single touch is enough", "At least two tested rejections at each edge", "Ten or more", "Boundaries don't need testing"], correct: 1 },
+          { q: "You genuinely cannot tell whether it's a range or a trend. The correct action is:", options: ["Fade it with a wider stop", "Take a smaller position", "No trade", "Buy and hold through it"], correct: 2 },
+        ],
+      },
+      {
+        id: "mr-vwap",
+        type: "concept",
+        title: "VWAP as Fair Value",
+        info: "VWAP is the volume-weighted average price: every trade of the session weighted by its size, so it tells you the price at which most of the day's business actually happened. That's why institutions use it as a fair-value benchmark, and why intraday futures traders treat it as a magnet - price that stretches far from VWAP tends to get pulled back toward it while the session stays balanced. Two things matter mechanically. VWAP resets each session, so it means nothing in the first few minutes when the sample is tiny. And standard-deviation bands drawn around it give you a measurable definition of 'stretched' instead of an eyeballed one. The honest limit: on a strongly trending day VWAP stops being a magnet and becomes a floor the market walks away from. Fair value is only fair while the session is balanced.",
+        questions: [
+          { q: "VWAP is:", options: ["The midpoint of the day's range", "Every trade weighted by its volume", "A 20-period moving average", "Yesterday's settlement"], correct: 1 },
+          { q: "VWAP is least meaningful:", options: ["In the middle of the session", "In the first few minutes after the reset", "On a balanced day", "Near the close"], correct: 1 },
+          { q: "Standard-deviation bands around VWAP give you:", options: ["A guaranteed reversal point", "A measurable definition of 'stretched' instead of a guess", "Your position size", "The tick value"], correct: 1 },
+          { q: "On a strongly trending day, VWAP tends to act as:", options: ["A reliable magnet", "A level the market walks away from", "The exact high of the day", "A stop-loss level"], correct: 1 },
+          { q: "Why do institutions care about VWAP?", options: ["It predicts direction", "It benchmarks whether their fills beat the day's average price", "It sets margin", "It determines the tick size"], correct: 1 },
+        ],
+      },
+      {
+        id: "mr-band-rejection",
+        type: "concept",
+        title: "Waiting for the Rejection",
+        info: "A tag of the band is not a signal. Price touching the upper band tells you the market is stretched; it tells you nothing about whether it has stopped going. The confirmation you actually wait for is a rejection: a wick that pokes beyond the band and a close back inside it. That close is the market telling you the stretch was refused. Enter without it and you are guessing that a moving market will stop, which is a bet on your opinion rather than on observed behaviour. Practically: mark the band, let the bar close, and act on the close - not the poke. The cost is that you give up a few ticks of the best entries. The benefit is that you stop taking the trades where price tagged the band and simply kept going, which is where the large losses in this strategy live.",
+        questions: [
+          { q: "Price tags the upper band. That alone tells you:", options: ["A reversal is starting", "The market is stretched, nothing more", "The range has broken", "It's time to add size"], correct: 1 },
+          { q: "The confirmation for a mean-reversion entry is:", options: ["Any touch of the band", "A wick beyond the band and a close back inside it", "Two green candles", "A volume spike"], correct: 1 },
+          { q: "Acting on the poke instead of the close means you are:", options: ["Getting a better fill with no downside", "Betting your opinion that a moving market will stop", "Following the plan", "Reducing risk"], correct: 1 },
+          { q: "What do you give up by waiting for the close?", options: ["Nothing at all", "A few ticks on the best entries", "The whole edge", "Your stop placement"], correct: 1 },
+          { q: "Where do the largest losses in this strategy come from?", options: ["Waiting too long to enter", "Trades where price tagged the band and kept going", "Taking profit at VWAP", "Using micro contracts"], correct: 1 },
+        ],
+      },
+      {
+        id: "mr-capped-math",
+        type: "concept",
+        title: "Capped Profit Changes the Math",
+        info: "Mean reversion is structurally the opposite of trend following. Your profit is capped, because the target is VWAP or the opposite band and there is nothing beyond it - the trade is over when price reaches fair value. Your loss is capped too, at a stop beyond the band. That symmetry has a consequence people miss: because you cannot have the occasional huge winner that pays for a string of losses, your win rate has to carry the strategy. A trend follower can win three times in ten and profit. A mean-reversion trader taking roughly one-to-one risk-to-reward cannot - they need to be right well over half the time. Concretely on ES at $12.50 a tick: a 12-tick stop risks $150 and a 12-tick target makes $150, so at a 50% win rate before costs you break even and after commissions you lose. Either the setup earns a higher win rate or the target has to reach further than the stop. There is no third option.",
+        questions: [
+          { q: "Profit in mean reversion is:", options: ["Open-ended, you trail the stop", "Capped at VWAP or the opposite band", "Unlimited with no stop", "Set by the tick value"], correct: 1 },
+          { q: "Because profit is capped, the strategy depends on:", options: ["Occasional huge winners", "A high win rate", "Wide stops", "Overnight holds"], correct: 1 },
+          { q: "On ES ($12.50/tick), a 12-tick stop and a 12-tick target means:", options: ["$150 risked to make $150", "$150 risked to make $600", "$12.50 risked to make $150", "$300 risked to make $150"], correct: 0 },
+          { q: "At one-to-one risk-to-reward and a 50% win rate, after commissions you:", options: ["Profit slightly", "Break even exactly", "Lose money", "Cannot tell"], correct: 2 },
+          { q: "A trend follower can profit winning 3 of 10 because:", options: ["Their stops are tighter", "Their winners are open-ended and pay for the losses", "They trade more often", "They use micros"], correct: 1 },
+        ],
+      },
+      {
+        id: "mr-range-break",
+        type: "concept",
+        title: "When the Range Breaks",
+        info: "The failure mode is specific and worth naming precisely: the range becomes a trend while you are positioned against it. Ranges do not end politely. Volatility compresses, then expands, and the move out of a range is often the fastest move of the day - which means you are short at the top of a range that has just become the bottom of a trend. Two things make this fatal rather than merely costly. The first is that 'overbought' has no ceiling; an indicator reading extreme is not a limit, and price can stay extreme for hours. The second is averaging down, which feels rational in a range - you liked it at the band, you like it more now - and is precisely the behaviour that converts a capped loss into an uncapped one. The discipline is unglamorous: the stop beyond the band is the whole risk control, it does not move, and a range break is information, not an invitation to add.",
+        questions: [
+          { q: "The failure mode of mean reversion is:", options: ["A slow fill", "The range becoming a trend while you're positioned against it", "Low commissions", "A tight spread"], correct: 1 },
+          { q: "Moves out of a range are often:", options: ["Slow and easy to exit", "The fastest move of the session", "Always false", "Limited to a few ticks"], correct: 1 },
+          { q: "An indicator reading 'extremely overbought' means:", options: ["Price cannot go higher", "Price is stretched and can stay stretched for hours", "A reversal is guaranteed", "The range is confirmed"], correct: 1 },
+          { q: "Averaging down on a losing mean-reversion trade:", options: ["Improves your average entry with no added risk", "Converts a capped loss into an uncapped one", "Is required by the strategy", "Reduces margin"], correct: 1 },
+          { q: "When the range breaks against you, the correct action is:", options: ["Add at a better price", "Widen the stop and wait", "Take the stop - it's information, not an invitation", "Flip to the other side with double size"], correct: 2 },
+        ],
+      },
+    ],
     buildDrill: (instrumentKey = "ES", difficulty = "medium") => {
       const { bars, lowIdx, highIdx } = generateRangeScenario(instrumentKey, 11, difficulty);
       return {
@@ -453,6 +520,11 @@ const TAKEAWAYS = {
   "paper-replay": "Paper and replay teach the buttons and the reading; only real stakes reveal your execution discipline.",
   "trend-intro": "Trend following enters on a confirmed breakout and trails the stop; it fails in chop when breakouts reverse.",
   "mr-intro": "Mean reversion fades band extremes back to VWAP; it fails when the range breaks and 'overbought' keeps going.",
+  "mr-range-vs-trend": "Check the regime before the setup - fading a trend that looks like a range is how mean-reversion accounts die.",
+  "mr-vwap": "VWAP is where the day's business actually happened; it's a magnet while the session is balanced and a floor when it isn't.",
+  "mr-band-rejection": "A tag of the band is stretch, not a signal - wait for the close back inside before you act.",
+  "mr-capped-math": "Capped profit means the win rate has to carry the strategy; one-to-one at 50% loses after costs.",
+  "mr-range-break": "The stop beyond the band is the whole risk control - a range break is information, never an invitation to add.",
   "trader-mindset": "Your edge isn't the chart - it's the consistency between what the market does and what you do about it.",
   fomo: "A move you didn't trade cost you nothing; a move you chased can cost everything - wait for your trigger.",
   "loss-aversion": "Exits are the plan's, not your feelings': target hit take profit, stop hit take the loss.",
