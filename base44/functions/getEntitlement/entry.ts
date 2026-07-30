@@ -14,6 +14,7 @@ export default async function(req) {
     const { tier, trial_ends, daysLeft } = await resolveEntitlement(base44, user.id);
     return Response.json({ tier, trial_ends, daysLeft });
   } catch (error) {
-    return Response.json({ error: String((error && error.message) || error) }, { status: 500 });
+    console.error('[getEntitlement]', error);
+    return Response.json({ error: 'Could not resolve entitlement' }, { status: 500 });
   }
 }

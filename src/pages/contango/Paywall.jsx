@@ -101,7 +101,7 @@ export default function Paywall() {
                   {plan === "monthly" && <Check className="absolute right-2 top-2 h-4 w-4 text-amber-400" />}
                   <div className="font-display text-2xl font-bold text-slate-100">${weeklyFromMonthly}</div>
                   <div className="text-xs text-slate-400">per week</div>
-                  <div className="mt-1 text-[11px] text-slate-500">$14.99 billed monthly</div>
+                  <div className="mt-1 text-[11px] text-slate-500">{`$${MONTHLY_PRICE.toFixed(2)} billed monthly`}</div>
                 </button>
                 <button
                   onClick={() => setPlan("yearly")}
@@ -114,7 +114,7 @@ export default function Paywall() {
                   {plan === "yearly" && <Check className="absolute right-2 top-2 h-4 w-4 text-amber-400" />}
                   <div className="font-display text-2xl font-bold text-amber-400">${weeklyFromAnnual}</div>
                   <div className="text-xs text-slate-400">per week</div>
-                  <div className="mt-1 text-[11px] text-slate-500">$79.99 billed annually</div>
+                  <div className="mt-1 text-[11px] text-slate-500">{`$${ANNUAL_PRICE.toFixed(2)} billed annually`}</div>
                 </button>
               </div>
               <p className="mt-3 text-center text-xs text-slate-500">Annual works out to ${weeklyFromAnnual} a week. Less than a coffee, for the habit that separates the 3%.</p>

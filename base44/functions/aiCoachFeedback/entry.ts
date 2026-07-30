@@ -12,8 +12,19 @@ export { selfTest } from './guardrail.ts';
 // to link a row to its owner - user_id is the owner handle).
 
 const CONSENT_VERSIONS = { session: 'v1-session', history: 'v2-history' };
-const FREE_DAILY_LIMIT = 3;
-const FREE_HOURLY_LIMIT = 8;
+
+// Per-tier LLM call caps. Every tier that appears here is enforced; a tier with
+// no entry is uncapped.
+//
+// Trial MUST be capped. It previously fell under a single `if (!premium)` guard
+// alongside premium, which meant a 21-day trial granted unlimited paid model
+// calls to someone who had paid nothing. The trial ceiling is deliberately
+// generous (a genuine evaluator will not come close) but finite.
+const TIER_LIMITS = {
+  free: { daily: 3, hourly: 8 },
+  trial: { daily: 30, hourly: 15 },
+  // premium: intentionally absent = uncapped
+};
 const MAX_OUTPUT_CHARS = 1200;
 
 function utcDay() {
@@ -109,27 +120,52 @@ export default async function (req) {
       return Response.json({ status: 'premium_required', flow });
     }
 
-    if (!premium) {
+    const limits = TIER_LIMITS[tier];
+    if (limits) {
       const day = utcDay();
       const hour = utcHourBucket();
       const rows = await base44.asServiceRole.entities.AiUsage.filter({ user_id: user.id });
-      let usage = rows && rows.length ? rows[0] : null;
-      // Day rollover resets the daily counter; hour rollover resets the hourly one.
-      const dayCount = usage && usage.day === day ? (usage.count || 0) : 0;
-      const hourCount = usage && usage.hour_bucket === hour ? (usage.hour_count || 0) : 0;
-      if (dayCount >= FREE_DAILY_LIMIT) {
-        return Response.json({ status: 'rate_limited', limit: FREE_DAILY_LIMIT, window: 'daily', flow });
+      const all = Array.isArray(rows) ? rows : [];
+
+      // AiUsage has no uniqueness constraint on user_id, so duplicate rows are
+      // possible. Reading rows[0] would count one of them and silently drop the
+      // cap, so SUM across every row for the current window instead.
+      let dayCount = 0;
+      let hourCount = 0;
+      for (const r of all) {
+        if (r && r.day === day) dayCount += r.count || 0;
+        if (r && r.hour_bucket === hour) hourCount += r.hour_count || 0;
       }
-      if (hourCount >= FREE_HOURLY_LIMIT) {
-        return Response.json({ status: 'rate_limited', limit: FREE_HOURLY_LIMIT, window: 'hourly', flow });
+      if (all.length > 1) {
+        console.warn('[aiCoachFeedback] duplicate AiUsage rows for user', user.id, 'count', all.length);
       }
-      if (!usage) {
-        usage = await base44.asServiceRole.entities.AiUsage.create({
+
+      if (dayCount >= limits.daily) {
+        return Response.json({ status: 'rate_limited', limit: limits.daily, window: 'daily', tier, flow });
+      }
+      if (hourCount >= limits.hourly) {
+        return Response.json({ status: 'rate_limited', limit: limits.hourly, window: 'hourly', tier, flow });
+      }
+
+      // Increment on the oldest row so concurrent callers converge on the same
+      // one. This is still read-then-write and therefore racy: two simultaneous
+      // calls can both pass the check above. The overrun is bounded by
+      // concurrency (not unbounded), and the window rolls over, so this is
+      // accepted rather than solved. A true fix needs an atomic increment,
+      // which the entity API does not expose.
+      const target = all.length
+        ? [...all].sort((a, b) =>
+            (Date.parse(a?.created_date || '') || 0) - (Date.parse(b?.created_date || '') || 0))[0]
+        : null;
+      if (!target) {
+        await base44.asServiceRole.entities.AiUsage.create({
           user_id: user.id, day, count: 1, hour_bucket: hour, hour_count: 1,
         });
       } else {
-        await base44.asServiceRole.entities.AiUsage.update(usage.id, {
-          day, count: dayCount + 1, hour_bucket: hour, hour_count: hourCount + 1,
+        const ownDay = target.day === day ? (target.count || 0) : 0;
+        const ownHour = target.hour_bucket === hour ? (target.hour_count || 0) : 0;
+        await base44.asServiceRole.entities.AiUsage.update(target.id, {
+          day, count: ownDay + 1, hour_bucket: hour, hour_count: ownHour + 1,
         });
       }
     }
@@ -216,6 +252,9 @@ export default async function (req) {
     }
     return Response.json({ status: 'ok', feedback: reply, guardrailed: false });
   } catch (error) {
-    return Response.json({ status: 'error', error: String((error && error.message) || error) }, { status: 500 });
+    // Log server-side; return a generic message. Raw error strings can leak
+    // internal detail (entity names, stack fragments) to the client.
+    console.error('[aiCoachFeedback]', error);
+    return Response.json({ status: 'error', error: 'Coach unavailable' }, { status: 500 });
   }
 }

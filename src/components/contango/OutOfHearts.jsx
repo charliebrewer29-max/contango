@@ -9,12 +9,23 @@ import { getServerOffset } from "@/lib/serverClock";
 // is practice - never a paywall, never a buy-hearts option, never a Premium
 // upsell. Hearts are never sold.
 export default function OutOfHearts({ variant = "depleted" }) {
+  // The countdown MUST NOT fall back to device time. resetHeartsForToday only
+  // runs when the server offset is known (see withDailyReset in
+  // ContangoContext, which returns data untouched when the offset is null).
+  // Rendering a device-clock countdown in that state promises a midnight reset
+  // that will never happen, so the user waits, nothing refills, and the app
+  // looks broken. When the clock is unverified we say so instead of guessing.
   const offset = getServerOffset();
-  const now = new Date(Date.now() + (offset || 0));
-  const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-  const ms = Math.max(0, nextMidnight - now);
-  const h = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
+  const clockVerified = offset !== null && offset !== undefined;
+
+  let countdown = null;
+  if (clockVerified) {
+    const now = new Date(Date.now() + offset);
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+    const ms = Math.max(0, nextMidnight - now);
+    countdown = `${Math.floor(ms / 3600000)}h ${Math.floor((ms % 3600000) / 60000)}m`;
+  }
+
   const headline = variant === "last" ? "That's your last heart" : "You've hit your daily loss limit";
 
   return (
@@ -24,7 +35,13 @@ export default function OutOfHearts({ variant = "depleted" }) {
       <p className="mx-auto mt-3 max-w-[340px] text-sm leading-relaxed text-slate-400">
         Five wrong calls. In a real account that's the day, and the disciplined move is to stop trading live and go back to sim. Hearts reset at midnight.
       </p>
-      <div className="mt-4 font-mono text-xs text-slate-500">Resets in {h}h {m}m</div>
+      {clockVerified ? (
+        <div className="mt-4 font-mono text-xs text-slate-500">Resets in {countdown}</div>
+      ) : (
+        <div className="mx-auto mt-4 max-w-[320px] text-xs leading-relaxed text-amber-400/80">
+          We can't confirm the time right now, so the reset is on hold. Reconnect and reopen the app to pick it up. Practice still earns hearts back.
+        </div>
+      )}
       <Link
         to="/practice"
         className="mt-6 flex w-full items-center justify-center rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300"

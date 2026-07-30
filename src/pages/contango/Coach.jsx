@@ -107,8 +107,30 @@ export default function Coach() {
         setMessages(m => [...m, { role: "coach", text: "Before we continue, I need your OK to send your drill data to the AI coach. Review the prompt below." }]);
         return;
       }
+      // rate_limited and premium_required carry no `feedback`. Falling through
+      // rendered an empty coach bubble AND called recordCoachCall(), charging a
+      // local call for a reply that never arrived.
+      if (data.status === "rate_limited") {
+        const isDaily = data.window === "daily";
+        setMessages(m => [...m, {
+          role: "coach",
+          text: isDaily
+            ? `That's your ${data.limit} coach questions for today. I'll be here tomorrow, and your drills keep counting in the meantime.`
+            : `We've covered a lot quickly. Give it an hour and ask me again.`,
+        }]);
+        return;
+      }
+      if (data.status === "premium_required") {
+        setMessages(m => [...m, {
+          role: "coach",
+          text: "Remembering our past conversations is a Premium feature. I can still help with this session right now.",
+        }]);
+        setShowTrialNudge(true);
+        return;
+      }
       if (data.status === "error") throw new Error(data.error || "Coach error");
       const reply = data.feedback;
+      if (!reply) throw new Error("Empty coach reply");
       setMessages(m => [...m, { role: "coach", text: reply }]);
       recordCoachCall();
       if (isPremium(entitlement)) pushCoachMemory({ q: userText, a: reply });

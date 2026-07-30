@@ -113,7 +113,7 @@ export default function Settings() {
 
       {/* privacy */}
       <Section title="Privacy">
-        <Toggle icon={<Bot className="h-4 w-4 text-sky-400" />} label="AI coach feedback" desc={aiOn ? "Allowed - sends drill data to Anthropic" : "Off - AI coach is disabled"} on={aiOn} onClick={toggleConsent} />
+        <Toggle icon={<Bot className="h-4 w-4 text-sky-400" />} label="AI coach feedback" desc={aiOn ? "Allowed - sends drill data to Anthropic" : "Off - AI coach is disabled"} on={aiOn} onClick={toggleConsent} disabled={aiBusy} />
         <Link to="/legal" className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-600">
           <div className="flex-1">
             <div className="text-sm font-medium text-slate-100">Privacy Policy & Terms</div>
