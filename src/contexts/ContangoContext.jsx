@@ -261,11 +261,21 @@ export function ContangoProvider({ children }) {
 
   // Starts the server-backed trial (startTrial backend function, once per
   // account), then re-resolves the entitlement so gates open immediately.
+  // Returns { status, entitlement }. The status MUST be surfaced: the server
+  // answers "already_used" with a normal 200, not an error, so a caller that
+  // only try/catches will treat a refused trial as a success and navigate away
+  // leaving the user on free tier with no explanation.
   const startTrial = useCallback(async () => {
-    await beginTrial();
+    let status = "error";
+    try {
+      const res = await beginTrial();
+      status = res?.status || "error";
+    } catch (_e) {
+      status = "error";
+    }
     const ent = await fetchEntitlement().catch(() => null);
     setEntitlement(ent);
-    return ent;
+    return { status, entitlement: ent };
   }, []);
 
   // goPremium was removed: Premium access is granted only by the server

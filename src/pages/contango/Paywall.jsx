@@ -23,16 +23,26 @@ export default function Paywall() {
   const { entitlement, startTrial } = useContango();
   const [plan, setPlan] = useState(null); // "monthly" | "yearly" — selection only
   const [starting, setStarting] = useState(false);
+  const [trialNotice, setTrialNotice] = useState("");
 
   // The trial is created on the server (once per account); only after it
   // resolves do we navigate away, so a failed/already-used trial stays here.
   async function beginTrial() {
     setStarting(true);
+    setTrialNotice("");
     try {
-      await startTrial();
-      navigate("/");
-    } catch (_e) {
-      // trial failed (e.g. already used) - stay on the paywall
+      const { status, entitlement: ent } = await startTrial();
+      if (status === "ok" || ent?.tier === "trial" || ent?.tier === "premium") {
+        navigate("/");
+        return;
+      }
+      if (status === "already_used") {
+        // One trial per account, enforced server-side. Say so plainly instead
+        // of bouncing the user to the dashboard still on free tier.
+        setTrialNotice("This account has already used its free trial. Subscribe below to unlock everything again.");
+        return;
+      }
+      setTrialNotice("We couldn't start your trial just now. Check your connection and try again.");
     } finally {
       setStarting(false);
     }
@@ -122,6 +132,11 @@ export default function Paywall() {
               <button onClick={beginTrial} disabled={starting} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-4 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-60">
                 {starting ? <><Loader2 className="h-5 w-5 animate-spin" /> Starting…</> : `Start ${TRIAL_DAYS}-day free trial`}
               </button>
+              {trialNotice && (
+                <p role="status" aria-live="polite" className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-xs leading-relaxed text-amber-300">
+                  {trialNotice}
+                </p>
+              )}
               <p className="mt-2 text-center text-xs text-slate-500">Subscriptions are billed by Apple — complete your purchase in the iOS app.</p>
               <div className="mt-3 flex items-center justify-center gap-4 text-[12px] text-slate-600">
                 <button onClick={restorePurchases} className="hover:text-slate-300">Restore Purchases</button>
