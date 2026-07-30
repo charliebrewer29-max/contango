@@ -2,10 +2,10 @@ import { describe, it, expect } from "vitest";
 import {
   isPremium, isTrial, trialDaysLeft, canAccessBranch, canAccessInstrument, canAccessLessonId,
   coachCallsRemaining, canRepairStreak,
-  strategyBranches, PREMIUM_INSTRUMENT_LESSON_IDS, PREMIUM_INSTRUMENTS,
+  strategyBranches, PREMIUM_INSTRUMENT_LESSON_IDS, PREMIUM_INSTRUMENTS, TRIAL_COACH_DAILY,
 } from "../subscription";
 import { MAX_HEARTS, spendHeart, refundHeart, resetHeartsForToday, applyProgress } from "../gamification";
-import { effectiveTier } from "../../../base44/shared/entitlement";
+import { effectiveTier, pickEntitlementRow } from "../../../base44/shared/entitlement";
 
 describe("isPremium", () => {
   it("true for premium and trial tiers, false for free / null / undefined", () => {
@@ -105,7 +105,9 @@ describe("coach calls & streak repair need both progress and entitlement", () =>
   it("coachCallsRemaining is unlimited for premium, metered for free", () => {
     const noCalls = { coachCalls: { date: "unused", count: 0 } };
     expect(coachCallsRemaining(noCalls, { tier: "premium" })).toBe(Infinity);
-    expect(coachCallsRemaining(noCalls, { tier: "trial" })).toBe(Infinity);
+    // Trial is capped (mirrors TIER_LIMITS on the server). Previously Infinity,
+    // which let a 21-day trial make unlimited paid model calls.
+    expect(coachCallsRemaining(noCalls, { tier: "trial" })).toBe(TRIAL_COACH_DAILY);
     expect(coachCallsRemaining(noCalls, { tier: "free" })).toBe(3);
     expect(coachCallsRemaining(noCalls, null)).toBe(3);
   });
@@ -148,5 +150,59 @@ describe("hearts are tier-agnostic (product commitment)", () => {
       const r = applyProgress(fullProgress(tier, 3), { correct: 1, total: 1, completedType: "lesson" });
       expect(r.progress.hearts).toBe(3);
     }
+  });
+});
+// Duplicate Entitlement rows are possible (no uniqueness constraint on user_id,
+// and creation is read-then-write). The expensive failure is a paying customer
+// being served as free because a read picked the wrong row, so selection must
+// prefer the best EFFECTIVE tier rather than whatever the query returned first.
+describe("pickEntitlementRow", () => {
+  const FUTURE = new Date(Date.now() + 5 * 86400000).toISOString();
+  const PAST = new Date(Date.now() - 5 * 86400000).toISOString();
+
+  it("returns null for empty or invalid input", () => {
+    expect(pickEntitlementRow([])).toBe(null);
+    expect(pickEntitlementRow(null)).toBe(null);
+    expect(pickEntitlementRow(undefined)).toBe(null);
+  });
+
+  it("prefers premium over a stale free row, in either order", () => {
+    const free = { id: "a", tier: "free" };
+    const paid = { id: "b", tier: "premium" };
+    expect(pickEntitlementRow([free, paid]).id).toBe("b");
+    expect(pickEntitlementRow([paid, free]).id).toBe("b");
+  });
+
+  it("prefers an active trial over free", () => {
+    const free = { id: "a", tier: "free" };
+    const trial = { id: "b", tier: "trial", trial_ends: FUTURE };
+    expect(pickEntitlementRow([free, trial]).id).toBe("b");
+  });
+
+  it("does not let an EXPIRED trial outrank a genuine free row", () => {
+    // Both resolve to free, so the tie breaks on age, not on stored tier.
+    const expired = { id: "a", tier: "trial", trial_ends: PAST, created_date: "2026-02-01T00:00:00Z" };
+    const free = { id: "b", tier: "free", created_date: "2026-01-01T00:00:00Z" };
+    expect(pickEntitlementRow([expired, free]).id).toBe("b");
+  });
+
+  it("premium still wins over an active trial", () => {
+    const trial = { id: "a", tier: "trial", trial_ends: FUTURE };
+    const paid = { id: "b", tier: "premium" };
+    expect(pickEntitlementRow([trial, paid]).id).toBe("b");
+  });
+
+  it("is stable: same-tier duplicates always resolve to the oldest row", () => {
+    const rows = [
+      { id: "new", tier: "free", created_date: "2026-03-01T00:00:00Z" },
+      { id: "old", tier: "free", created_date: "2026-01-01T00:00:00Z" },
+    ];
+    expect(pickEntitlementRow(rows).id).toBe("old");
+    expect(pickEntitlementRow([...rows].reverse()).id).toBe("old");
+  });
+
+  it("tolerates rows with no timestamps", () => {
+    const rows = [{ id: "a", tier: "free" }, { id: "b", tier: "free" }];
+    expect(pickEntitlementRow(rows)).toBeTruthy();
   });
 });

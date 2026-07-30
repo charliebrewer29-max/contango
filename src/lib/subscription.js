@@ -9,6 +9,10 @@ import { todayStr, monthStr } from "./gamification";
 
 export const TRIAL_DAYS = 21;          // long trial: 17-32d window converts ~70% better
 export const FREE_COACH_DAILY = 3;     // free coach calls per day, session-only
+// Trial is capped too, mirroring TIER_LIMITS in base44/functions/aiCoachFeedback.
+// The server is authoritative; this exists so the UI does not promise unlimited
+// calls and then hit a wall. Keep the two in sync.
+export const TRIAL_COACH_DAILY = 30;
 export const FREE_STRATEGY_COUNT = 2;  // free learners get the first two strategy branches
 export const FREE_INSTRUMENTS = ["ES", "NQ"];
 export const PREMIUM_INSTRUMENTS = ["ES", "NQ", "CL", "GC"];
@@ -81,8 +85,9 @@ export function coachCallsToday(progress) {
 }
 
 export function coachCallsRemaining(progress, entitlement) {
-  if (isPremium(entitlement)) return Infinity;
-  return Math.max(0, FREE_COACH_DAILY - coachCallsToday(progress));
+  if (entitlement?.tier === "premium") return Infinity;
+  const cap = entitlement?.tier === "trial" ? TRIAL_COACH_DAILY : FREE_COACH_DAILY;
+  return Math.max(0, cap - coachCallsToday(progress));
 }
 
 // Streak repair is a monthly Premium perk. The streakRepairMonth counter lives

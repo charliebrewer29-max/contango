@@ -23,9 +23,14 @@ export function Section({ title, children }) {
   );
 }
 
-export function Toggle({ icon, label, desc, on, onClick }) {
+export function Toggle({ icon, label, desc, on, onClick, disabled = false }) {
   return (
-    <button onClick={onClick} className="flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 text-left">
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-busy={disabled || undefined}
+      className={`flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 text-left transition ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+    >
       <span className="text-slate-400">{icon}</span>
       <div className="flex-1">
         <div className="text-sm font-medium text-slate-200">{label}</div>

@@ -18,9 +18,38 @@ export function effectiveTier(row, now = Date.now()) {
   return tier;
 }
 
+// Duplicate rows are possible: there is no uniqueness constraint on user_id and
+// row creation is read-then-write, so two concurrent requests can both create
+// one. Taking rows[0] is then non-deterministic, and the failure mode is
+// expensive: the RevenueCat webhook updates one row while a read picks the
+// other, serving a PAYING customer as free.
+//
+// So never take rows[0]. Pick the highest EFFECTIVE tier (an expired trial
+// resolves to free, so it cannot outrank a genuine free row), breaking ties on
+// the oldest row for stability across calls.
+const TIER_RANK = { premium: 3, trial: 2, free: 1 };
+
+export function pickEntitlementRow(rows, now = Date.now()) {
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+  const sorted = [...rows].sort((a, b) => {
+    const ra = TIER_RANK[effectiveTier(a, now)] || 0;
+    const rb = TIER_RANK[effectiveTier(b, now)] || 0;
+    if (rb !== ra) return rb - ra;
+    const ta = Date.parse(a?.created_date || a?.updated_at || '') || 0;
+    const tb = Date.parse(b?.created_date || b?.updated_at || '') || 0;
+    return ta - tb;
+  });
+  return sorted[0];
+}
+
 export async function resolveEntitlement(base44, userId) {
   const rows = await base44.asServiceRole.entities.Entitlement.filter({ user_id: userId });
-  let row = rows && rows.length ? rows[0] : null;
+  if (rows && rows.length > 1) {
+    // Surfaces the condition without failing the request. Duplicates need
+    // manual reconciliation; serving the best row is the safe interim.
+    console.warn('[entitlement] duplicate rows for user', userId, 'count', rows.length);
+  }
+  let row = pickEntitlementRow(rows);
   if (!row) {
     row = await base44.asServiceRole.entities.Entitlement.create({
       user_id: userId,

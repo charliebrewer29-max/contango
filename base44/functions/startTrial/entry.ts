@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { pickEntitlementRow } from '../../shared/entitlement.ts';
 
 // startTrial - starts the 21-day trial. Once per account, enforced server-side:
 // if trial_started is already set, return "already_used" and do not restart.
@@ -12,7 +13,14 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const rows = await base44.asServiceRole.entities.Entitlement.filter({ user_id: user.id });
-    let row = rows && rows.length ? rows[0] : null;
+
+    // Check trial_started across EVERY row, not just the selected one. With
+    // duplicate rows, checking only one is a second free trial.
+    if (Array.isArray(rows) && rows.some((r) => r && r.trial_started)) {
+      return Response.json({ status: 'already_used' });
+    }
+
+    let row = pickEntitlementRow(rows);
     if (!row) {
       row = await base44.asServiceRole.entities.Entitlement.create({
         user_id: user.id,
@@ -22,9 +30,6 @@ export default async function(req) {
         source: 'dev',
         updated_at: new Date().toISOString(),
       });
-    }
-    if (row.trial_started) {
-      return Response.json({ status: 'already_used' });
     }
     const now = new Date();
     const trial_ends = new Date(now.getTime() + TRIAL_DAYS * 86400000).toISOString();
@@ -38,6 +43,9 @@ export default async function(req) {
     const daysLeft = Math.max(0, Math.ceil((new Date(trial_ends).getTime() - now.getTime()) / 86400000));
     return Response.json({ status: 'ok', tier: 'trial', trial_ends, daysLeft });
   } catch (error) {
-    return Response.json({ error: String((error && error.message) || error) }, { status: 500 });
+    // Log server-side, return a generic message: error strings can carry
+    // internal detail (entity names, stack fragments) that clients don't need.
+    console.error('[startTrial]', error);
+    return Response.json({ error: 'Could not start trial' }, { status: 500 });
   }
 }
