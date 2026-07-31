@@ -6,8 +6,35 @@
 
 import { generateTrendData, generateRangeScenario } from "./instruments";
 import { PSYCH_UNITS, DIARY_ENTRIES } from "./psychCurriculum";
-import { EXTRA_QUESTIONS, EXTRA_UNITS, EXTRA_BRANCHES } from "./extraCurriculum";
+import { EXTRA_QUESTIONS, EXTRA_UNITS, EXTRA_BRANCHES, pickVariant } from "./extraCurriculum";
 import { EXPANDED_CARDS } from "./expandedCards";
+
+// See pickVariant in extraCurriculum: drill prompts are the most-repeated
+// content in the app, so each anchor draws from a pool rather than being fixed.
+const TREND_PRE = [
+  { prompt: "Price is just consolidating - no breakout yet. What's the right move?", options: ["Buy now - anticipate the breakout", "Wait for a confirmed close beyond the range", "Sell short the range", "Buy with maximum size"], correct: 1 },
+  { prompt: "The range is tightening and volume is drying up. That usually precedes:", options: ["A guaranteed move higher", "An expansion, direction unknown", "The end of the session", "Nothing at all"], correct: 1 },
+  { prompt: "You're convinced this breaks upward, but you have no confirmation yet. The plan says:", options: ["Size in early, conviction is edge", "No position until confirmation", "Buy half now, half later", "Short it instead"], correct: 1 },
+  { prompt: "Anticipating a breakout before confirmation mainly buys you:", options: ["A better price and a worse win rate", "A better price at no cost", "A tighter stop and a better win rate", "Nothing either way"], correct: 0 },
+];
+const TREND_TRAIL = [
+  { prompt: "We broke out and ran up, now we're pulling back. Where does the trailing stop sit?", options: ["Above the entry", "Below the recent swing low", "At the original breakout level", "No stop - let it run forever"], correct: 1 },
+  { prompt: "The trade is up nicely and price stalls. Widening the stop would:", options: ["Give the trade room to work at no cost", "Convert a defined risk into an undefined one", "Improve the expectancy", "Lock in the gain"], correct: 1 },
+  { prompt: "On a long, a healthy trailing stop follows:", options: ["Successive higher lows", "The session high", "A fixed dollar amount only", "VWAP exactly"], correct: 0 },
+  { prompt: "Price pulls back but hasn't reached your stop. The correct action is:", options: ["Exit early to be safe", "Nothing - the stop is the plan", "Add to the position", "Move the stop closer to break even"], correct: 1 },
+];
+const MR_LOW = [
+  { prompt: "Price tagged the low of the range and is bouncing. What's the move?", options: ["Sell short", "Buy the bounce toward the range mid", "Hold through the band", "Wait for the range to break"], correct: 1 },
+  { prompt: "Price is at the range low. What separates a fade from a guess?", options: ["A strong feeling", "A close back inside after the poke", "A round number", "High volume alone"], correct: 1 },
+  { prompt: "You're long from the range low. Where's the target?", options: ["Open-ended, trail it", "The range mid or VWAP", "Twice the range height", "The next session"], correct: 1 },
+  { prompt: "Price tagged the low and kept going. That tells you:", options: ["Add, it's cheaper now", "The range may be breaking - take the stop", "Hold and wait it out", "Flip to a bigger long"], correct: 1 },
+];
+const MR_HIGH = [
+  { prompt: "Price tagged the top of the range. On a short fade, where does the stop go?", options: ["Above the range high", "At the mid", "Below the low", "No stop"], correct: 0 },
+  { prompt: "Short from the range top. Profit is capped at the mid, so your win rate must be:", options: ["Lower than a trend strategy's", "Higher than a trend strategy's", "Exactly 50%", "Irrelevant"], correct: 1 },
+  { prompt: "The fade is against you and price is now above the range high. You should:", options: ["Average down", "Take the stop", "Widen the stop", "Double the size"], correct: 1 },
+  { prompt: "On a short fade, placing the stop inside the range would:", options: ["Protect capital better", "Get hit by normal noise", "Improve the reward-to-risk", "Have no effect"], correct: 1 },
+];
 
 export const BRANCHES = [
   {
@@ -362,9 +389,9 @@ export const BRANCHES = [
         instrument: instrumentKey,
         dataProfile: "consolidation-then-breakout",
         decisionPoints: [
-          { barIndex: 19, type: "mcq", prompt: "Price is just consolidating - no breakout yet. What's the right move?", options: ["Buy now - anticipate the breakout", "Wait for a confirmed close beyond the range", "Sell short the range", "Buy with maximum size"], correct: 1 },
+          { barIndex: 19, type: "mcq", ...pickVariant(TREND_PRE) },
           { barIndex: 24, type: "tap", prompt: "The breakout just closed beyond the range. Tap directly on the chart where you'd enter.", zoneStart: 22, zoneEnd: 26 },
-          { barIndex: 41, type: "mcq", prompt: "We broke out and ran up, now we're pulling back. Where does the trailing stop sit?", options: ["Above the entry", "Below the recent swing low", "At the original breakout level", "No stop - let it run forever"], correct: 1 },
+          { barIndex: 41, type: "mcq", ...pickVariant(TREND_TRAIL) },
           { barIndex: 58, type: "exit-tap", prompt: "You're in the breakout long. Tap where you'd exit this trade." },
         ],
         entryZone: { zoneStart: 22, zoneEnd: 26 },
@@ -466,8 +493,8 @@ export const BRANCHES = [
         bars,
         instrument: instrumentKey,
         decisionPoints: [
-          { barIndex: lowIdx, type: "mcq", prompt: "Price tagged the low of the range and is bouncing. What's the move?", options: ["Sell short", "Buy the bounce toward the range mid", "Hold through the band", "Wait for the range to break"], correct: 1 },
-          { barIndex: highIdx, type: "mcq", prompt: "Price tagged the top of the range. On a short fade, where does the stop go?", options: ["Above the range high", "At the mid", "Below the low", "No stop"], correct: 0 },
+          { barIndex: lowIdx, type: "mcq", ...pickVariant(MR_LOW) },
+          { barIndex: highIdx, type: "mcq", ...pickVariant(MR_HIGH) },
         ],
         entryZone: { zoneStart: lowIdx - 1, zoneEnd: lowIdx + 1 },
         stopPrice: bars[Math.max(0, lowIdx - 2)].low,
