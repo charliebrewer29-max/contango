@@ -3,15 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { Crown, X, Sparkles, BookOpen, LineChart, Waves, CalendarClock, BarChart3, Repeat, Check, Loader2 } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { COACH_NAME } from "@/lib/contangoTheme";
-import { TRIAL_DAYS, isPremium, trialDaysLeft, restorePurchases } from "@/lib/subscription";
+import { TRIAL_DAYS, isPremium, trialDaysLeft, restorePurchases, MONTHLY_PRICE, ANNUAL_PRICE, MONTHLY_WEEKLY, ANNUAL_WEEKLY } from "@/lib/subscription";
 
-// Price constants — the weekly figures are derived from these so they cannot
-// drift if a price ever changes. Do not hardcode the weekly strings.
-const MONTHLY_PRICE = 14.99;
-const ANNUAL_PRICE = 79.99;
-const WEEKS_PER_YEAR = 52;
-const weeklyFromMonthly = (MONTHLY_PRICE * 12 / WEEKS_PER_YEAR).toFixed(2);
-const weeklyFromAnnual = (ANNUAL_PRICE / WEEKS_PER_YEAR).toFixed(2);
 
 // Paywall: the full premium split (spec Section 9). Hearts stay on the graded
 // path for everyone - Premium buys the unlimited Practice sandbox, not a
@@ -109,7 +102,7 @@ export default function Paywall() {
                   }`}
                 >
                   {plan === "monthly" && <Check className="absolute right-2 top-2 h-4 w-4 text-amber-400" />}
-                  <div className="font-display text-2xl font-bold text-slate-100">${weeklyFromMonthly}</div>
+                  <div className="font-display text-2xl font-bold text-slate-100">${MONTHLY_WEEKLY}</div>
                   <div className="text-xs text-slate-400">per week</div>
                   <div className="mt-1 text-[11px] text-slate-500">{`$${MONTHLY_PRICE.toFixed(2)} billed monthly`}</div>
                 </button>
@@ -122,12 +115,12 @@ export default function Paywall() {
                 >
                   <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-slate-950">BEST VALUE</span>
                   {plan === "yearly" && <Check className="absolute right-2 top-2 h-4 w-4 text-amber-400" />}
-                  <div className="font-display text-2xl font-bold text-amber-400">${weeklyFromAnnual}</div>
+                  <div className="font-display text-2xl font-bold text-amber-400">${ANNUAL_WEEKLY}</div>
                   <div className="text-xs text-slate-400">per week</div>
                   <div className="mt-1 text-[11px] text-slate-500">{`$${ANNUAL_PRICE.toFixed(2)} billed annually`}</div>
                 </button>
               </div>
-              <p className="mt-3 text-center text-xs text-slate-500">Annual works out to ${weeklyFromAnnual} a week. Less than a coffee, for the habit that separates the 3%.</p>
+              <p className="mt-3 text-center text-xs text-slate-500">Annual works out to ${ANNUAL_WEEKLY} a week. Less than a coffee, for the habit that separates the 3%.</p>
 
               <button onClick={beginTrial} disabled={starting} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 py-4 font-display font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-60">
                 {starting ? <><Loader2 className="h-5 w-5 animate-spin" /> Starting…</> : `Start ${TRIAL_DAYS}-day free trial`}

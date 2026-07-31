@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Zap, ShieldCheck, Check } from "lucide-react";
+import { ChevronRight, Zap, ShieldCheck, Check, Sparkles } from "lucide-react";
 import { useContango } from "@/contexts/ContangoContext";
 import { GOAL_OPTIONS } from "@/lib/contangoTheme";
 import { LEGAL_LAST_UPDATED, LEGAL_AGE_THRESHOLD } from "@/lib/legalVersion";
 import ContangoLogo from "@/components/contango/ContangoLogo";
 import { validateDisplayName } from "@/lib/displayName";
+import { TRIAL_DAYS, ANNUAL_WEEKLY } from "@/lib/subscription";
 
-// Onboarding: welcome → disclaimer → goal selection ("why") → daily goal → first lesson prompt.
+// Onboarding: welcome → disclaimer → name → goal selection ("why") → daily goal → premium offer.
 // Disclaimers are visible and required (spec Section 2 & 13).
 export default function Onboarding() {
   const [step, setStep] = useState(0);
@@ -32,7 +33,7 @@ export default function Onboarding() {
     "already-trade": "Nice - after the basics, we'll send you to the strategy branches, then drill the behavioral habits that keep the 3% ahead."
   };
 
-  function finish() {
+  function finish(dest = "/lesson/contracts") {
     const recommendedBranch = WHY_OPTIONS.find((o) => o.id === why)?.branch || null;
     const now = new Date().toISOString();
     update({
@@ -56,11 +57,11 @@ export default function Onboarding() {
         terms_version: LEGAL_LAST_UPDATED,
       },
     });
-    navigate("/lesson/contracts");
+    navigate(dest);
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
+    <div className="relative min-h-screen overflow-x-hidden bg-slate-950 text-slate-100">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -left-24 -top-32 h-80 w-80 rounded-full bg-amber-500/20 blur-3xl" style={{ animation: "drift1 18s ease-in-out infinite" }} />
         <div className="absolute -right-24 top-1/3 h-72 w-72 rounded-full bg-emerald-500/15 blur-3xl" style={{ animation: "drift2 22s ease-in-out infinite" }} />
@@ -206,9 +207,54 @@ export default function Onboarding() {
                 </button>
             )}
             </div>
-            <button onClick={finish} className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
-              Start your first lesson
+            <button onClick={() => setStep(5)} className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
+              Continue
             </button>
+          </div>
+        }
+
+        {/* Step 5 - the premium offer. Placed LAST on purpose: a paywall shown
+            before the user has seen anything converts badly and reads as a
+            money grab. Both exits call finish(), so onboarding and the legal
+            attestations are persisted either way. The free path is a real
+            button, not a buried grey link - the free tier is genuinely good and
+            hiding the exit would be a dark pattern App Review looks for. */}
+        {step === 5 &&
+        <div className="my-auto">
+            <Sparkles className="h-7 w-7 text-amber-400" />
+            <h2 className="mt-3 font-display text-2xl font-bold">Go all in, or start free</h2>
+            <p className="mt-2 text-sm text-slate-400">Contango is free to use for as long as you like. Premium opens the whole curriculum and unlimited practice - and you can try it for {TRIAL_DAYS} days without paying.</p>
+
+            <div className="mt-6 rounded-2xl border border-amber-400/40 bg-amber-500/5 p-5">
+              <div className="font-display text-lg font-bold text-amber-400">Premium</div>
+              <div className="mt-1 text-xs text-slate-500">${ANNUAL_WEEKLY} a week, billed annually</div>
+              <div className="mt-4 space-y-2.5">
+                {[
+                  "Every strategy branch, not just the first few",
+                  "All four instruments - ES, NQ, CL and GC",
+                  "Unlimited practice mode",
+                  "A coach that remembers your past sessions",
+                  "Your full journal and decision history",
+                ].map((f) =>
+                  <div key={f} className="flex items-start gap-2.5">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                    <span className="text-sm text-slate-300">{f}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() => finish("/paywall")}
+              className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
+              See Premium
+            </button>
+            <button
+              onClick={() => finish()}
+              className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-900 py-3.5 font-semibold text-slate-300 transition hover:bg-slate-800">
+              Start with the free version
+            </button>
+            <p className="mt-3 text-center text-xs text-slate-500">Full pricing and terms on the next screen. You can upgrade any time from your profile.</p>
           </div>
         }
       </div>

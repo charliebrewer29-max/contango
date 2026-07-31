@@ -427,3 +427,81 @@ export const DIARY_ENTRIES = [
     body: "A winning streak is variance, not a new me. I size by the formula, never by how I feel. The cold streak is coming; I'll be the same trader either way.",
   },
 ];
+
+// === Depth pass ==============================================================
+// Risk & Psychology is the Discipline Engine's own subject matter, and it was
+// the thinnest branch in the curriculum: 9 teaching units averaging 2.4
+// questions each, against ~5 everywhere else. These bring each teaching unit to
+// five. Appended rather than inlined so the authored stage order (teach →
+// emotion → quiz) is preserved and the original content is untouched.
+const EXTRA_PSYCH_QUIZZES = {
+  "trader-mindset": [
+    { type: "quiz", q: "Two traders take the identical setup. One profits over a year, one doesn't. The likeliest difference is:", options: ["One had better data", "One followed the plan on the trades that hurt", "One used more leverage", "One traded a faster timeframe"], correct: 1,
+      notes: ["Everyone sees the same chart.", "Right. Edge shows up in the trades you didn't want to take and the exits you didn't want to make.", "Leverage changes size, not skill.", "Speed isn't the variable."] },
+    { type: "quiz", q: "\"I'll be disciplined once I'm profitable\" gets the order wrong because:", options: ["Profit comes first, always", "Discipline is what produces the profit, not a reward for it", "Neither matters", "Discipline only applies to large accounts"], correct: 1,
+      notes: ["That's the trap.", "Exactly. Waiting to be disciplined until it's easy means never being disciplined.", "One of them matters a great deal.", "Size is irrelevant to the principle."] },
+    { type: "quiz", q: "Which is the better measure of a single trading day?", options: ["Whether you made money", "Whether you followed your process", "How many trades you took", "How close you got to the high"], correct: 1,
+      notes: ["A profitable day of bad decisions is a losing habit that happened to pay.", "Right. Outcome is noisy over one day; process is the only thing you control.", "Activity isn't performance.", "Nobody catches the high."] },
+  ],
+  "fomo": [
+    { type: "quiz", q: "The real cost of a missed trade is:", options: ["The full move you didn't capture", "Zero - you cannot lose money on a trade you didn't take", "Your entire account", "The commission you saved"], correct: 1,
+      notes: ["That money was never yours; it's imagined, not lost.", "Right. Missing costs nothing. Chasing to make up for missing is what costs.", "No.", "Not the point."] },
+    { type: "quiz", q: "FOMO entries tend to have poor reward-to-risk because:", options: ["Commissions rise", "The move already happened, so the stop is far and the remaining target is near", "The spread widens permanently", "Micros aren't available"], correct: 1,
+      notes: ["Commissions are fixed.", "Exactly. You're buying the least attractive part of the move.", "Not the mechanism.", "Unrelated."] },
+    { type: "quiz", q: "The most practical structural defence against chasing is:", options: ["Watching more charts", "A written entry trigger you require before clicking", "Trading a larger size to catch up", "Removing your stop"], correct: 1,
+      notes: ["More screens, more temptation.", "Right. A pre-committed trigger turns an impulse decision into a checklist.", "That compounds the error.", "Never."] },
+  ],
+  "loss-aversion": [
+    { type: "quiz", q: "The disposition effect damages a P&L because it produces:", options: ["Small winners and large losers", "Large winners and small losers", "No trades at all", "Higher commissions only"], correct: 0,
+      notes: ["Right. Cutting winners early and holding losers inverts the distribution you need.", "That's the profitable shape - the opposite of the bias.", "It produces plenty of trades.", "Commissions are a rounding error next to this."] },
+    { type: "quiz", q: "\"It's not a loss until I close it\" is false because:", options: ["Brokers ban the phrase", "The position is marked to market and the capital is already impaired", "Losses can't be realised in futures", "It becomes true after the close"], correct: 1,
+      notes: ["Not a rule.", "Exactly. Futures mark to market continuously - the money has already moved.", "They certainly can.", "No."] },
+    { type: "quiz", q: "You're up 6 ticks and desperate to close before it turns. That urge is best answered by:", options: ["Closing immediately, protect the win", "Checking whether your planned target has been reached", "Adding size", "Removing the stop"], correct: 1,
+      notes: ["That's the disposition effect making the decision for you.", "Right. The exit was decided before the trade; the urge isn't new information.", "Unrelated to the exit.", "Never."] },
+  ],
+  "revenge-tilt": [
+    { type: "quiz", q: "The clearest behavioural marker of tilt is:", options: ["Taking fewer trades than usual", "Sizing up or trading faster right after a loss", "Reading the news", "Using a limit order"], correct: 1,
+      notes: ["That's often healthy caution.", "Right. Acceleration after a loss is the signature - it's the market being asked to pay you back.", "Neutral.", "Neutral."] },
+    { type: "quiz", q: "Why is the trade immediately after a loss statistically the most dangerous?", options: ["Spreads widen after losses", "It's usually taken to recover, not because the setup appeared", "The exchange throttles you", "It always has worse fills"], correct: 1,
+      notes: ["Spreads don't know your P&L.", "Exactly. The motive changed from 'my setup' to 'my last trade', and the market can't tell.", "It doesn't.", "Fills aren't the issue."] },
+    { type: "quiz", q: "The most reliable tilt intervention is:", options: ["Trying harder to stay calm", "A pre-committed rule that removes the decision, like a mandatory break after N losses", "Doubling down to reset", "Switching instruments"], correct: 1,
+      notes: ["Willpower is the first thing tilt takes.", "Right. Rules made when calm outperform judgement made when tilted.", "That's the tilt talking.", "Same trader, new chart."] },
+  ],
+  "overconfidence": [
+    { type: "quiz", q: "A win streak is dangerous mainly because it:", options: ["Attracts exchange scrutiny", "Feels like evidence your size should increase", "Reduces liquidity", "Raises commissions"], correct: 1,
+      notes: ["It doesn't.", "Right. Recent results feel like skill, and the sizing formula quietly gets abandoned.", "No.", "No."] },
+    { type: "quiz", q: "Five wins in a row on a strategy with a 55% win rate is:", options: ["Proof the strategy improved", "Well within normal variance", "Statistically impossible", "A reason to double size"], correct: 1,
+      notes: ["Five outcomes prove very little.", "Right. Roughly 1 in 20 - unremarkable. Streaks feel like information and usually aren't.", "It's common.", "The opposite of what the formula says."] },
+    { type: "quiz", q: "The defence against overconfidence sizing is:", options: ["Trusting your read when you're hot", "Sizing from the formula regardless of how the last trades went", "Trading only after losses", "Avoiding streaks"], correct: 1,
+      notes: ["Feeling hot is not an input.", "Right. The formula doesn't know your streak, which is precisely why it works.", "Equally arbitrary.", "You can't."] },
+  ],
+  "position-sizing": [
+    { type: "quiz", q: "Risking 1% of a $10,000 account with a 10-tick ES stop ($125) means you can trade:", options: ["4 contracts", "1 contract, and the stop is already slightly over budget", "10 contracts", "As many as margin allows"], correct: 1,
+      notes: ["That would risk $500, or 5%.", "Right. $100 is the budget and one contract risks $125 - this is exactly when Micros earn their place.", "$1,250 of risk on a $10k account.", "Margin is not a risk limit."] },
+    { type: "quiz", q: "Sizing from available margin instead of a risk percentage means:", options: ["Your risk is capped by the broker", "Your position size is set by what you can afford to hold, not what you can afford to lose", "Nothing changes", "You always trade smaller"], correct: 1,
+      notes: ["Margin is a collateral requirement, not a risk control.", "Exactly. Those are completely different questions and only one protects the account.", "It changes everything.", "Usually much larger."] },
+  ],
+  "stops": [
+    { type: "quiz", q: "Moving a stop further away mid-trade converts:", options: ["A small loss into a smaller one", "A defined risk into an undefined one", "A loss into a win", "Nothing meaningful"], correct: 1,
+      notes: ["It never shrinks the loss.", "Right. The single number you controlled is now unknown, which is how one trade ends a month.", "Hope isn't a mechanism.", "It's the most consequential thing you can do."] },
+    { type: "quiz", q: "A stop placed at a round number rather than at structure is vulnerable because:", options: ["Brokers reject round numbers", "Round numbers are crowded, and clusters of stops attract the move that takes them", "It costs more", "It can't be modified"], correct: 1,
+      notes: ["They don't.", "Right. Structure is why the trade is wrong; a round number is just tidy.", "Same cost.", "It can."] },
+  ],
+  "risk-reward": [
+    { type: "quiz", q: "At 1:1 reward-to-risk, the win rate you need just to break even before costs is:", options: ["33%", "50%", "60%", "25%"], correct: 1,
+      notes: ["That's the 2:1 figure.", "Right - and after commissions, 50% is a slow loss.", "Higher than required.", "That's 3:1."] },
+    { type: "quiz", q: "A 3:1 setup with a 30% win rate over 10 trades returns:", options: ["A loss", "Break-even", "A profit - 3 wins at 3R against 7 losses at 1R", "Undefined"], correct: 2,
+      notes: ["Do the arithmetic: 9R gained, 7R lost.", "It's better than that.", "Right. 9R against 7R. Losing most trades and still profiting is normal at high R.", "It's calculable."] },
+  ],
+  "daily-loss-limit": [
+    { type: "quiz", q: "A daily loss limit works mainly because it:", options: ["Predicts market direction", "Removes the decision at the exact moment you're least able to make it", "Guarantees a profitable week", "Lowers commissions"], correct: 1,
+      notes: ["It predicts nothing.", "Right. It's a rule set by the calm version of you, binding the tilted version.", "It guarantees nothing.", "Unrelated."] },
+    { type: "quiz", q: "Prop firm evaluations most commonly fail because of:", options: ["Bad strategies", "Breaching the daily loss limit while trying to recover", "Slow internet", "High commissions"], correct: 1,
+      notes: ["Strategy is rarely the binding constraint.", "Right. The rule that ends most evaluations is behavioural, not analytical.", "Rarely decisive.", "A cost, not a cause."] },
+  ],
+};
+
+for (const u of PSYCH_UNITS) {
+  const extra = EXTRA_PSYCH_QUIZZES[u.id];
+  if (extra && Array.isArray(u.stages)) u.stages.push(...extra);
+}

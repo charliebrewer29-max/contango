@@ -7,6 +7,15 @@
 import { BRANCHES } from "./content";
 import { todayStr, monthStr } from "./gamification";
 
+// Pricing. Single source of truth: the Paywall and the onboarding offer both
+// read these, and the weekly figures are derived so they can never disagree
+// with the billed amounts.
+export const MONTHLY_PRICE = 14.99;
+export const ANNUAL_PRICE = 79.99;
+const WEEKS_PER_YEAR = 52;
+export const MONTHLY_WEEKLY = (MONTHLY_PRICE * 12 / WEEKS_PER_YEAR).toFixed(2);
+export const ANNUAL_WEEKLY = (ANNUAL_PRICE / WEEKS_PER_YEAR).toFixed(2);
+
 export const TRIAL_DAYS = 21;          // long trial: 17-32d window converts ~70% better
 export const FREE_COACH_DAILY = 3;     // free coach calls per day, session-only
 // Trial is capped too, mirroring TIER_LIMITS in base44/functions/aiCoachFeedback.
