@@ -1,3 +1,42 @@
+// Drill prompts are the most-repeated content in the app: Practice invites
+// unlimited reps and the bars are regenerated every run, but the QUESTIONS were
+// hardcoded one-per-anchor. Ten reps meant the same two prompts ten times, which
+// is what makes the app feel repetitive even though the lesson library is large.
+//
+// Each anchor now draws from a pool of equivalent-difficulty variants that probe
+// the same decision from different angles, sampled per run.
+export function pickVariant(pool) {
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// --- breakout ---------------------------------------------------------------
+export const BREAKOUT_PRE = [
+  { prompt: "The opening range is set - no breakout yet. What's the right move?", options: ["Buy now and anticipate", "Wait for a confirmed close beyond the range", "Short the range low", "Double normal size"], correct: 1 },
+  { prompt: "The opening range is established. What exactly are you waiting for?", options: ["Any touch of the range high", "A close beyond the range, not a poke", "Three green bars", "The session to end"], correct: 1 },
+  { prompt: "Entering before the opening range has finished forming means:", options: ["You get the best price", "You have no range to break yet", "Your stop is tighter", "Nothing, it's identical"], correct: 1 },
+  { prompt: "Price pokes above the range then closes back inside. That is:", options: ["A confirmed breakout", "A failed breakout, not a signal", "A reason to add", "Irrelevant"], correct: 1 },
+];
+export const BREAKOUT_STOP = [
+  { prompt: "We broke above the opening range. Where does the stop sit?", options: ["Back inside the range", "At the day's high", "No stop needed", "Ten points away"], correct: 0 },
+  { prompt: "You're long an opening-range breakout. Where is the thesis invalidated?", options: ["On any red bar", "On a close back inside the range", "At VWAP", "At the session close"], correct: 1 },
+  { prompt: "A stop placed exactly at the breakout level will often:", options: ["Never be touched", "Get hit by the normal retest", "Guarantee the trade works", "Reduce the position size"], correct: 1 },
+  { prompt: "Price closes back inside the opening range. Your thesis is:", options: ["Still valid, just early", "Invalidated - take the stop", "Stronger than before", "Confirmed"], correct: 1 },
+];
+
+// --- momentum ---------------------------------------------------------------
+export const MOMENTUM_CHASE = [
+  { prompt: "Price is accelerating out of the gate but you missed the exact bottom. What's the move?", options: ["Chase at market immediately", "Wait for a pullback or pass on the trade", "Short it, it's overextended", "Add size to catch up"], correct: 1 },
+  { prompt: "You missed the initial thrust. Chasing here mainly risks:", options: ["A slightly worse fill", "Entering right as the move exhausts", "Higher commissions", "Nothing measurable"], correct: 1 },
+  { prompt: "Momentum is strong but you have no entry trigger. The disciplined action is:", options: ["Enter anyway, the trend is your friend", "Wait for a defined trigger or pass", "Enter with double size", "Short the strength"], correct: 1 },
+  { prompt: "Buying strength without first identifying a stop level means:", options: ["Tighter risk", "Undefined risk", "Better expectancy", "A guaranteed winner"], correct: 1 },
+];
+export const MOMENTUM_CLIMAX = [
+  { prompt: "After a long run, a climax volume spike prints and price is far from VWAP. What now?", options: ["Add to the position", "Take profit into strength", "Move the stop further away", "Ignore it"], correct: 1 },
+  { prompt: "Climax volume far from VWAP most often signals:", options: ["Continuation", "Exhaustion", "A data error", "Low liquidity"], correct: 1 },
+  { prompt: "You're long into a climax spike. Adding size here means:", options: ["Pressing a proven edge", "Buying from the people taking profit", "Reducing risk", "Locking in gains"], correct: 1 },
+  { prompt: "Price is stretched far from VWAP on climax volume. The mean-reversion risk is:", options: ["Zero while the trend holds", "Elevated - the snapback can be fast", "Only relevant overnight", "Removed by a wider stop"], correct: 1 },
+];
+
 // Curriculum expansion - extra questions for existing units, brand-new units
 // inside existing branches, and entirely new learning areas (branches).
 // Merged into BRANCHES by content.js at module load, so every consumer
@@ -289,8 +328,8 @@ export const EXTRA_BRANCHES = [
         bars,
         instrument: instrumentKey,
         decisionPoints: [
-          { barIndex: 15, type: "mcq", prompt: "The opening range is set - no breakout yet. What's the right move?", options: ["Buy the middle of the range", "Wait for a close beyond the range high or low", "Short straight into the range high", "Size up immediately"], correct: 1 },
-          { barIndex: 30, type: "mcq", prompt: "We broke above the opening range. Where does the stop sit?", options: ["Above the range high", "Below the opening range low", "At the entry price", "No stop"], correct: 1 },
+          { barIndex: 15, type: "mcq", ...pickVariant(BREAKOUT_PRE) },
+          { barIndex: 30, type: "mcq", ...pickVariant(BREAKOUT_STOP) },
         ],
         entryZone: { zoneStart: 17, zoneEnd: 21 },
         stopPrice: rangeLow,
@@ -388,8 +427,8 @@ export const EXTRA_BRANCHES = [
         bars,
         instrument: instrumentKey,
         decisionPoints: [
-          { barIndex: 14, type: "mcq", prompt: "Price is accelerating out of the gate but you missed the exact bottom. What's disciplined?", options: ["Chase the spike now", "Wait for the first pullback that holds, then enter", "Short the strength", "Size up to make up for missing it"], correct: 1 },
-          { barIndex: 38, type: "mcq", prompt: "After a long run, a climax volume spike prints and price is far from VWAP. What's the move?", options: ["Add more - it's working", "Hold and hope", "Take profits into strength; this is exhaustion", "Flip short at the exact top"], correct: 2 },
+          { barIndex: 14, type: "mcq", ...pickVariant(MOMENTUM_CHASE) },
+          { barIndex: 38, type: "mcq", ...pickVariant(MOMENTUM_CLIMAX) },
         ],
         entryZone: { zoneStart: 18, zoneEnd: 24 },
         stopPrice: accelLow,
