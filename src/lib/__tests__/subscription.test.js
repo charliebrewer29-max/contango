@@ -3,6 +3,7 @@ import {
   isPremium, isTrial, trialDaysLeft, canAccessBranch, canAccessInstrument, canAccessLessonId,
   coachCallsRemaining, canRepairStreak,
   strategyBranches, PREMIUM_INSTRUMENT_LESSON_IDS, PREMIUM_INSTRUMENTS, TRIAL_COACH_DAILY,
+  MONTHLY_PRICE, ANNUAL_PRICE, MONTHLY_WEEKLY, ANNUAL_WEEKLY,
 } from "../subscription";
 import { MAX_HEARTS, spendHeart, refundHeart, resetHeartsForToday, applyProgress } from "../gamification";
 import { effectiveTier, pickEntitlementRow } from "../../../base44/shared/entitlement";
@@ -204,5 +205,25 @@ describe("pickEntitlementRow", () => {
   it("tolerates rows with no timestamps", () => {
     const rows = [{ id: "a", tier: "free" }, { id: "b", tier: "free" }];
     expect(pickEntitlementRow(rows)).toBeTruthy();
+  });
+});
+
+// Pricing lives in subscription.js so the Paywall and the onboarding offer read
+// one source. These catch a weekly figure drifting away from the billed amount,
+// which would be a consumer-facing misstatement and an App Review problem.
+describe("pricing", () => {
+  it("weekly figures derive from the billed prices", () => {
+    expect(Number(MONTHLY_WEEKLY)).toBeCloseTo(MONTHLY_PRICE * 12 / 52, 2);
+    expect(Number(ANNUAL_WEEKLY)).toBeCloseTo(ANNUAL_PRICE / 52, 2);
+  });
+
+  it("are formatted to exactly two decimals", () => {
+    expect(MONTHLY_WEEKLY).toMatch(/^\d+\.\d{2}$/);
+    expect(ANNUAL_WEEKLY).toMatch(/^\d+\.\d{2}$/);
+  });
+
+  it("annual is genuinely cheaper per week than monthly", () => {
+    expect(Number(ANNUAL_WEEKLY)).toBeLessThan(Number(MONTHLY_WEEKLY));
+    expect(ANNUAL_PRICE).toBeLessThan(MONTHLY_PRICE * 12);
   });
 });
