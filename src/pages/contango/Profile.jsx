@@ -1,5 +1,5 @@
 import React from "react";
-import { User, Pencil, BarChart3, Repeat, Gift, Settings as SettingsIcon, Lock } from "lucide-react";
+import { User, Pencil, BarChart3, Repeat, Gift, Settings as SettingsIcon, Lock, Check, X } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import MindsetMeter from "@/components/contango/MindsetMeter";
@@ -11,15 +11,29 @@ import { avatarById } from "@/components/contango/avatars";
 import AvatarPicker from "@/components/contango/AvatarPicker";
 import { LinkRow, Stat } from "@/components/contango/profileBits";
 import { isPremium } from "@/lib/subscription";
+import { validateDisplayName } from "@/lib/displayName";
 
 // Profile - the bottom-nav destination. Holds only the trader identity,
 // quick stats, mindset, and branch badges; everything else lives behind the
 // link rows to Rewards, Insights, Practice, and Settings.
 export default function Profile() {
-  const { progress, entitlement } = useContango();
+  const { progress, entitlement, update } = useContango();
   const flair = getEquippedFlair(progress);
   const avatar = avatarById(progress.avatar);
   const [pickerOpen, setPickerOpen] = React.useState(false);
+  const [editingName, setEditingName] = React.useState(false);
+  const [nameDraft, setNameDraft] = React.useState(progress.displayName || "");
+  const nameCheck = validateDisplayName(nameDraft);
+
+  function startEditName() {
+    setNameDraft(progress.displayName || "");
+    setEditingName(true);
+  }
+  function saveName() {
+    if (!nameCheck.valid) return;
+    update({ displayName: nameCheck.trimmed || null });
+    setEditingName(false);
+  }
 
   return (
     <ScreenShell showStats={false} title="Profile" tab="profile">
@@ -45,7 +59,35 @@ export default function Profile() {
             )}
           </div>
           <div className="min-w-0">
-            <div className="font-display text-lg font-semibold text-slate-100">Trader</div>
+            {editingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={nameDraft}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") saveName(); if (e.key === "Escape") setEditingName(false); }}
+                  maxLength={20}
+                  placeholder="Trader"
+                  className="w-36 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 font-display text-base font-semibold text-slate-100 outline-none focus:border-amber-400"
+                />
+                <button onClick={saveName} disabled={!nameCheck.valid} aria-label="Save name" className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-400 text-slate-950 disabled:opacity-40">
+                  <Check className="h-4 w-4" />
+                </button>
+                <button onClick={() => setEditingName(false)} aria-label="Cancel" className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <div className="font-display text-lg font-semibold text-slate-100">{progress.displayName || "Trader"}</div>
+                <button onClick={startEditName} aria-label="Edit name" className="flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-800 hover:text-slate-200">
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+            {editingName && nameCheck.error && (
+              <div className="text-[11px] text-rose-400">{nameCheck.error}</div>
+            )}
             <div className="text-xs text-slate-500">{progress.xp} XP · {progress.streak || 0} day streak</div>
             {flair ? (
               <div className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: `${flair.glow}22`, color: flair.glow }}>
