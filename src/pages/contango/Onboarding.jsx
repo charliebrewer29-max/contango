@@ -6,7 +6,7 @@ import { GOAL_OPTIONS } from "@/lib/contangoTheme";
 import { LEGAL_LAST_UPDATED, LEGAL_AGE_THRESHOLD } from "@/lib/legalVersion";
 import ContangoLogo from "@/components/contango/ContangoLogo";
 import { validateDisplayName } from "@/lib/displayName";
-import { TRIAL_DAYS, ANNUAL_WEEKLY } from "@/lib/subscription";
+import { TRIAL_DAYS, ANNUAL_WEEKLY, isPremium } from "@/lib/subscription";
 
 // Onboarding: welcome → disclaimer → name → goal selection ("why") → daily goal → premium offer.
 // Disclaimers are visible and required (spec Section 2 & 13).
@@ -17,7 +17,7 @@ export default function Onboarding() {
   const [acknowledged, setAcknowledged] = useState(false);
   const [ageOk, setAgeOk] = useState(false);
   const [name, setName] = useState("");
-  const { update } = useContango();
+  const { update, entitlement } = useContango();
   const navigate = useNavigate();
   const nameCheck = validateDisplayName(name);
 
@@ -207,8 +207,14 @@ export default function Onboarding() {
                 </button>
             )}
             </div>
-            <button onClick={() => setStep(5)} className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
-              Continue
+            {/* Someone already on trial or Premium has nothing to buy. Sending
+                them to the offer means tapping "See Premium" and landing on a
+                paywall that says "17 days left in your trial" - confusing, and
+                it wastes the last screen of onboarding. Skip straight in. */}
+            <button
+              onClick={() => (isPremium(entitlement) ? finish() : setStep(5))}
+              className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
+              {isPremium(entitlement) ? "Start your first lesson" : "Continue"}
             </button>
           </div>
         }
@@ -219,7 +225,17 @@ export default function Onboarding() {
             attestations are persisted either way. The free path is a real
             button, not a buried grey link - the free tier is genuinely good and
             hiding the exit would be a dark pattern App Review looks for. */}
-        {step === 5 &&
+        {step === 5 && isPremium(entitlement) && (
+          <div className="my-auto text-center">
+            <h2 className="font-display text-2xl font-bold">You&apos;re all set</h2>
+            <p className="mt-2 text-sm text-slate-400">Your subscription is already active - everything is unlocked.</p>
+            <button onClick={() => finish()} className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
+              Start your first lesson
+            </button>
+          </div>
+        )}
+
+        {step === 5 && !isPremium(entitlement) &&
         <div className="my-auto">
             <Sparkles className="h-7 w-7 text-amber-400" />
             <h2 className="mt-3 font-display text-2xl font-bold">Go all in, or start free</h2>
