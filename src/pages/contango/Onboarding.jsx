@@ -12,7 +12,9 @@ import { TRIAL_DAYS, ANNUAL_WEEKLY } from "@/lib/subscription";
 // Disclaimers are visible and required (spec Section 2 & 13).
 export default function Onboarding() {
   const [step, setStep] = useState(0);
-  const [why, setWhy] = useState("curiosity");
+  // Deliberately no default: a preselected answer routes passive users into
+  // the weakest segment and makes a reflexive tap look like a real choice.
+  const [why, setWhy] = useState(null);
   const [goal, setGoal] = useState("regular");
   const [acknowledged, setAcknowledged] = useState(false);
   const [ageOk, setAgeOk] = useState(false);
@@ -24,12 +26,14 @@ export default function Onboarding() {
   const WHY_OPTIONS = [
   { id: "curiosity", label: "Curiosity", desc: "Just learning how futures work", branch: "instruments" },
   { id: "considering", label: "Considering trading", desc: "Thinking about real capital someday", branch: "risk-psych" },
-  { id: "already-trade", label: "Already trade", desc: "Filling gaps in my knowledge", branch: "trend" }];
+  { id: "already-trade", label: "Already trade", desc: "Filling gaps in my knowledge", branch: "trend" },
+  { id: "prop-firm", label: "Prop firm evaluation", desc: "Passing one, or recovering from a fail", branch: "risk-psych" }];
 
 
   const WHY_NUDGE = {
     curiosity: "Got it - after the basics, we'll point you to the Instrument Tour, then start you on the discipline drills that separate the 3%.",
     considering: "Smart - after the basics, we'll prioritize Risk & Psychology and the discipline drills before you ever risk real capital.",
+    "prop-firm": "Then discipline is the whole game - most evaluations end on the daily loss limit, not on a bad strategy. We'll put Risk & Psychology first.",
     "already-trade": "Nice - after the basics, we'll send you to the strategy branches, then drill the behavioral habits that keep the 3% ahead."
   };
 
@@ -182,7 +186,10 @@ export default function Onboarding() {
                 {WHY_NUDGE[why]}
               </p>
           }
-            <button onClick={() => setStep(4)} className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300">
+            <button
+              onClick={() => why && setStep(4)}
+              disabled={!why}
+              className="mt-6 w-full rounded-xl bg-amber-400 py-3.5 font-semibold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40">
               Continue
             </button>
           </div>

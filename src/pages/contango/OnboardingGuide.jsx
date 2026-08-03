@@ -12,6 +12,9 @@ function buildOpener(progress) {
     curiosity: "curiosity - just learning how futures work",
     considering: "considering trading with real capital someday",
     "already-trade": "already trading and filling knowledge gaps",
+    // Keep in sync with WHY_OPTIONS in Onboarding.jsx - an unmapped id falls
+    // through to the raw slug, which reads as gibberish to the coach.
+    "prop-firm": "working toward a prop firm evaluation, or recovering from a failed one",
   };
   const parts = ["I'm brand new here and setting up my learning journey in Contango."];
   if (progress.why) parts.push(`Why I'm here: ${whyMap[progress.why] || progress.why}.`);

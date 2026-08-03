@@ -227,3 +227,23 @@ describe("pricing", () => {
     expect(ANNUAL_PRICE).toBeLessThan(MONTHLY_PRICE * 12);
   });
 });
+
+// The onboarding "why" answer is not decorative: branchProgress.js reads
+// progress.recommendedBranch to reorder the curriculum after Foundation, and the
+// value is also sent to the AI coach. A branch id that doesn't exist would
+// silently fall through to default ordering.
+describe("onboarding why -> branch routing", () => {
+  it("every WHY_OPTIONS branch target is a real branch", async () => {
+    const { BRANCHES } = await import("../content");
+    const ids = new Set(BRANCHES.map((b) => b.id));
+    // Mirrors WHY_OPTIONS in Onboarding.jsx.
+    for (const target of ["instruments", "risk-psych", "trend"]) {
+      expect(ids.has(target), `missing branch: ${target}`).toBe(true);
+    }
+  });
+
+  it("risk-psych exists, since both 'considering' and 'prop-firm' route there", async () => {
+    const { BRANCHES } = await import("../content");
+    expect(BRANCHES.some((b) => b.id === "risk-psych")).toBe(true);
+  });
+});
