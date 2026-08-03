@@ -67,13 +67,38 @@ export default function Paywall() {
           <p className="mt-2 text-sm text-slate-400">The full sandbox, the coach that remembers, and the journal that compounds.</p>
 
           {isPremium(entitlement) ? (
-            <div className="mt-8 w-full rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
-              <p className="font-display text-lg font-semibold text-amber-400">
-                {entitlement?.tier === "trial" ? `${trialDaysLeft(entitlement)} days left in your trial` : "Premium is active"}
-              </p>
-              <p className="mt-1 text-xs text-slate-400">Everything below is unlocked.</p>
-              <button onClick={() => navigate("/")} className="mt-4 w-full rounded-xl bg-amber-400 py-3.5 font-display font-bold text-slate-950">Back to learning</button>
-            </div>
+            /* Entitled users have nothing to buy, but the perks list was
+               previously rendered only in the non-entitled branch, leaving this
+               screen almost empty. Show what IS unlocked instead - it reassures
+               a trial user and reminds a subscriber what they pay for. */
+            <>
+              <div className="mt-8 w-full rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
+                <p className="font-display text-lg font-semibold text-amber-400">
+                  {entitlement?.tier === "trial" ? `${trialDaysLeft(entitlement)} days left in your trial` : "Premium is active"}
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {entitlement?.tier === "trial"
+                    ? "Everything below is unlocked while your trial runs."
+                    : "Everything below is unlocked."}
+                </p>
+                <button onClick={() => navigate("/")} className="mt-4 w-full rounded-xl bg-amber-400 py-3.5 font-display font-bold text-slate-950">Back to learning</button>
+              </div>
+
+              <div className="mt-6 w-full space-y-3 text-left">
+                {perks.map((p, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3">
+                    <span className="text-amber-400">{p.icon}</span>
+                    <span className="text-sm text-slate-200">{p.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {entitlement?.tier === "trial" && (
+                <p className="mt-6 text-center text-xs text-slate-500">
+                  Your trial converts to a paid subscription unless you cancel before it ends. Manage it any time in your Apple ID settings.
+                </p>
+              )}
+            </>
           ) : (
             <>
               <div className="mt-8 w-full space-y-3 text-left">
