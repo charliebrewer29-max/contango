@@ -31,7 +31,7 @@ export default function BottomNav({ active }) {
             const isActive = active ? t.id === active : t.match(location.pathname);
             const Icon = t.icon;
             return (
-              <Link key={t.id} to={t.to} onClick={(e) => handleTabClick(e, t, isActive)} className={`flex flex-1 flex-col items-center gap-1 rounded-xl py-2 transition ${isActive ? "bg-amber-400/10" : "hover:bg-slate-800/40"}`}>
+              <Link key={t.id} data-tour={`nav-${t.id}`} to={t.to} onClick={(e) => handleTabClick(e, t, isActive)} className={`flex flex-1 flex-col items-center gap-1 rounded-xl py-2 transition ${isActive ? "bg-amber-400/10" : "hover:bg-slate-800/40"}`}>
                 <Icon
                   className={`h-6 w-6 ${isActive ? "text-amber-400" : "text-slate-500"}`}
                   strokeWidth={isActive ? 2.4 : 1.9}
