@@ -94,7 +94,7 @@ export default function Settings() {
               placeholder="Nickname (optional)"
               maxLength={20}
               aria-label="Display name"
-              className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-amber-400 focus:outline-none"
+              className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-base text-slate-100 placeholder:text-slate-600 focus:border-amber-400 focus:outline-none md:text-sm"
             />
             <button
               onClick={saveDisplayName}

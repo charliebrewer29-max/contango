@@ -107,7 +107,7 @@ export default function ReminderSettings() {
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500/50"
+              className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-base text-slate-200 outline-none focus:border-amber-500/50 md:text-sm"
             />
           </label>
           <label className="flex flex-col gap-1">
@@ -117,7 +117,7 @@ export default function ReminderSettings() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
-              className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 outline-none focus:border-amber-500/50"
+              className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-base text-slate-200 outline-none focus:border-amber-500/50 md:text-sm"
             />
           </label>
         </div>
