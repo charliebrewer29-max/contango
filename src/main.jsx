@@ -8,7 +8,7 @@ import '@/index.css'
 // CSS variables in index.css resolve against. Defaults to the dark
 // trading-terminal feel, adapts to the system preference when set.
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem>
+  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
     <App />
   </ThemeProvider>
 )
