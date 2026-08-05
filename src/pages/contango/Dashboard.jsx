@@ -8,6 +8,7 @@ import AdBanner from "@/components/contango/AdBanner";
 import { useContango } from "@/contexts/ContangoContext";
 import { BRANCHES } from "@/lib/content";
 import { canAccessBranch, canAccessLessonId } from "@/lib/subscription";
+import GuidedTour from "@/components/contango/GuidedTour";
 
 // Home / Dashboard. One dominant primary action - "Pick up where you left
 // off" - sits in the goal card and is the largest, brightest thing on the
@@ -70,6 +71,7 @@ export default function Dashboard() {
           Contango isn't affiliated with TradingView.
         </p>
       </div>
+      <GuidedTour />
     </ScreenShell>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Bot, Eye, Volume2, Vibrate, Crown, BookOpen, Trash2, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Bot, Eye, Volume2, Vibrate, Crown, BookOpen, Trash2, LogOut, Compass } from "lucide-react";
 import ScreenShell from "@/components/contango/ScreenShell";
 import { useContango } from "@/contexts/ContangoContext";
 import { COACH_NAME } from "@/lib/contangoTheme";
@@ -28,6 +28,7 @@ import {
 // an explicit confirmation dialog (not a single tap).
 export default function Settings() {
   const { progress, entitlement, update, resetProgress } = useContango();
+  const navigate = useNavigate();
   const flow = isPremium(entitlement) ? "history" : "session";
   const [aiOn, setAiOn] = React.useState(false);
   const [aiBusy, setAiBusy] = React.useState(false);
@@ -72,6 +73,11 @@ export default function Settings() {
   function saveDisplayName() {
     if (!nameCheck.valid) return;
     update({ displayName: nameCheck.trimmed || null });
+  }
+
+  function replayTour() {
+    update({ tourSeen: false });
+    navigate("/");
   }
 
   return (
@@ -140,6 +146,14 @@ export default function Settings() {
         <Toggle icon={<Eye className="h-4 w-4" />} label="Reduced motion" desc="Disable the ticker animation" on={progress.reducedMotion} onClick={() => toggle("reducedMotion")} />
         <Toggle icon={<Volume2 className="h-4 w-4" />} label="Sound" desc="Correct/wrong/complete cues" on={progress.soundOn} onClick={() => toggle("soundOn")} />
         <Toggle icon={<Vibrate className="h-4 w-4" />} label="Haptics" desc="Tap feedback on answers" on={progress.hapticsOn} onClick={() => toggle("hapticsOn")} />
+        <button onClick={replayTour} className="flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 text-left hover:border-slate-600">
+          <Compass className="h-5 w-5 text-amber-400" />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-slate-100">Replay app tour</div>
+            <div className="text-xs text-slate-500">See the dashboard walkthrough again</div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-600" />
+        </button>
       </Section>
 
       {/* subscription */}

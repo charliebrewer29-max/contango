@@ -20,6 +20,7 @@ const DEFAULT_PROGRESS = {
   dailyGoal: 20,
   firstLessonDone: false,
   onboardingDone: false,
+  tourSeen: false,
   goal: "regular",
   why: "curiosity",
   completedLessons: [],

@@ -35,6 +35,9 @@
     "onboardingDone": {
       "type": "boolean"
     },
+    "tourSeen": {
+      "type": "boolean"
+    },
     "goal": {
       "type": [
         "string",
