@@ -1,0 +1,6 @@
+{
+	"appId": "com.contango.app",
+	"appName": "Contango",
+	"webDir": "dist",
+	"packageClassList": []
+}
