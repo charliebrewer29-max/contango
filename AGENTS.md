@@ -63,7 +63,12 @@ These are product-defining constraints. A change that breaks one is wrong, even 
 
 ## Open decisions
 
-- **Capacitor vs Expo is undecided**, and native auth needs rework either way: `loginWithProvider` does a full-page redirect and the token returns in the URL, which a native webview cannot land.
+- **DECIDED — ship via Base44's native build flow, not Capacitor.** Base44 support confirmed in writing that (a) custom URL schemes cannot be allowlisted as `from_url`, (b) Universal Links are not supported, and (c) there is no supported path for social login in a Capacitor wrapper. Independently, Google refuses OAuth in embedded webviews, and this repo has no deep-link infrastructure (no `CFBundleURLSchemes`, no `appUrlOpen` listener, no `@capacitor/browser`). Base44's native build wraps the **published** app over HTTPS, so `from_url` stays HTTPS and OAuth works normally.
+  - **Do not gate social login.** On Base44's build the app is served from HTTPS and Google/Apple sign-in work normally. There is no native-shell special case to write.
+  - **Known tradeoff: no push notifications.** The native build supports neither APNs nor FCM, and web push is limited in WKWebView. Email reminders via `sendDailyReminders` are the current substitute. If push becomes a growth blocker, *that* is the trigger to reconsider migrating — not the subscription cost.
+  - **Workflow: the native build wraps whatever is currently PUBLISHED in Base44, not GitHub HEAD.** Order is: merge to `main` → let the sync carry it to Base44 → publish → build. Building before publishing ships the previous release.
+  - **`nativeAwareFromUrl()` in `src/lib/platform.js` is a no-op.** It reproduces the exact string the SDK already derives: the SDK does `new URL(fromUrl, window.location.origin)`, and in a native shell that origin is already `capacitor://localhost`, so `"/"` and `"capacitor://localhost/"` both resolve to `capacitor://localhost/`. It solved nothing — do not assume otherwise, and do not build on it.
+  - **The `capacitor-ios` branch stays unmerged as a parked option.** Do not merge it; do not delete it.
 - **The leaderboard ranks on `progress.xp` (lifetime)** while `leagueXp` resets weekly and is displayed nowhere.
 - **The Discipline Engine NEUTRAL is 70** while formula midpoints are 50, so collecting data can lower a score versus having none.
 - **The main bundle is about 198 kB gzipped** against a 200 kB target, with framer-motion at 125 kB used in one file.
