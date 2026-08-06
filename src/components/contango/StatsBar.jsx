@@ -11,7 +11,7 @@ export default function StatsBar({ compact = false }) {
 
   if (compact) {
     return (
-      <div className="flex items-center gap-4 text-sm">
+      <div data-tour="stats" className="flex items-center gap-4 text-sm">
         <span className="inline-flex items-center gap-1 text-amber-400">
           <Flame className="h-4 w-4" /> {progress.streak || 0}
         </span>
@@ -37,9 +37,9 @@ export default function StatsBar({ compact = false }) {
   ];
 
   if (tiles.length === 3) {
-    return <div className="grid grid-cols-3 gap-1.5">{tiles}</div>;
+    return <div data-tour="stats" className="grid grid-cols-3 gap-1.5">{tiles}</div>;
   }
-  return <div className="flex justify-center gap-1.5">{tiles}</div>;
+  return <div data-tour="stats" className="flex justify-center gap-1.5">{tiles}</div>;
 }
 
 function StatTile({ icon, value, label, color, valueColor = "text-slate-100", bg, border = "border-slate-800/60" }) {

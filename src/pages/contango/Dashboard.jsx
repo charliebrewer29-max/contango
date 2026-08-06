@@ -30,7 +30,7 @@ export default function Dashboard() {
         <DisciplineHero />
 
         {/* Daily goal + the single dominant primary action */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-3.5">
+        <section data-tour="daily-goal" className="rounded-2xl border border-slate-800 bg-slate-900 p-3.5">
           <div className="flex items-center gap-3">
             <GoalRing pct={dailyPct} />
             <div className="min-w-0 flex-1">
@@ -55,7 +55,7 @@ export default function Dashboard() {
         </section>
 
         {/* Skill tree - section heading sits 8px above its content */}
-        <section>
+        <section data-tour="skill-tree">
           <h2 className="font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-slate-400">The skills the disciplined 3% use</h2>
           <p className="mt-2 text-[15px] leading-relaxed text-slate-500">Strategy branches are the vehicle - you drill each one until the behavior is automatic.</p>
           <div className="mt-6">
