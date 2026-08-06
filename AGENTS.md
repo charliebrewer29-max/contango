@@ -71,7 +71,7 @@ These are product-defining constraints. A change that breaks one is wrong, even 
   - **The `capacitor-ios` branch stays unmerged as a parked option.** Do not merge it; do not delete it.
 - **The leaderboard ranks on `progress.xp` (lifetime)** while `leagueXp` resets weekly and is displayed nowhere.
 - **The Discipline Engine NEUTRAL is 70** while formula midpoints are 50, so collecting data can lower a score versus having none.
-- **The main bundle is about 198 kB gzipped** against a 200 kB target, with framer-motion at 125 kB used in one file.
+- **The main bundle is 209.70 kB gzipped (671.53 kB raw) against a 200 kB target — the target is breached and has been since PR #2.** The earlier "~198 kB" figure was accurate at `e68ad6c` and went stale. Measured progression of the `index-*.js` chunk: `e68ad6c` 198.71 → #1 `f3b24ce` 199.04 → #2 `141e9ae` 202.38 (**target first breached here**) → #3 `f38487a` 203.96 → #4 `f220659` 207.57 → `8646b64` 207.68 → `b6e1541` 208.64 → current 209.70. The bulk (+8.97 kB) came from the curriculum expansions — mean-reversion units, drill prompt pools 8→32, risk-psych 22→45. The remaining +2.02 kB is the guided tour and its rewrite. framer-motion is still a separate 125.40 kB vendor chunk (42.14 kB gzipped) used in one file, and is the obvious first cut if the target is to be met.
 
 ## Verification discipline
 
