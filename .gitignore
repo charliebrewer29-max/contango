@@ -31,3 +31,17 @@ dist-ssr
 .env
 .vite
 base44/.app.jsonc
+
+# Capacitor generated output. `npx cap sync ios` rewrites all of these from
+# dist/ and capacitor.config.ts on every run. Tracking them meant a sync
+# commit carried dozens of artifact diffs, which is how PR #8 landed as 40
+# generated files and zero src/ changes. Regenerate them, never commit them.
+ios/App/App/public
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+ios/capacitor-cordova-ios-plugins
+ios/App/Pods
+ios/App/build
+ios/App/output
+ios/DerivedData
+ios/**/xcuserdata
