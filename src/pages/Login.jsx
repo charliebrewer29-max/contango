@@ -8,7 +8,6 @@ import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import AppleIcon from "@/components/AppleIcon";
-import { nativeAwareFromUrl } from "@/lib/platform";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -31,14 +30,14 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", nativeAwareFromUrl("/"));
+    base44.auth.loginWithProvider("google", "/");
   };
 
   // Apple Sign-In — required alongside Google per App Store Review Guideline 4.8.
   // NOTE: Apple must be enabled in the Base44 app's authentication settings first,
   // or this provider will 404.
   const handleApple = () => {
-    base44.auth.loginWithProvider("apple", nativeAwareFromUrl("/"));
+    base44.auth.loginWithProvider("apple", "/");
   };
 
   return (

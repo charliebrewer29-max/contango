@@ -9,7 +9,6 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import AppleIcon from "@/components/AppleIcon";
-import { nativeAwareFromUrl } from "@/lib/platform";
 import { toast } from "@/components/ui/use-toast";
 
 export default function Register() {
@@ -69,14 +68,14 @@ export default function Register() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", nativeAwareFromUrl("/"));
+    base44.auth.loginWithProvider("google", "/");
   };
 
   // Apple Sign-In — required alongside Google per App Store Review Guideline 4.8.
   // NOTE: Apple must be enabled in the Base44 app's authentication settings first,
   // or this provider will 404.
   const handleApple = () => {
-    base44.auth.loginWithProvider("apple", nativeAwareFromUrl("/"));
+    base44.auth.loginWithProvider("apple", "/");
   };
 
   if (showOtp) {
